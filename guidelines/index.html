@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guideline Repository · Collatera</title>
+<meta name="description" content="A catalog of society guideline links.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" class="search-input" type="search" placeholder="Search topics, societies, years…" autocomplete="off" aria-label="Search guidelines">
+  </div>
+  <div class="chips" id="chips" role="tablist" aria-label="Filter by society or topic"></div>
+  <div class="repos" id="repos"></div>
+</div>
+
+<main>
+  <div class="count" id="count"></div>
+  <div class="grid links" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <strong>Nothing found</strong>
+    Try a different word, or pick a different society or topic above.
+  </div>
+</main>
+
+<footer>collatera.org · guideline repository.</footer>
+
+<script>window.COLLATERA_SECTION = "Guideline Repository";</script>
+<script src="/assets/site.js"></script>
+
+<script>
+/* =================================================================
+   ====   YOUR GUIDELINE CATALOG  —  generated from your Excel.    ====
+   ====   To add or edit entries, edit the GUIDELINES list below.  ====
+   ====   Each entry: topic (title), year, societies [list], url.  ====
+   ====   SOCIETIES and TOPICS become the filter chips; a society  ====
+   ====   chip matches any entry that lists it (joint guidelines   ====
+   ====   show under each of their societies). REPOSITORIES are    ====
+   ====   the pinned links under the filter.                       ====
+   ================================================================= */
+
+const SOCIETIES = ["ACC", "AHA", "ESC", "HRS", "SCAI", "HFSA", "CHEST"];
+const TOPICS = ["ACHD", "ACS", "Acute PE", "AF", "Aorta", "CAD", "Chest Pain", "CKMS", "Endocarditis", "HCM", "HF", "HLD", "HTN", "PCI", "Peri-Op", "PH", "Pregnancy", "Prevention", "SVT", "Syncope", "Valve", "VT/VF"];
+const REPOSITORIES = [{"label": "JACC", "url": "https://www.jacc.org/guidelines"}, {"label": "ACC", "url": "https://www.acc.org/guidelines"}, {"label": "ESC", "url": "https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/"}, {"label": "JCS", "url": "https://www.j-circ.or.jp/english/cj/jcs-guidelines/"}];
+const GUIDELINES = [
+  {"topic": "Acute PE", "year": 2026, "societies": ["ACC", "AHA"], "url": "https://www.jacc.org/guidelines/acute-pulmonary-embolism"},
+  {"topic": "HLD", "year": 2026, "societies": ["ACC", "AHA"], "url": "https://www.jacc.org/guidelines/dyslipidemia"},
+  {"topic": "CKMS", "year": 2026, "societies": ["AHA", "ACC"], "url": "https://www.jacc.org/guidelines/cardiovascular-kidney-metabolic"},
+  {"topic": "ACS", "year": 2025, "societies": ["ACC", "AHA", "SCAI"], "url": "https://www.jacc.org/guidelines/acute-coronary-syndromes"},
+  {"topic": "ACHD", "year": 2025, "societies": ["AHA", "ACC"], "url": "https://www.jacc.org/guidelines/congenital-heart-disease"},
+  {"topic": "HTN", "year": 2025, "societies": ["ACC", "AHA"], "url": "https://www.jacc.org/guidelines/high-blood-pressure"},
+  {"topic": "Valve", "year": 2025, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/46/44/4635/8234488"},
+  {"topic": "Pregnancy", "year": 2025, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/46/43/4462/8234487"},
+  {"topic": "HTN", "year": 2024, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/45/38/3912/7741010"},
+  {"topic": "HCM", "year": 2024, "societies": ["AHA", "ACC"], "url": "https://www.jacc.org/guidelines/hcm"},
+  {"topic": "AF", "year": 2024, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/45/36/3314/7738779"},
+  {"topic": "CAD", "year": 2024, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/45/36/3415/7743115?login=false"},
+  {"topic": "Peri-Op", "year": 2024, "societies": ["AHA", "ACC"], "url": "https://www.jacc.org/guidelines/perioperative-cardiovascular-management"},
+  {"topic": "ACS", "year": 2023, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/41/1/111/5556353"},
+  {"topic": "AF", "year": 2023, "societies": ["ACC", "AHA", "HRS"], "url": "https://www.jacc.org/guidelines/atrial-fibrillation"},
+  {"topic": "CAD", "year": 2023, "societies": ["AHA", "ACC"], "url": "https://www.jacc.org/guidelines/chronic-coronary-disease"},
+  {"topic": "HF", "year": 2023, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/44/37/3627/7246292"},
+  {"topic": "Endocarditis", "year": 2023, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/44/39/3948/7243107?login=false"},
+  {"topic": "Peri-Op", "year": 2022, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/43/39/3826/6675076"},
+  {"topic": "Aorta", "year": 2022, "societies": ["ACC", "AHA"], "url": "https://www.jacc.org/guidelines/aortic-disease"},
+  {"topic": "HF", "year": 2022, "societies": ["AHA", "ACC", "HFSA"], "url": "https://www.jacc.org/guidelines/heart-failure-management"},
+  {"topic": "PH", "year": 2022, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/43/38/3618/6673929?login=false"},
+  {"topic": "Chest Pain", "year": 2021, "societies": ["AHA", "ACC", "CHEST"], "url": "https://www.jacc.org/guidelines/chest-pain"},
+  {"topic": "PCI", "year": 2021, "societies": ["ACC", "AHA", "SCAI"], "url": "https://www.jacc.org/guidelines/revascularization"},
+  {"topic": "Prevention", "year": 2021, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/42/34/3227/6358713"},
+  {"topic": "ACHD", "year": 2020, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/42/6/563/5898606"},
+  {"topic": "Valve", "year": 2020, "societies": ["ACC", "AHA"], "url": "https://www.jacc.org/guidelines/vhd"},
+  {"topic": "HLD", "year": 2019, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/41/1/111/5556353"},
+  {"topic": "Prevention", "year": 2019, "societies": ["ACC", "AHA"], "url": "https://www.jacc.org/guidelines/prevention"},
+  {"topic": "SVT", "year": 2019, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article/41/5/655/5556821"},
+  {"topic": "PCI", "year": 2018, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article-abstract/40/2/87/5079120?redirectedFrom=fulltext"},
+  {"topic": "Syncope", "year": 2018, "societies": ["ESC"], "url": "https://academic.oup.com/eurheartj/article-abstract/39/21/1883/4939241?redirectedFrom=fulltext"},
+  {"topic": "Syncope", "year": 2017, "societies": ["ACC", "AHA", "HRS"], "url": "https://www.jacc.org/doi/pdf/10.1016/j.jacc.2017.03.003"},
+  {"topic": "VT/VF", "year": 2017, "societies": ["ACC", "AHA", "HRS"], "url": "https://www.jacc.org/guidelines/VASCD"},
+  {"topic": "SVT", "year": 2015, "societies": ["ACC", "AHA", "HRS"], "url": "https://www.jacc.org/doi/pdf/10.1016/j.jacc.2015.08.856"}
+];
+
+/* =================================================================
+   ====   You normally do NOT need to edit anything below here. ====
+   ================================================================= */
+
+const catColors=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const colorFor=(soc)=>{const i=SOCIETIES.indexOf(soc);return i>=0?catColors[i%catColors.length]:"var(--border)";};
+
+const grid=document.getElementById("grid");
+const chipsEl=document.getElementById("chips");
+const countEl=document.getElementById("count");
+const emptyEl=document.getElementById("empty");
+const searchEl=document.getElementById("search");
+const reposEl=document.getElementById("repos");
+
+let activeFilter={type:"all",value:null};
+let query="";
+
+/* pinned repository links */
+function buildRepos(){
+  if(!REPOSITORIES.length) return;
+  reposEl.innerHTML='<span class="repos-label">Full repositories:</span>';
+  REPOSITORIES.forEach(r=>{
+    const a=document.createElement("a");
+    a.className="repo-link"; a.href=r.url; a.target="_blank"; a.rel="noopener";
+    a.textContent=r.label; reposEl.appendChild(a);
+  });
+}
+
+function chipButton(label,type,value,isTag){
+  const b=document.createElement("button");
+  b.className="chip"+(isTag?" is-tag":""); b.textContent=label;
+  b.setAttribute("role","tab");
+  const pressed=activeFilter.type===type&&activeFilter.value===value;
+  b.setAttribute("aria-pressed",pressed?"true":"false");
+  b.onclick=()=>{activeFilter={type,value};
+    [...chipsEl.querySelectorAll(".chip")].forEach(c=>c.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true"); render();};
+  return b;
+}
+function buildChips(){
+  chipsEl.appendChild(chipButton("All","all",null,false));
+  const recent=chipButton("Recent","recent",null,false); recent.classList.add("is-mode");
+  const most=chipButton("Most used","mostused",null,false); most.classList.add("is-mode");
+  chipsEl.appendChild(recent); chipsEl.appendChild(most);
+  const sep0=document.createElement("span"); sep0.className="chip-sep"; sep0.setAttribute("aria-hidden","true");
+  chipsEl.appendChild(sep0);
+  SOCIETIES.forEach(s=>chipsEl.appendChild(chipButton(s,"soc",s,false)));
+  if(TOPICS.length){
+    const sep=document.createElement("span");sep.className="chip-sep";sep.setAttribute("aria-hidden","true");
+    chipsEl.appendChild(sep);
+    TOPICS.forEach(t=>chipsEl.appendChild(chipButton(t,"topic",t,true)));
+  }
+}
+
+function matchesFilter(g){
+  if(activeFilter.type==="all")return true;
+  if(activeFilter.type==="soc")return g.societies.includes(activeFilter.value);
+  if(activeFilter.type==="topic")return g.topic===activeFilter.value;
+  return true;
+}
+function render(){
+  const q=query.trim().toLowerCase();
+  const views=CollateraViews.all();
+  const mode=activeFilter.type;
+  let visible=GUIDELINES.filter(g=>{
+    if(!matchesFilter(g))return false;
+    const hay=(g.topic+" "+g.societies.join(" ")+" "+g.year).toLowerCase();
+    if(q && !hay.includes(q))return false;
+    if(mode==="recent"||mode==="mostused")return !!views[g.url];
+    return true;
+  });
+  if(mode==="recent"){
+    visible.sort((a,b)=>(views[b.url]?.t||0)-(views[a.url]?.t||0));
+  } else if(mode==="mostused"){
+    visible.sort((a,b)=>(views[b.url]?.c||0)-(views[a.url]?.c||0));
+  } else {
+    // default: viewed float up by score; otherwise newest publication year first
+    visible.sort((a,b)=>
+      CollateraViews.score(views[b.url]) - CollateraViews.score(views[a.url])
+      || (Number(b.year)||0)-(Number(a.year)||0)
+      || a.topic.localeCompare(b.topic));
+  }
+
+  grid.innerHTML="";
+  visible.forEach((g,i)=>{
+    const a=document.createElement("a");
+    a.className="linkcard"; a.href=g.url; a.target="_blank"; a.rel="noopener";
+    a.onclick=()=>CollateraViews.record(g.url);
+    a.style.setProperty("--cat",colorFor(g.societies[0]||""));
+    a.style.animationDelay=(Math.min(i,18)*0.03)+"s";
+    const socPills=g.societies.map(s=>`<span class="lc-soc" style="background:${colorFor(s)}">${s}</span>`).join("");
+    a.innerHTML=`<div class="lc-socrow">${socPills}</div>
+      <span class="lc-title">${g.topic}</span>
+      <span class="lc-meta">${g.year}</span>`;
+    grid.appendChild(a);
+  });
+
+  const n=visible.length;
+  let label=`${n} ${n===1?"guideline":"guidelines"}`;
+  if(activeFilter.type==="soc")label+=` from ${activeFilter.value}`;
+  if(activeFilter.type==="topic")label+=` on ${activeFilter.value}`;
+  if(mode==="recent")label+=` · recently viewed`;
+  if(mode==="mostused")label+=` · most used`;
+  if(q)label+=` matching “${query.trim()}”`;
+  countEl.textContent=label;
+  emptyEl.style.display=n?"none":"block";
+  grid.style.display=n?"grid":"none";
+}
+
+searchEl.addEventListener("input",(e)=>{query=e.target.value;render();});
+buildRepos(); buildChips(); render();
+</script>
+</body>
+</html>

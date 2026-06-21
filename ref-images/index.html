@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reference Image Library · Collatera</title>
+<meta name="description" content="A personal clinical reference image library.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+
+<!-- Search + filter chips (the shared header/banner are injected by site.js above) -->
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" class="search-input" type="search" placeholder="Search titles, notes, tags…" autocomplete="off" aria-label="Search the library">
+  </div>
+  <div class="chips" id="chips" role="tablist" aria-label="Filter by category or tag"></div>
+</div>
+
+<main>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <strong>Nothing found</strong>
+    Try a different word, or pick a different category or tag above.
+  </div>
+</main>
+
+<footer>
+  collatera.org &middot; a personal reference library.
+</footer>
+
+<!-- ---------- Lightbox markup ---------- -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+  <button class="lb-close" id="lbClose" aria-label="Close">&#10005;</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next">&#8250;</button>
+  <div class="lb-panel">
+    <div class="lb-imgwrap"><img id="lbImg" src="" alt=""></div>
+    <div class="lb-meta">
+      <div class="lb-tagrow" id="lbTagRow"></div>
+      <div class="lb-title" id="lbTitle"></div>
+      <div class="lb-note" id="lbNote"></div>
+    </div>
+  </div>
+</div>
+
+<!-- shared header / nav / banner -->
+<script>window.COLLATERA_SECTION = "Reference Image Library";</script>
+<script src="/assets/site.js"></script>
+
+<script>
+/* =================================================================
+   ====   YOUR LIBRARY LIVES HERE  —  THIS IS THE ONLY PART     ====
+   ====   YOU NEED TO EDIT TO ADD OR CHANGE IMAGES.             ====
+   =================================================================
+
+   Each image has:
+     file:  "/images/your-file.jpg"   the picture, kept in the /images
+                                       folder at the top of your repo
+     title: "What it's called"         shown under the thumbnail
+     cat:   "Echo"                     ONE primary category (must match
+                                       a name in CATEGORIES below)
+     tags:  ["AV", "LV"]               ANY number of cross-cutting tags;
+                                       one tag can appear across several
+                                       categories (e.g. AV in Echo AND Valves)
+     note:  "A short description."     optional — shows only when the
+                                       image is opened, not on the thumbnail
+
+   Categories appear as the first group of filter chips; tags appear
+   after the divider. Clicking either filters across the whole library.
+
+   NOTE: the entries below are placeholders so you can see the layout.
+   Your 108 real entries (generated from your Excel) replace this block.
+   ================================================================= */
+
+const CATEGORIES = ["ACLS", "Stroke", "Cath / Angio", "EP", "Anatomy", "Echo", "Pathophys", "Valve", "ECG", "HF", "Shock", "HemoDyn", "Preg/Cong", "Lipids"];
+
+const IMAGES = [
+  {"file": "/images/ACLS ACS Algo.jpg", "title": "ACS Algo (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Algo.jpg", "title": "Cardiac Arrest Algo  (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Bradycardia.jpg", "title": "Brady Algo (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Circular Algo.jpg", "title": "Circular Algorithm (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Doses Details.jpg", "title": "ACLS Meds", "cat": "ACLS", "tags": ["Meds"], "note": ""},
+  {"file": "/images/ACLS EMS.jpg", "title": "EMS Activation (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Post-Arrest Algo.jpg", "title": "Post Arrest Algo (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Pregnancy Algo.jpg", "title": "Pregnancy Algo (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Stroke Algo.jpg", "title": "Stroke Algo  (ACLS)", "cat": "Stroke", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS Tachycardia Algo.jpg", "title": "Tachy Algo (ACLS)", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/ACLS VAD Algo.jpg", "title": "VAD Algo (ACLS)", "cat": "ACLS", "tags": ["Algo", "MCS"], "note": ""},
+  {"file": "/images/ACLSmeds.jpg", "title": "Pharm Summary (ACLS)", "cat": "ACLS", "tags": ["Table", "Meds"], "note": ""},
+  {"file": "/images/aclsroles.jpg", "title": "Team Roles (ACLS)", "cat": "ACLS", "tags": [], "note": ""},
+  {"file": "/images/acstypes.jpg", "title": "ACS Types", "cat": "Cath / Angio", "tags": ["ACS"], "note": ""},
+  {"file": "/images/Acute Stroke.jpg", "title": "AHA Stroke Algo", "cat": "Stroke", "tags": ["Algo"], "note": ""},
+  {"file": "/images/afib hypercoag.png", "title": "AFib Hypercoaguability", "cat": "EP", "tags": ["AF"], "note": ""},
+  {"file": "/images/Afib Inflammation trigger.png", "title": "AFib Inflammation", "cat": "EP", "tags": ["AF"], "note": ""},
+  {"file": "/images/afib stages 2.jpg", "title": "AFib Stages 1", "cat": "EP", "tags": ["AF"], "note": ""},
+  {"file": "/images/afib stages.jpg", "title": "AFib Stages 2", "cat": "EP", "tags": ["AF"], "note": ""},
+  {"file": "/images/aortasizes1.jpg", "title": "Aorta Sizes 1", "cat": "Anatomy", "tags": ["Aorta", "Vasc"], "note": ""},
+  {"file": "/images/aortasizes2.jpg", "title": "Aorta Sizes 2", "cat": "Anatomy", "tags": ["Aorta"], "note": ""},
+  {"file": "/images/aortasizes3.jpg", "title": "Aorta Sizes 3", "cat": "Anatomy", "tags": ["Aorta"], "note": ""},
+  {"file": "/images/Aortic Regurg 1.jpg", "title": "Aortic Regurgitation 1", "cat": "Echo", "tags": ["AV"], "note": ""},
+  {"file": "/images/Aortic Regurg 2.jpg", "title": "Aortic Regurgitation 2", "cat": "Echo", "tags": ["AV"], "note": ""},
+  {"file": "/images/AorticStenosis.png", "title": "Aortic Stenosis", "cat": "Echo", "tags": ["AV"], "note": ""},
+  {"file": "/images/artherosclerosis.png", "title": "Atherosclerosis 1", "cat": "Pathophys", "tags": ["Vasc"], "note": ""},
+  {"file": "/images/artherosclerosis2.png", "title": "Atherosclerosis 2", "cat": "Pathophys", "tags": ["Vasc"], "note": ""},
+  {"file": "/images/artherosclerosis3.png", "title": "Atherosclerosis 3", "cat": "Pathophys", "tags": ["Vasc"], "note": ""},
+  {"file": "/images/AS stages.png", "title": "AS Stages", "cat": "Valve", "tags": ["AV"], "note": ""},
+  {"file": "/images/ASE_LV_Size.png", "title": "LV Size", "cat": "Echo", "tags": ["LV"], "note": ""},
+  {"file": "/images/atherosclerosis4.png", "title": "Atherosclerosis 4", "cat": "Pathophys", "tags": ["Vasc"], "note": ""},
+  {"file": "/images/bifurcation lesion.png", "title": "Bifurcation Lesion Algo", "cat": "Cath / Angio", "tags": ["Algo", "Cor"], "note": ""},
+  {"file": "/images/bifurcation lesions.jpg", "title": "Medina Bifurcation", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/BLS Algo.jpg", "title": "BLS Algo", "cat": "ACLS", "tags": ["Algo"], "note": ""},
+  {"file": "/images/Cardiac Arrest Survival.jpg", "title": "Cardiac Arrest Survival", "cat": "ACLS", "tags": [], "note": ""},
+  {"file": "/images/Chain of Survival.png", "title": "Chain of Survival", "cat": "ACLS", "tags": [], "note": ""},
+  {"file": "/images/coronary projections 1.png", "title": "Coronary Projections 1", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/coronary projections 2.jpg", "title": "Coronary Projections 2", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/cprcoronaryperfusion.jpg", "title": "Coronary Perfusion during CPR", "cat": "ACLS", "tags": ["Cor"], "note": ""},
+  {"file": "/images/diastology.jpg", "title": "Diastology (old algo)", "cat": "Echo", "tags": ["diastology", "LV"], "note": ""},
+  {"file": "/images/diastology2.jpg", "title": "Diastology (NEW algo)", "cat": "Echo", "tags": ["diastology", "LV"], "note": ""},
+  {"file": "/images/ecgaxis3d.jpg", "title": "ECG lead axis", "cat": "ECG", "tags": [], "note": ""},
+  {"file": "/images/endtidalco2.jpg", "title": "End Tidal CO2 (ACLS)", "cat": "ACLS", "tags": [], "note": ""},
+  {"file": "/images/fibrinolyticcontraindications.jpg", "title": "Fibrinolytic Contraindications", "cat": "Stroke", "tags": ["Meds", "Table"], "note": ""},
+  {"file": "/images/ftr.jpg", "title": "Functional TR", "cat": "Echo", "tags": ["TV"], "note": ""},
+  {"file": "/images/HCM risk.png", "title": "HCM Penetrance", "cat": "Pathophys", "tags": [], "note": ""},
+  {"file": "/images/hfpef cmo.png", "title": "HFpEF DDx", "cat": "HF", "tags": ["HFpEF"], "note": ""},
+  {"file": "/images/IABP 1.jpg", "title": "IABP 1", "cat": "Shock", "tags": ["IABP", "MCS"], "note": ""},
+  {"file": "/images/IABP 2.jpeg", "title": "IABP 2", "cat": "Shock", "tags": ["IABP", "MCS"], "note": ""},
+  {"file": "/images/Impella 2.jpeg", "title": "Impella 2", "cat": "Shock", "tags": ["Impella", "MCS"], "note": ""},
+  {"file": "/images/Impella CP RP.jpeg", "title": "Imella CP / RP", "cat": "Shock", "tags": ["Impella", "MCS"], "note": ""},
+  {"file": "/images/Impella Device Config.png", "title": "Impella Configuration", "cat": "Shock", "tags": ["Impella", "MCS"], "note": ""},
+  {"file": "/images/Impella vs IABP.jpg", "title": "Impella vs IABP", "cat": "Shock", "tags": ["Impella", "IABP", "MCS"], "note": ""},
+  {"file": "/images/Impella.jpg", "title": "Impella", "cat": "Shock", "tags": ["Impella", "MCS"], "note": ""},
+  {"file": "/images/inflammation arrhythmias.png", "title": "Inflammation Arrhythmogenicity", "cat": "Pathophys", "tags": [], "note": ""},
+  {"file": "/images/ischemiasymptoms.jpg", "title": "Ischemia Symptoms", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/LASize.png", "title": "LA Size", "cat": "Echo", "tags": ["LA"], "note": ""},
+  {"file": "/images/Lefevre bifurcation.jpeg", "title": "Lefevre Bifurcation", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/LFLG AS.png", "title": "LFLG AS", "cat": "Valve", "tags": ["AV", "Algo"], "note": ""},
+  {"file": "/images/lvhypertrophy.jpg", "title": "LV Hypertrophy", "cat": "Echo", "tags": ["LV"], "note": ""},
+  {"file": "/images/MCS types.png", "title": "MCS Options", "cat": "Shock", "tags": ["MCS"], "note": ""},
+  {"file": "/images/MitralProsthesis.png", "title": "Mitral Prosthesis", "cat": "Echo", "tags": ["MV", "Table"], "note": ""},
+  {"file": "/images/MitralRegurgitationAlgo.jpg", "title": "MR Grading Algorithm", "cat": "Echo", "tags": ["MV", "Algo"], "note": ""},
+  {"file": "/images/Mitralregurgitationtable.png", "title": "MR Grading Table", "cat": "Echo", "tags": ["MV", "Table"], "note": ""},
+  {"file": "/images/MitralStenosis.jpg", "title": "Mitral Stenosis", "cat": "Echo", "tags": ["MV", "Table"], "note": ""},
+  {"file": "/images/morphine in acs.jpg", "title": "Morphine in ACS", "cat": "ACLS", "tags": ["Meds"], "note": ""},
+  {"file": "/images/Neuroprognostication.jpg", "title": "Neuroprognostication (ACLS) 1", "cat": "ACLS", "tags": [], "note": ""},
+  {"file": "/images/Neuroprognostication2.jpg", "title": "Neuroprognostication (ACLS) 2", "cat": "ACLS", "tags": [], "note": ""},
+  {"file": "/images/obesity afib.jpg", "title": "AFib Obesity", "cat": "Pathophys", "tags": ["AF"], "note": ""},
+  {"file": "/images/pci1.gif", "title": "PCI Example", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/pci2.jpeg", "title": "PCI Example", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/phalgo.jpg", "title": "PH Dx Algorithm", "cat": "HemoDyn", "tags": ["Algo", "PH"], "note": ""},
+  {"file": "/images/pregnancymeds.jpg", "title": "Pregnancy Meds", "cat": "Preg/Cong", "tags": ["Meds"], "note": ""},
+  {"file": "/images/Prosthetic AV stenosis.png", "title": "Prosthetic AV Stenosis", "cat": "Echo", "tags": ["AV", "Table"], "note": ""},
+  {"file": "/images/ProstheticAR.png", "title": "Prosthetic AV Regurgitation", "cat": "Echo", "tags": ["AV"], "note": ""},
+  {"file": "/images/ProstheticAV.png", "title": "Prosthetic AV Stenosis", "cat": "Echo", "tags": ["AV"], "note": ""},
+  {"file": "/images/ProstheticMR.png", "title": "Prosthetic MV Algo", "cat": "Echo", "tags": ["MV"], "note": ""},
+  {"file": "/images/ProstheticMR2.png", "title": "Prostehtic MV Table", "cat": "Echo", "tags": ["MV"], "note": ""},
+  {"file": "/images/ProstheticPPM.png", "title": "Prosthetic PPM", "cat": "Echo", "tags": [], "note": ""},
+  {"file": "/images/PulmonicRegurgitation.jpg", "title": "Pulmonic Regurgitation", "cat": "Echo", "tags": ["PV"], "note": ""},
+  {"file": "/images/PVI ablation.jpg", "title": "PVI Ablation", "cat": "EP", "tags": ["AF"], "note": ""},
+  {"file": "/images/qtc prolongation.png", "title": "QTc Prolongation", "cat": "Pathophys", "tags": [], "note": ""},
+  {"file": "/images/rap.png", "title": "RAP", "cat": "Echo", "tags": ["RA"], "note": ""},
+  {"file": "/images/rapalgo.jpg", "title": "RAP Quantification", "cat": "Echo", "tags": ["RA"], "note": ""},
+  {"file": "/images/RASize.png", "title": "RA Size", "cat": "Echo", "tags": ["RA"], "note": ""},
+  {"file": "/images/RHC Waveforms.jpg", "title": "RHC Waveforms", "cat": "HemoDyn", "tags": ["RHC"], "note": ""},
+  {"file": "/images/rhfunction.jpg", "title": "RH Function", "cat": "HF", "tags": ["RV"], "note": ""},
+  {"file": "/images/RVFunction.png", "title": "RA Function", "cat": "Echo", "tags": ["RA"], "note": ""},
+  {"file": "/images/RVSize.png", "title": "RV Size", "cat": "Echo", "tags": ["RV"], "note": ""},
+  {"file": "/images/SCAD.jpeg", "title": "SCAD", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/SCAI Stages.png", "title": "SCAI Stages", "cat": "Shock", "tags": [], "note": ""},
+  {"file": "/images/standard coronary views.jpeg", "title": "Coronary Projections 3", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/statin dosing.png", "title": "Statin Dosing", "cat": "Lipids", "tags": ["Meds", "Table"], "note": ""},
+  {"file": "/images/statin intolerance.png", "title": "Statin Intolerance Pathway", "cat": "Lipids", "tags": ["Meds", "Algo"], "note": ""},
+  {"file": "/images/statin primary prevention.jpg", "title": "Statin Primary Prevention", "cat": "Lipids", "tags": ["Meds", "Algo"], "note": ""},
+  {"file": "/images/statin secondary prevention.jpg", "title": "Statin Secondary Prevention", "cat": "Lipids", "tags": ["Meds", "Algo"], "note": ""},
+  {"file": "/images/stelevation.jpg", "title": "ST Elevation", "cat": "EP", "tags": ["Cor"], "note": ""},
+  {"file": "/images/stent vs bypass.gif", "title": "PCI vs CABG Example", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/stroke center levels.png", "title": "Stroke Centers", "cat": "Stroke", "tags": [], "note": ""},
+  {"file": "/images/Stroke HTN Management.png", "title": "Stroke HTN Management", "cat": "Stroke", "tags": ["Meds"], "note": ""},
+  {"file": "/images/stroke thrombolytics.png", "title": "Thrombolytics", "cat": "Stroke", "tags": ["Meds"], "note": ""},
+  {"file": "/images/subcu ICD indications.png", "title": "Subcutaneous ICD indications", "cat": "EP", "tags": ["ICD"], "note": ""},
+  {"file": "/images/TEE Probe Positioning.png", "title": "TEE Probe Positioning", "cat": "Echo", "tags": [], "note": ""},
+  {"file": "/images/TEE views 1.jpg", "title": "TEE Views 1", "cat": "Echo", "tags": [], "note": ""},
+  {"file": "/images/transcutaneouspacing.jpg", "title": "Transcutaneous Pacing", "cat": "EP", "tags": ["Pace"], "note": ""},
+  {"file": "/images/TricuspidProsthesis.png", "title": "TV Prosthesis", "cat": "Echo", "tags": ["TV"], "note": ""},
+  {"file": "/images/TricuspidRegurgitation.jpg", "title": "Tricuspid Regurgitation", "cat": "Echo", "tags": ["TV"], "note": ""},
+  {"file": "/images/TricuspidStenosis.jpg", "title": "Tricuspid Stenosis", "cat": "Echo", "tags": ["TV"], "note": ""},
+  {"file": "/images/TRtable.png", "title": "TR Quantification Table", "cat": "Echo", "tags": ["TV"], "note": ""},
+  {"file": "/images/tteviews.jpg", "title": "TTE Views", "cat": "Echo", "tags": [], "note": ""},
+  {"file": "/images/uterine displacement.png", "title": "Uterine Displacement Maneuver", "cat": "Shock", "tags": ["Preg"], "note": ""},
+  {"file": "/images/vadconfigurations.jpg", "title": "VAD Configurations", "cat": "HF", "tags": ["MCS"], "note": ""},
+  {"file": "/images/vadexample.jpg", "title": "VAD Example", "cat": "HF", "tags": ["MCS"], "note": ""},
+  {"file": "/images/vascularwall.jpg", "title": "Vascular Wall", "cat": "Anatomy", "tags": [], "note": ""},
+  {"file": "/images/vasoreactivity testing.png", "title": "Vasoreactivity Testing", "cat": "Cath / Angio", "tags": ["Cor"], "note": ""},
+  {"file": "/images/vfsurvival.jpg", "title": "VF Survival", "cat": "ACLS", "tags": ["VF"], "note": ""},
+  {"file": "/images/wallsegment1.jpg", "title": "Wall Segments 1", "cat": "Echo", "tags": ["LV"], "note": ""},
+  {"file": "/images/wallsegment2.jpg", "title": "Wall Segments 2", "cat": "Echo", "tags": ["LV"], "note": ""},
+  {"file": "/images/wallsegment3.jpg", "title": "Wall Segments 3", "cat": "Echo", "tags": ["LV"], "note": ""}
+];
+
+/* =================================================================
+   ====   You normally do NOT need to edit anything below here. ====
+   ================================================================= */
+
+const catColors = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const colorFor = (cat) => {
+  const i = CATEGORIES.indexOf(cat);
+  return i >= 0 ? catColors[i % catColors.length] : "var(--border)";
+};
+
+/* unique tags across the whole library, alphabetical */
+const ALL_TAGS = [...new Set(IMAGES.flatMap(img => img.tags || []))].sort((a,b)=>a.localeCompare(b));
+
+const grid    = document.getElementById("grid");
+const chipsEl = document.getElementById("chips");
+const countEl = document.getElementById("count");
+const emptyEl = document.getElementById("empty");
+const searchEl= document.getElementById("search");
+
+let activeFilter = { type: "all", value: null };  // single-select
+let query = "";
+let visible = [];
+
+/* ----- build the unified chip row: All · categories · | · tags ----- */
+function chipButton(label, type, value, isTag) {
+  const b = document.createElement("button");
+  b.className = "chip" + (isTag ? " is-tag" : "");
+  b.textContent = label;
+  b.setAttribute("role","tab");
+  const pressed = activeFilter.type === type && activeFilter.value === value;
+  b.setAttribute("aria-pressed", pressed ? "true" : "false");
+  b.onclick = () => {
+    activeFilter = { type, value };
+    [...chipsEl.querySelectorAll(".chip")].forEach(c => c.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    render();
+  };
+  return b;
+}
+function buildChips() {
+  chipsEl.appendChild(chipButton("All", "all", null, false));
+  // view-mode chips (per-device history)
+  const recent = chipButton("Recent", "recent", null, false); recent.classList.add("is-mode"); recent.classList.remove("is-tag");
+  const most = chipButton("Most used", "mostused", null, false); most.classList.add("is-mode"); most.classList.remove("is-tag");
+  chipsEl.appendChild(recent); chipsEl.appendChild(most);
+  const sep0 = document.createElement("span"); sep0.className = "chip-sep"; sep0.setAttribute("aria-hidden","true");
+  chipsEl.appendChild(sep0);
+  CATEGORIES.forEach(cat => chipsEl.appendChild(chipButton(cat, "cat", cat, false)));
+  if (ALL_TAGS.length) {
+    const sep = document.createElement("span");
+    sep.className = "chip-sep"; sep.setAttribute("aria-hidden","true");
+    chipsEl.appendChild(sep);
+    ALL_TAGS.forEach(tag => chipsEl.appendChild(chipButton(tag, "tag", tag, true)));
+  }
+}
+
+/* ----- render the gallery ----- */
+function matchesFilter(img) {
+  if (activeFilter.type === "all") return true;
+  if (activeFilter.type === "cat") return img.cat === activeFilter.value;
+  if (activeFilter.type === "tag") return (img.tags || []).includes(activeFilter.value);
+  if (activeFilter.type === "recent" || activeFilter.type === "mostused") return true; // sorted below
+  return true;
+}
+function render() {
+  const q = query.trim().toLowerCase();
+  const views = CollateraViews.all();
+  const mode = activeFilter.type;
+
+  visible = IMAGES.filter(img => {
+    if (!matchesFilter(img)) return false;
+    const hay = (img.title + " " + img.cat + " " + (img.note||"") + " " + (img.tags||[]).join(" ")).toLowerCase();
+    if (q && !hay.includes(q)) return false;
+    // Recent / Most used show only items with view history
+    if (mode === "recent" || mode === "mostused") return !!views[img.file];
+    return true;
+  });
+
+  if (mode === "recent") {
+    visible.sort((a,b) => (views[b.file]?.t||0) - (views[a.file]?.t||0));
+  } else if (mode === "mostused") {
+    visible.sort((a,b) => (views[b.file]?.c||0) - (views[a.file]?.c||0));
+  } else {
+    // default: viewed items float up by blended score; unviewed keep original order
+    visible.sort((a,b) => CollateraViews.score(views[b.file]) - CollateraViews.score(views[a.file]));
+  }
+
+  grid.innerHTML = "";
+  visible.forEach((img, i) => {
+    const card = document.createElement("button");
+    card.className = "card";
+    card.style.setProperty("--cat", colorFor(img.cat));
+    card.style.animationDelay = (Math.min(i, 18) * 0.03) + "s";
+    card.onclick = () => openLightbox(i);
+    card.innerHTML = `
+      <img class="thumb" src="${encodeURI(img.file)}" alt="${img.title}" loading="lazy"
+           onerror="this.style.opacity=.4;this.alt='Image not found — check the file name';">
+      <div class="card-body">
+        <span class="card-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>
+        <span class="card-title">${img.title}</span>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  const n = visible.length;
+  let label = `${n} ${n === 1 ? "image" : "images"}`;
+  if (activeFilter.type === "cat") label += ` in ${activeFilter.value}`;
+  if (activeFilter.type === "tag") label += ` tagged #${activeFilter.value}`;
+  if (mode === "recent") label += ` · recently viewed`;
+  if (mode === "mostused") label += ` · most used`;
+  if (q) label += ` matching “${query.trim()}”`;
+  countEl.textContent = label;
+  emptyEl.style.display = n ? "none" : "block";
+  grid.style.display = n ? "grid" : "none";
+}
+
+/* ----- lightbox (title, category, tags, note all appear here) ----- */
+const lb = document.getElementById("lightbox");
+const lbImg = document.getElementById("lbImg");
+const lbTitle = document.getElementById("lbTitle");
+const lbNote = document.getElementById("lbNote");
+const lbTagRow = document.getElementById("lbTagRow");
+let lbIndex = 0;
+
+function openLightbox(i) {
+  lbIndex = i; showLb();
+  const img = visible[lbIndex];
+  if (img) CollateraViews.record(img.file);
+  lb.classList.add("open");
+  document.body.style.overflow = "hidden";
+  document.getElementById("lbClose").focus();
+}
+function showLb() {
+  const img = visible[lbIndex];
+  if (!img) return;
+  lbImg.src = encodeURI(img.file); lbImg.alt = img.title;
+  lbTitle.textContent = img.title;
+  lbNote.textContent = img.note || "[placeholder — captions under development]";
+  lbTagRow.innerHTML =
+    `<span class="lb-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>` +
+    (img.tags||[]).map(t => `<span class="lb-tag">${t}</span>`).join("");
+}
+function closeLb() { lb.classList.remove("open"); document.body.style.overflow = ""; }
+function step(d) { lbIndex = (lbIndex + d + visible.length) % visible.length; showLb(); }
+document.getElementById("lbClose").onclick = closeLb;
+document.getElementById("lbPrev").onclick = () => step(-1);
+document.getElementById("lbNext").onclick = () => step(1);
+lb.onclick = (e) => { if (e.target === lb) closeLb(); };
+document.addEventListener("keydown", (e) => {
+  if (!lb.classList.contains("open")) return;
+  if (e.key === "Escape") closeLb();
+  if (e.key === "ArrowLeft") step(-1);
+  if (e.key === "ArrowRight") step(1);
+});
+
+/* ----- search ----- */
+searchEl.addEventListener("input", (e) => { query = e.target.value; render(); });
+
+/* ----- go ----- */
+buildChips();
+render();
+</script>
+</body>
+</html>

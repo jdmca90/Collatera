@@ -1,0 +1,421 @@
+/* =================================================================
+   COLLATERA — shared stylesheet
+   One file, loaded by every page. Edit visual styling here once and
+   it applies site-wide. (Nav links and header markup live in site.js.)
+   Palette and type match the live brand: cream Light profile, teal
+   accent, Gill Sans MT headings, Calibri Light body.
+   ================================================================= */
+
+:root {
+  /* ---- Light palette ---- */
+  --bg:        #FAF7F0;   /* page background  */
+  --surface:   #F0EDE6;   /* cards, header    */
+  --ink:       #2E2C2A;   /* body text        */
+  --muted:     #6B6860;   /* secondary text   */
+  --border:    #D8D4CC;   /* hairlines        */
+  --accent:        #85CCCC;  /* teal base   */
+  --accent-deep:   #3F8F8F;  /* teal deep (text on tint) */
+  --accent-tint:   #E7F4F4;  /* teal tint   */
+  --shadow:    rgba(46,44,42,0.10);
+  --radius:    16px;
+
+  /* Category accent colours, rotating through the brand palette */
+  --c1: #85CCCC; --c2: #90C0D8; --c3: #8DD4A8;
+  --c4: #A5C878; --c5: #C0AEDD; --c6: #F0A860;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
+    --border:#3F3B33; --accent:#85CCCC; --accent-deep:#A9DEDE;
+    --accent-tint:#2C3A3A; --shadow:rgba(0,0,0,0.35);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
+  --border:#3F3B33; --accent:#85CCCC; --accent-deep:#A9DEDE;
+  --accent-tint:#2C3A3A; --shadow:rgba(0,0,0,0.35);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Calibri Light", "Calibri", "Hanken Grotesk", system-ui, sans-serif;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(var(--border) 0.5px, transparent 0.5px),
+    radial-gradient(var(--border) 0.5px, var(--bg) 0.5px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+  background-attachment: fixed;
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1, h2, h3, .brand, .chip, .count, .section-title, .brandmark, .cs-title {
+  font-family: "Gill Sans MT", "Gill Sans", "Gill Sans Nova",
+               "Hanken Grotesk", "Segoe UI", sans-serif;
+}
+
+/* =================================================================
+   HEADER  (top bar injected by site.js)
+   ================================================================= */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  max-width: 1180px; margin: 0 auto;
+  padding: 12px 20px;
+}
+.header-top {
+  display: flex; align-items: center; gap: 14px;
+}
+
+/* hamburger menu button (top-left) */
+.menu-btn {
+  flex: 0 0 auto;
+  width: 42px; height: 42px;
+  border: 1px solid var(--border); border-radius: 11px;
+  background: var(--bg); color: var(--ink);
+  cursor: pointer; font-size: 20px; line-height: 1;
+  display: grid; place-items: center; transition: .18s;
+}
+.menu-btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+
+.brand {
+  font-size: 26px; font-weight: 700; letter-spacing: .01em;
+  color: var(--accent-deep); text-decoration: none; line-height: 1;
+  font-variant-caps: small-caps;
+}
+.brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
+.section-title {
+  font-size: 15px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+  padding-left: 14px; margin-left: 2px;
+  border-left: 1px solid var(--border);
+  line-height: 1.1;
+}
+.spacer { flex: 1 1 auto; }
+
+.theme-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); border-radius: 999px;
+  width: 38px; height: 38px; cursor: pointer; font-size: 17px;
+  display: grid; place-items: center; transition: .2s;
+}
+.theme-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
+
+/* brand-mark logo (top-right) */
+.brandmark {
+  flex: 0 0 auto;
+  height: 40px; width: auto; display: block;
+  object-fit: contain; user-select: none;
+}
+
+/* =================================================================
+   NAV PANEL  (opens from the hamburger)
+   ================================================================= */
+.nav-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(20,18,16,0.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.nav-scrim.open { opacity: 1; pointer-events: auto; }
+
+.nav-panel {
+  position: fixed; top: 0; left: 0; z-index: 70;
+  width: 300px; max-width: 84vw; height: 100%;
+  background: var(--surface); border-right: 1px solid var(--border);
+  box-shadow: 6px 0 30px var(--shadow);
+  transform: translateX(-100%); transition: transform .24s ease;
+  display: flex; flex-direction: column; padding: 18px 16px;
+}
+.nav-panel.open { transform: none; }
+.nav-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; padding: 2px 4px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-head .brand { font-size: 24px; }
+.nav-close {
+  width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--muted); cursor: pointer; font-size: 18px;
+  display: grid; place-items: center; transition: .18s;
+}
+.nav-close:hover { color: var(--ink); border-color: var(--accent); }
+.nav-link {
+  display: block; text-decoration: none;
+  color: var(--ink); font-size: 16px; font-weight: 600;
+  padding: 13px 14px; border-radius: 11px; margin-bottom: 4px;
+  border: 1px solid transparent; transition: .15s;
+}
+.nav-link:hover { background: var(--bg); border-color: var(--border); }
+.nav-link[aria-current="page"] {
+  background: var(--accent-tint); color: var(--accent-deep);
+  border-color: var(--accent);
+}
+.nav-link .nl-sub {
+  display: block; font-family: "Calibri Light","Hanken Grotesk",sans-serif;
+  font-weight: 400; font-size: 12.5px; color: var(--muted);
+  text-transform: none; letter-spacing: 0; margin-top: 2px;
+}
+
+/* =================================================================
+   DEV / DISCLAIMER BANNER
+   ================================================================= */
+.dev-banner {
+  text-align: center;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 16px;
+}
+
+/* =================================================================
+   SEARCH + CHIP FILTER  (library & guidelines)
+   ================================================================= */
+.controls { max-width: 1180px; margin: 0 auto; padding: 18px 20px 0; }
+
+.search-wrap { position: relative; margin: 0 0 14px; }
+.search-wrap svg {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none;
+}
+.search-input {
+  width: 100%; padding: 13px 16px 13px 46px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg); color: var(--ink);
+  font: inherit; font-size: 16px; outline: none; transition: .2s;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+
+.chips {
+  display: flex; align-items: center; gap: 8px; overflow-x: auto;
+  padding: 0 0 14px; scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; cursor: pointer; user-select: none;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); padding: 7px 15px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; white-space: nowrap; transition: .18s;
+}
+.chip:hover { color: var(--ink); border-color: var(--accent); }
+.chip[aria-pressed="true"] {
+  background: var(--accent-tint); color: var(--accent-deep);
+  border-color: var(--accent);
+}
+/* view-mode chips (Recent / Most used) — pinned at the front */
+.chip.is-mode {
+  color: var(--accent-deep); border-color: var(--accent);
+  background: var(--bg);
+}
+.chip.is-mode::before { content: "★"; font-size: 11px; margin-right: 5px; opacity: .8; }
+.chip.is-mode[aria-pressed="true"] { background: var(--accent-tint); }
+/* tag chips read as a lighter, secondary class of filter than categories */
+.chip.is-tag {
+  font-size: 13px; font-weight: 600; padding: 6px 13px;
+  border-style: dashed; color: var(--muted);
+}
+.chip.is-tag::before {
+  content: "#"; opacity: .55; margin-right: 1px; font-weight: 700;
+}
+.chip.is-tag[aria-pressed="true"] {
+  border-style: solid; background: var(--accent-tint); color: var(--accent-deep);
+}
+/* thin divider between the category group and the tag group */
+.chip-sep {
+  flex: 0 0 auto; width: 1px; align-self: stretch;
+  background: var(--border); margin: 2px 4px;
+}
+
+/* pinned static repository links (guidelines page) */
+.repos {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 2px 0 16px;
+}
+.repos-label {
+  font-size: 12.5px; font-weight: 600; color: var(--muted);
+  letter-spacing: .02em; margin-right: 2px;
+}
+.repo-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 600; text-decoration: none;
+  color: var(--accent-deep); background: var(--accent-tint);
+  border: 1px solid var(--accent); border-radius: 999px;
+  padding: 5px 12px; transition: .16s;
+}
+.repo-link:hover { background: var(--bg); }
+.repo-link::after { content: "↗"; font-size: 11px; opacity: .7; }
+
+/* =================================================================
+   MAIN + GALLERY GRID
+   ================================================================= */
+main { max-width: 1180px; margin: 0 auto; padding: 18px 20px 80px; }
+.count { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+
+/* 6 per row on desktop, 3 on mobile (smaller thumbnails) */
+.grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(6, 1fr);
+}
+@media (max-width: 720px) {
+  .grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+}
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  display: flex; flex-direction: column; text-align: left;
+  font: inherit; color: inherit; padding: 0;
+  box-shadow: 0 1px 2px var(--shadow); transition: transform .18s, box-shadow .18s;
+  opacity: 0; transform: translateY(10px);
+  animation: rise .45s ease forwards;
+  border-top: 3px solid var(--cat, var(--border));  /* category colour accent */
+}
+@keyframes rise { to { opacity: 1; transform: none; } }
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px var(--shadow); }
+.card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.thumb {
+  aspect-ratio: 4 / 3; width: 100%; object-fit: cover;
+  background: var(--bg); border-bottom: 1px solid var(--border); display: block;
+}
+/* compact card: category + title only — note/tags are shown in the lightbox */
+.card-body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 5px; }
+.card-cat {
+  align-self: flex-start;
+  font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px; color: var(--ink); line-height: 1.3;
+}
+.card-title {
+  font-size: 13px; font-weight: 600; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 720px) {
+  .card-title { font-size: 12px; }
+  .card-cat { font-size: 9px; }
+}
+
+.empty { text-align: center; color: var(--muted); padding: 70px 20px; }
+.empty strong { color: var(--ink); display: block; font-size: 18px; margin-bottom: 6px;
+  font-family: "Gill Sans MT","Hanken Grotesk",sans-serif; }
+
+/* =================================================================
+   GUIDELINE LINK CARDS  (catalog — opens an external link)
+   ================================================================= */
+.grid.links {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 720px) { .grid.links { grid-template-columns: 1fr; } }
+.linkcard {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--cat, var(--accent));
+  border-radius: 12px; padding: 16px 18px; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 6px;
+  box-shadow: 0 1px 2px var(--shadow); transition: transform .18s, box-shadow .18s;
+  opacity: 0; transform: translateY(10px); animation: rise .45s ease forwards;
+}
+.linkcard:hover { transform: translateY(-3px); box-shadow: 0 8px 20px var(--shadow); }
+.linkcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.lc-soc {
+  align-self: flex-start; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 999px; color: var(--ink);
+}
+.lc-title { font-size: 16px; font-weight: 600; line-height: 1.3;
+  font-family:"Gill Sans MT","Hanken Grotesk",sans-serif; }
+.lc-meta { font-size: 13px; color: var(--muted); }
+
+/* =================================================================
+   LIGHTBOX  (image expanded — title, category, tags, note appear here)
+   ================================================================= */
+.lightbox {
+  position: fixed; inset: 0; z-index: 100; display: none;
+  background: rgba(20,18,16,0.72); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.lightbox.open { display: flex; }
+.lb-panel {
+  background: var(--bg); border-radius: 18px; max-width: 1000px; width: 100%;
+  max-height: 92vh; overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5); animation: pop .25s ease;
+}
+@keyframes pop { from { opacity:0; transform: scale(.97);} to {opacity:1; transform:none;} }
+.lb-imgwrap {
+  background: var(--surface); display: grid; place-items: center;
+  overflow: auto; padding: 16px; flex: 1 1 auto; min-height: 0;
+}
+.lb-imgwrap img { max-width: 100%; max-height: 70vh; border-radius: 8px; }
+.lb-meta {
+  padding: 16px 22px 20px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.lb-tagrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.lb-cat {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; color: var(--ink);
+}
+.lb-tag {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  padding: 3px 9px; border-radius: 999px;
+  border: 1px dashed var(--border);
+}
+.lb-tag::before { content: "#"; opacity: .55; }
+.lb-title { font-size: 20px; font-weight: 700;
+  font-family:"Gill Sans MT","Hanken Grotesk",sans-serif; }
+.lb-note { font-size: 15px; color: var(--muted); }
+.lb-close, .lb-nav {
+  position: absolute; top: 18px; right: 18px;
+  width: 44px; height: 44px; border-radius: 999px; border: none;
+  background: rgba(0,0,0,0.45); color: #fff; font-size: 22px;
+  cursor: pointer; display: grid; place-items: center; transition: .2s;
+}
+.lb-close:hover { background: rgba(0,0,0,0.7); }
+.lb-nav { top: 50%; transform: translateY(-50%); }
+.lb-prev { left: 18px; right: auto; }
+.lb-next { right: 18px; }
+.lb-nav:hover { background: rgba(0,0,0,0.7); }
+
+/* =================================================================
+   COMING-SOON PAGES  (how-to, self-educate)
+   ================================================================= */
+.coming-soon {
+  max-width: 760px; margin: 0 auto; padding: 90px 24px;
+  text-align: center;
+}
+.cs-badge {
+  display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent-deep);
+  background: var(--accent-tint); border: 1px solid var(--accent);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+}
+.cs-title { font-size: 34px; font-weight: 700; line-height: 1.15; margin-bottom: 14px; }
+.cs-body { font-size: 16.5px; color: var(--muted); max-width: 520px; margin: 0 auto; }
+
+/* =================================================================
+   FOOTER
+   ================================================================= */
+footer {
+  max-width: 1180px; margin: 0 auto; padding: 0 20px 50px;
+  color: var(--muted); font-size: 13px; text-align: center;
+}
+footer a { color: var(--accent-deep); }
+
+@media (max-width: 560px) {
+  .brand { font-size: 24px; }
+  .section-title { font-size: 12.5px; letter-spacing: .1em; }
+  .lb-meta { padding: 14px 18px 18px; }
+}
+
+/* guideline card: row of society pills */
+.lc-socrow { display: flex; flex-wrap: wrap; gap: 5px; }
