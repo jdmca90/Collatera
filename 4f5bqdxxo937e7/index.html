@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Collatera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+<style>
+  /* ---- page-local styles, additive to styles.css ---- */
+  main.uploader { max-width: 720px; margin: 0 auto; padding: 60px 20px 100px; }
+  .gate { max-width: 380px; margin: 100px auto; text-align: center; }
+  .gate h1 { font-size: 22px; margin-bottom: 18px; }
+  .gate input, .field input, .field textarea, .field select {
+    width: 100%; font: inherit; font-size: 15px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-top: 6px;
+  }
+  .gate input:focus, .field input:focus, .field textarea:focus, .field select:focus {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  .gate button, .btn {
+    font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer;
+    background: var(--accent-deep); color: #fff; border: none;
+    border-radius: 10px; padding: 10px 18px; margin-top: 14px;
+  }
+  .gate button:hover, .btn:hover { opacity: 0.9; }
+  .gate .err, .form-err { color: #B4483A; font-size: 13.5px; margin-top: 10px; }
+  .gate .hint { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+  .drop {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 40px 20px; text-align: center; color: var(--muted);
+    cursor: pointer; transition: border-color .15s, background .15s;
+    margin-bottom: 24px;
+  }
+  .drop.drag { border-color: var(--accent-deep); background: var(--accent-tint); }
+  .drop img.preview { max-width: 100%; max-height: 320px; border-radius: 10px; margin-bottom: 12px; }
+  .drop .drop-msg { font-size: 14.5px; }
+  .drop .drop-sub { font-size: 12.5px; margin-top: 4px; }
+
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+  .tagpick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .tagchip {
+    font-size: 13px; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--ink); cursor: pointer;
+  }
+  .tagchip.on { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+  .tag-add { display: flex; gap: 8px; margin-top: 10px; }
+  .tag-add input { flex: 1; margin-top: 0; }
+  .tag-add button { margin-top: 0; padding: 8px 14px; font-size: 13px; }
+
+  .filename-preview { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .status { margin-top: 20px; padding: 14px 16px; border-radius: 10px; font-size: 14px; }
+  .status.ok { background: var(--accent-tint); color: var(--accent-deep); }
+  .status.err { background: #FBEAD6; color: #8A4A1E; }
+  .status.busy { background: var(--surface); color: var(--muted); }
+  h1.page-title { font-size: 26px; margin-bottom: 4px; }
+  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  fieldset { border: none; padding: 0; }
+  fieldset[disabled] { opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<!-- ================= GATE 1: password ================= -->
+<div class="gate" id="gatePw">
+  <h1>Collatera admin</h1>
+  <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+  <button id="pwBtn" class="btn">Continue</button>
+  <div class="err" id="pwErr" style="display:none">Incorrect password.</div>
+</div>
+
+<!-- ================= GATE 2: GitHub token ================= -->
+<div class="gate" id="gateToken" style="display:none">
+  <h1>GitHub token</h1>
+  <p class="hint" style="margin-top:0">
+    Paste a fine-grained personal access token scoped to just this repo
+    (Contents: read and write). It's kept only for this browser tab —
+    never saved, never committed.
+  </p>
+  <input type="password" id="tokenInput" placeholder="github_pat_..." autocomplete="off">
+  <button id="tokenBtn" class="btn">Continue</button>
+  <div class="err" id="tokenErr" style="display:none"></div>
+</div>
+
+<!-- ================= MAIN UPLOADER ================= -->
+<main class="uploader" id="uploaderMain" style="display:none">
+  <h1 class="page-title">Add an image</h1>
+  <p class="page-sub">Publishes directly to collatera.org — no separate GitHub editing step.</p>
+
+  <fieldset id="formFieldset">
+    <div class="drop" id="drop">
+      <div id="dropInner">
+        <div class="drop-msg">Drag an image here, paste it, or click to browse</div>
+        <div class="drop-sub">Resized and compressed automatically before upload</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
+    </div>
+
+    <div class="field">
+      <label for="titleInput">Title</label>
+      <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
+      <div class="filename-preview" id="filenamePreview"></div>
+    </div>
+
+    <div class="field">
+      <label for="catInput">Category</label>
+      <select id="catInput"></select>
+    </div>
+
+    <div class="field">
+      <label>Tags</label>
+      <div class="tagpick" id="tagPick"></div>
+      <div class="tag-add">
+        <input type="text" id="newTagInput" placeholder="New tag">
+        <button class="btn" id="newTagBtn" type="button">Add</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="noteInput">Caption <span style="text-transform:none;font-weight:400">(optional)</span></label>
+      <textarea id="noteInput" rows="3" placeholder="Shown when the image is opened, not on the thumbnail"></textarea>
+    </div>
+
+    <button class="btn" id="publishBtn" type="button">Publish</button>
+  </fieldset>
+
+  <div id="statusBox"></div>
+</main>
+
+<script>
+/* =================================================================
+   CONFIG — repo details and the password check.
+   ================================================================= */
+const REPO_OWNER = "jdmca90";
+const REPO_NAME  = "collatera";
+const BRANCH     = "main";
+const IMAGES_JSON_PATH = "data/images.json";
+const IMAGES_DIR = "images";
+
+/* SHA-256 hash of the admin password — NOT the password itself.
+   To change the password: open this page, open the browser console, run:
+     crypto.subtle.digest("SHA-256", new TextEncoder().encode("yournewpassword"))
+       .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")))
+   then paste the resulting hex string in below. */
+const PASSWORD_HASH = "242ab4ac31522e28fb16163c45c0c19e4402c4a32bcb3b144e7c2edce675b150";
+
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* =================================================================
+   GATE 1 — password
+   ================================================================= */
+const gatePw = document.getElementById("gatePw");
+const pwInput = document.getElementById("pwInput");
+const pwBtn = document.getElementById("pwBtn");
+const pwErr = document.getElementById("pwErr");
+
+async function tryPassword() {
+  const hash = await sha256Hex(pwInput.value);
+  if (hash === PASSWORD_HASH) {
+    gatePw.style.display = "none";
+    proceedToToken();
+  } else {
+    pwErr.style.display = "block";
+  }
+}
+pwBtn.onclick = tryPassword;
+pwInput.addEventListener("keydown", e => { if (e.key === "Enter") tryPassword(); });
+
+/* =================================================================
+   GATE 2 — GitHub token (sessionStorage only, never persisted to disk)
+   ================================================================= */
+const gateToken = document.getElementById("gateToken");
+const tokenInput = document.getElementById("tokenInput");
+const tokenBtn = document.getElementById("tokenBtn");
+const tokenErr = document.getElementById("tokenErr");
+const TOKEN_KEY = "collatera_admin_token";
+
+function proceedToToken() {
+  const existing = sessionStorage.getItem(TOKEN_KEY);
+  if (existing) { startUploader(); return; }
+  gateToken.style.display = "block";
+}
+
+async function verifyAndStoreToken(token) {
+  const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!r.ok) throw new Error(`Token check failed (HTTP ${r.status}). Check the token's scope and expiry.`);
+  sessionStorage.setItem(TOKEN_KEY, token);
+}
+
+tokenBtn.onclick = async () => {
+  tokenErr.style.display = "none";
+  try {
+    await verifyAndStoreToken(tokenInput.value.trim());
+    gateToken.style.display = "none";
+    startUploader();
+  } catch (err) {
+    tokenErr.textContent = err.message;
+    tokenErr.style.display = "block";
+  }
+};
+
+/* =================================================================
+   GitHub Contents API helpers
+   ================================================================= */
+function ghHeaders() {
+  return {
+    Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`,
+    Accept: "application/vnd.github+json"
+  };
+}
+
+async function getFile(path) {
+  const r = await fetch(
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`,
+    { headers: ghHeaders() }
+  );
+  if (!r.ok) throw new Error(`Couldn't read ${path} (HTTP ${r.status})`);
+  const data = await r.json();
+  return { sha: data.sha, content: decodeURIComponent(escape(atob(data.content))) };
+}
+
+async function putFile(path, base64Content, message, sha) {
+  const body = { message, content: base64Content, branch: BRANCH };
+  if (sha) body.sha = sha;
+  const r = await fetch(
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+    { method: "PUT", headers: { ...ghHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) }
+  );
+  if (!r.ok) {
+    const detail = await r.json().catch(() => ({}));
+    throw new Error(`Couldn't write ${path} (HTTP ${r.status}) — ${detail.message || "unknown error"}`);
+  }
+  return r.json();
+}
+
+/* =================================================================
+   MAIN UPLOADER
+   ================================================================= */
+let CATEGORIES = [];
+let ALL_TAGS = [];
+let selectedTags = new Set();
+let compressedDataUrl = null;
+let compressedExt = "jpg";
+let existingFilenames = new Set();
+let imagesJsonSha = null;
+let imagesJsonParsed = null;
+
+const uploaderMain = document.getElementById("uploaderMain");
+const statusBox = document.getElementById("statusBox");
+const formFieldset = document.getElementById("formFieldset");
+
+function setStatus(kind, html) {
+  statusBox.innerHTML = html ? `<div class="status ${kind}">${html}</div>` : "";
+}
+
+async function startUploader() {
+  uploaderMain.style.display = "block";
+  setStatus("busy", "Loading current library…");
+  try {
+    const { sha, content } = await getFile(IMAGES_JSON_PATH);
+    imagesJsonSha = sha;
+    imagesJsonParsed = JSON.parse(content);
+    CATEGORIES = imagesJsonParsed.categories || [];
+    ALL_TAGS = [...new Set((imagesJsonParsed.images || []).flatMap(i => i.tags || []))].sort((a,b)=>a.localeCompare(b));
+    existingFilenames = new Set((imagesJsonParsed.images || []).map(i => i.file));
+    populateCategories();
+    populateTags();
+    setStatus("", "");
+  } catch (err) {
+    setStatus("err", `Couldn't load <code>/data/images.json</code> — ${err.message}`);
+    formFieldset.disabled = true;
+  }
+}
+
+function populateCategories() {
+  const sel = document.getElementById("catInput");
+  sel.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+function populateTags() {
+  const box = document.getElementById("tagPick");
+  box.innerHTML = "";
+  ALL_TAGS.forEach(tag => box.appendChild(tagChipEl(tag)));
+}
+
+function tagChipEl(tag) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "tagchip";
+  b.textContent = tag;
+  b.onclick = () => {
+    if (selectedTags.has(tag)) { selectedTags.delete(tag); b.classList.remove("on"); }
+    else { selectedTags.add(tag); b.classList.add("on"); }
+  };
+  return b;
+}
+
+document.getElementById("newTagBtn").onclick = () => {
+  const input = document.getElementById("newTagInput");
+  const tag = input.value.trim();
+  if (!tag) return;
+  if (!ALL_TAGS.includes(tag)) {
+    ALL_TAGS.push(tag);
+    ALL_TAGS.sort((a,b)=>a.localeCompare(b));
+    populateTags();
+  }
+  selectedTags.add(tag);
+  [...document.querySelectorAll(".tagchip")].forEach(el => {
+    if (el.textContent === tag) el.classList.add("on");
+  });
+  input.value = "";
+};
+
+/* ----- title -> filename slug, with collision handling ----- */
+function slugify(title) {
+  return title.trim().toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+function computeFilename() {
+  const title = document.getElementById("titleInput").value;
+  const base = slugify(title) || "untitled";
+  let candidate = `/${IMAGES_DIR}/${base}.${compressedExt}`;
+  let n = 2;
+  while (existingFilenames.has(candidate)) {
+    candidate = `/${IMAGES_DIR}/${base}-${n}.${compressedExt}`;
+    n++;
+  }
+  document.getElementById("filenamePreview").textContent = title ? `Will save as: ${candidate}` : "";
+  return candidate;
+}
+document.getElementById("titleInput").addEventListener("input", computeFilename);
+
+/* ----- drop zone: drag, paste, click-to-browse ----- */
+const drop = document.getElementById("drop");
+const dropInner = document.getElementById("dropInner");
+const fileInput = document.getElementById("fileInput");
+
+drop.onclick = () => fileInput.click();
+fileInput.onchange = () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); };
+
+["dragenter","dragover"].forEach(evt =>
+  drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.add("drag"); }));
+["dragleave","drop"].forEach(evt =>
+  drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.remove("drag"); }));
+drop.addEventListener("drop", e => {
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+document.addEventListener("paste", e => {
+  const item = [...e.clipboardData.items].find(i => i.type.startsWith("image/"));
+  if (item) handleFile(item.getAsFile());
+});
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => compressImage(img);
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function compressImage(img) {
+  const MAX_DIM = 1600;
+  let { width, height } = img;
+  if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+  else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width; canvas.height = height;
+  canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+
+  compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  compressedExt = "jpg";
+
+  dropInner.innerHTML = `<img class="preview" src="${compressedDataUrl}">
+    <div class="drop-sub">Click, drag, or paste to replace</div>`;
+  computeFilename();
+}
+
+/* ----- publish ----- */
+document.getElementById("publishBtn").onclick = async () => {
+  const title = document.getElementById("titleInput").value.trim();
+  const cat = document.getElementById("catInput").value;
+  const note = document.getElementById("noteInput").value.trim();
+
+  if (!compressedDataUrl) { setStatus("err", "Add an image first."); return; }
+  if (!title) { setStatus("err", "Add a title first."); return; }
+
+  const filename = computeFilename();
+  formFieldset.disabled = true;
+  setStatus("busy", `Publishing "${title}"…`);
+
+  try {
+    const base64Image = compressedDataUrl.split(",")[1];
+    await putFile(filename.slice(1), base64Image, `Add image: ${title}`);
+
+    const { sha: latestSha, content: latestContent } = await getFile(IMAGES_JSON_PATH);
+    const latestJson = JSON.parse(latestContent);
+    latestJson.images.push({ file: filename, title, cat, tags: [...selectedTags], note });
+    const newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(latestJson, null, 2))));
+    await putFile(IMAGES_JSON_PATH, newContentB64, `Add to images.json: ${title}`, latestSha);
+
+    setStatus("ok", `Published. It'll appear at <a href="https://collatera.org/ref-images/" target="_blank">collatera.org/ref-images</a> within a minute or so.`);
+    resetForm();
+    startUploader(); // refresh categories/tags/existing filenames for the next upload
+  } catch (err) {
+    setStatus("err", err.message);
+  } finally {
+    formFieldset.disabled = false;
+  }
+};
+
+function resetForm() {
+  document.getElementById("titleInput").value = "";
+  document.getElementById("noteInput").value = "";
+  document.getElementById("newTagInput").value = "";
+  document.getElementById("filenamePreview").textContent = "";
+  selectedTags = new Set();
+  compressedDataUrl = null;
+  dropInner.innerHTML = `<div class="drop-msg">Drag an image here, paste it, or click to browse</div>
+    <div class="drop-sub">Resized and compressed automatically before upload</div>`;
+}
+</script>
+</body>
+</html>
