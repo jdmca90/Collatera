@@ -1,0 +1,18 @@
+/* ----- load the library from images.json, then go ----- */
+fetch("/data/images.json")
+  .then(r => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .then(data => {
+    CATEGORIES = data.categories || [];
+    IMAGES = data.images || [];
+    ALL_TAGS = [...new Set(IMAGES.flatMap(img => img.tags || []))].sort((a,b)=>a.localeCompare(b));
+    buildChips();
+    render();
+  })
+  .catch(err => {
+    grid.style.display = "none";
+    emptyEl.style.display = "block";
+    emptyEl.innerHTML = `<strong>Couldn't load the image library</strong><br>Check that /data/images.json exists at the repo root and is valid JSON.<br><span style="opacity:.7">${err.message}</span>`;
+  });
