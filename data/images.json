@@ -1095,6 +1095,13 @@
       "cat": "HF",
       "tags": [],
       "note": ""
+    },
+    {
+      "file": "/images/pvc-localization.jpg",
+      "title": "PVC localization",
+      "cat": "ECG",
+      "tags": [],
+      "note": ""
     }
   ]
 }
