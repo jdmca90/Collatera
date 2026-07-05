@@ -1102,6 +1102,15 @@
       "cat": "ECG",
       "tags": [],
       "note": ""
+    },
+    {
+      "file": "/images/ppm-lead-examples.jpg",
+      "title": "PPM Lead examples",
+      "cat": "EP",
+      "tags": [
+        "ICD"
+      ],
+      "note": ""
     }
   ]
 }
