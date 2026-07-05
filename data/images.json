@@ -1111,6 +1111,16 @@
         "ICD"
       ],
       "note": ""
+    },
+    {
+      "file": "/images/ppm-magnet-function.jpg",
+      "title": "PPM Magnet Function",
+      "cat": "EP",
+      "tags": [
+        "ICD",
+        "Table"
+      ],
+      "note": ""
     }
   ]
 }
