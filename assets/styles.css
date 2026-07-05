@@ -16,8 +16,9 @@
   --accent:        #85CCCC;  /* teal base   */
   --accent-deep:   #3F8F8F;  /* teal deep (text on tint) */
   --accent-tint:   #E7F4F4;  /* teal tint   */
-  --shadow:    rgba(46,44,42,0.10);
+--shadow:    rgba(46,44,42,0.10);
   --radius:    16px;
+  --pill-ink:  #1F1D1B;  /* fixed dark text for society/category pills — pill backgrounds don't change with theme, so this shouldn't either */
 
   /* Category accent colours, rotating through the brand palette */
   --c1: #85CCCC; --c2: #90C0D8; --c3: #8DD4A8;
@@ -313,7 +314,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 18px 20px 80px; }
 .card-cat {
   align-self: flex-start;
   font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
-  padding: 2px 7px; border-radius: 999px; color: var(--ink); line-height: 1.3;
+  padding: 2px 7px; border-radius: 999px; color: var(--pill-ink); line-height: 1.3;
 }
 .card-title {
   font-size: 13px; font-weight: 600; line-height: 1.25;
@@ -351,7 +352,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 18px 20px 80px; }
 .linkcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .lc-soc {
   align-self: flex-start; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
-  text-transform: uppercase; padding: 3px 9px; border-radius: 999px; color: var(--ink);
+  text-transform: uppercase; padding: 3px 9px; border-radius: 999px; color: var(--pill-ink);
 }
 .lc-title { font-size: 32px; font-weight: 700; line-height: 1.2;
   font-family:"Gill Sans MT","Hanken Grotesk",sans-serif; }
@@ -385,7 +386,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 18px 20px 80px; }
 .lb-tagrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .lb-cat {
   font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 999px; color: var(--ink);
+  padding: 3px 9px; border-radius: 999px; color: var(--pill-ink);
 }
 .lb-tag {
   font-size: 12px; font-weight: 600; color: var(--muted);
