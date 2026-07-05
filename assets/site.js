@@ -16,7 +16,7 @@ const SECTIONS = [
   { title: "Guideline Repository",         href: "/guidelines/",   sub: "Society guideline links" },
   { title: "How To Guides",                href: "/how-to/",       sub: "Walkthroughs and how-tos" },
   { title: "Self-Education Resource Hub",  href: "/self-educate/", sub: "Learning resources" },
-  { title: "Reportable (demo)",            href: "/reportabledev/",sub: "Project demo — reporting duty lookup" }
+  { title: "Reportable (demo)",            href: "/reportabledev/",sub: "Project demo — reporting duty lookup", dev: true }
 ];
 
 /* Disclaimer text shown in the strip under the header */
@@ -46,10 +46,13 @@ header.innerHTML = `
   <div class="header-inner">
     <div class="header-top">
       <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">&#9776;</button>
-      <a class="brand" href="/ref-images/"><span class="brand-c">C</span>ollatera</a>
-      ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
+      <div class="brand-group">
+        <a class="brand" href="/ref-images/"><span class="brand-c">C</span>ollatera</a>
+        ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
+      </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
+      <a class="upload-btn" href="https://collatera.org/4f5bqdxxo937e7/" title="Upload" aria-label="Upload an image">+</a>
       <img class="brandmark" src="/assets/collatera-logo.png" alt="Collatera logo">
     </div>
   </div>`;
@@ -73,9 +76,10 @@ nav.innerHTML = `
     <a class="brand" href="/ref-images/"><span class="brand-c">C</span>ollatera</a>
     <button class="nav-close" id="navClose" aria-label="Close menu">&#10005;</button>
   </div>
-  ${SECTIONS.map(s => {
+  ${SECTIONS.map((s, i) => {
     const active = s.href === HERE ? ' aria-current="page"' : "";
-    return `<a class="nav-link" href="${s.href}"${active}>${s.title}
+    const divider = s.dev && !SECTIONS[i - 1]?.dev ? '<div class="nav-divider"></div>' : "";
+    return `${divider}<a class="nav-link" href="${s.href}"${active}>${s.title}
       <span class="nl-sub">${s.sub}</span></a>`;
   }).join("")}
 `;
