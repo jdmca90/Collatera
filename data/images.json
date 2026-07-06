@@ -1122,14 +1122,23 @@
       ],
       "note": ""
     },
-  {
-    "file": "/images/tvp-summary.jpg",
-    "title": "TVP Summary",
-    "cat": "EP",
-    "tags": [
-      "PPM"
-    ],
-    "note": ""
-  }
+    {
+      "file": "/images/tvp-summary.jpg",
+      "title": "TVP Summary",
+      "cat": "EP",
+      "tags": [
+        "PPM"
+      ],
+      "note": ""
+    },
+    {
+      "file": "/images/cath-projection-axis.jpg",
+      "title": "Cath Projection Axis",
+      "cat": "Cath / Angio",
+      "tags": [
+        "Cor"
+      ],
+      "note": ""
+    }
   ]
 }
