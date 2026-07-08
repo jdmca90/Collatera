@@ -1149,6 +1149,17 @@
         "Meds"
       ],
       "note": ""
+    },
+    {
+      "file": "/images/hf-phenotypes.jpg",
+      "title": "HF phenotypes",
+      "cat": "HF",
+      "tags": [
+        "RHC",
+        "RV",
+        "LV"
+      ],
+      "note": ""
     }
   ]
 }
