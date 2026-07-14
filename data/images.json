@@ -1178,6 +1178,18 @@
         "Meds"
       ],
       "note": "https://www.ccjm.org/content/92/10/619"
+    },
+    {
+      "file": "/images/rhc-hemodynamics.jpg",
+      "title": "RHC Hemodynamics",
+      "cat": "Cath / Angio",
+      "tags": [
+        "PH",
+        "Table",
+        "RV",
+        "RHC"
+      ],
+      "note": ""
     }
   ]
 }
