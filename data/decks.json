@@ -1,0 +1,15 @@
+{
+  "categories": ["Journal club", "Conference", "M&M", "Fellows' lecture", "Case"],
+  "decks": [
+    {
+      "file": "/decks/files/journal-club-p2y12-pretreatment-stemi.pdf",
+      "cover": "/decks/covers/journal-club-p2y12-pretreatment-stemi.jpg",
+      "title": "P2Y12 pretreatment in STEMI: the Bern-PCI registry",
+      "cat": "Journal club",
+      "tags": ["STEMI", "DAPT", "PCI", "P2Y12"],
+      "date": "2025-01-09",
+      "slides": 45,
+      "note": "Rohla et al., JACC Interv 2024. Immediate vs delayed P2Y12 loading in STEMI; no measurable difference in 30-day MACCE."
+    }
+  ]
+}
