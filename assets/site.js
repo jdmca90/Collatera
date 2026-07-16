@@ -14,6 +14,7 @@ const SECTIONS = [
   { title: "About",                        href: "/about/",        sub: "The project, in brief" },
   { title: "Reference Image Library",      href: "/ref-images/",   sub: "Clinical reference images" },
   { title: "Guideline Repository",         href: "/guidelines/",   sub: "Society guideline links" },
+  { title: "Slide Decks",                  href: "/decks/",        sub: "Presentations and talks" }, 
   { title: "How To Guides",                href: "/how-to/",       sub: "Walkthroughs and how-tos" },
   { title: "Self-Education Resource Hub",  href: "/self-educate/", sub: "Learning resources" },
   { title: "Reportable (demo)",            href: "/reportabledev/",sub: "Project demo — reporting duty lookup", dev: true }
