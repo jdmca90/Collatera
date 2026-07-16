@@ -439,3 +439,133 @@ footer a { color: var(--accent-deep); }
   .section-title { font-size: 12.5px; letter-spacing: .1em; }
   .lb-meta { padding: 14px 18px 18px; }
 }
+/* =================================================================
+   SLIDE DECKS  (/decks/)
+   Card grid reuses .grid/.card from the image library; these rules
+   cover the deck-specific extras, the passphrase gate, and the viewer.
+   ================================================================= */
+.grid.decks { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1100px) { .grid.decks { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px)  { .grid.decks { grid-template-columns: 1fr; } }
+
+.deckcard { position: relative; }
+.deck-thumb {
+  aspect-ratio: 16 / 9; object-fit: contain; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.deck-lock {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  font-size: 12px; line-height: 1; padding: 5px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+}
+.deck-meta { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- passphrase gate ---------- */
+.gate {
+  display: none; position: fixed; inset: 0; z-index: 120;
+  background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 20px;
+}
+.gate.open { display: flex; }
+.gate-panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 26px 24px; width: 100%; max-width: 380px; text-align: center;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+}
+.gate-lock { font-size: 26px; margin-bottom: 10px; }
+.gate-title {
+  font-family: "Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif;
+  font-size: 21px; font-weight: 700; margin-bottom: 5px;
+}
+.gate-sub { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+.gate-input {
+  width: 100%; padding: 11px 13px; font-size: 15px; font-family: inherit;
+  color: var(--ink); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 10px; outline: none;
+}
+.gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+.gate-err { font-size: 13px; color: #C0503A; margin-top: 9px; }
+.gate-actions { display: flex; gap: 9px; margin-top: 16px; }
+.gate-btn {
+  flex: 1; padding: 10px 12px; font-size: 14.5px; font-family: inherit;
+  border-radius: 10px; cursor: pointer; border: 1px solid var(--border);
+}
+.gate-btn.ghost { background: transparent; color: var(--muted); }
+.gate-btn.ghost:hover { color: var(--ink); border-color: var(--accent); }
+.gate-btn.solid { background: var(--accent); border-color: var(--accent); color: var(--pill-ink); font-weight: 600; }
+.gate-btn.solid:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+
+/* ---------- deck viewer ---------- */
+.dv {
+  display: none; position: fixed; inset: 0; z-index: 130;
+  background: var(--bg); flex-direction: column;
+}
+.dv.open { display: flex; }
+.dv-bar {
+  display: flex; align-items: center; gap: 10px; flex: 0 0 auto;
+  padding: 9px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.dv-title {
+  font-family: "Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif;
+  font-size: 16px; font-weight: 700; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 46vw;
+}
+.dv-counter {
+  font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dv-btn {
+  background: transparent; border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); font-size: 15px; line-height: 1; cursor: pointer;
+  padding: 6px 9px; flex: 0 0 auto;
+}
+.dv-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
+
+.dv-body { display: flex; flex: 1 1 auto; min-height: 0; }
+
+.dv-rail {
+  flex: 0 0 132px; overflow-y: auto; padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--surface); border-right: 1px solid var(--border);
+}
+.dv.rail-hidden .dv-rail { display: none; }
+.dv-thumb {
+  position: relative; padding: 0; cursor: pointer; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+  aspect-ratio: 16 / 9; flex: 0 0 auto;
+}
+.dv-thumb canvas { width: 100%; height: 100%; display: block; object-fit: contain; }
+.dv-thumb.current { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-tint); }
+.dv-thumb-n {
+  position: absolute; bottom: 3px; right: 4px; font-size: 10.5px; padding: 1px 4px;
+  border-radius: 4px; background: rgba(0,0,0,0.6); color: #fff;
+}
+
+.dv-stage {
+  flex: 1 1 auto; min-width: 0; position: relative;
+  display: flex; align-items: center; justify-content: center; padding: 14px 56px;
+}
+.dv-canvas-wrap {
+  flex: 1 1 auto; height: 100%; display: flex;
+  align-items: center; justify-content: center; position: relative; min-width: 0;
+}
+#dvCanvas { max-width: 100%; max-height: 100%; border-radius: 6px; box-shadow: 0 6px 24px var(--shadow); }
+.dv-loading { position: absolute; font-size: 14.5px; color: var(--muted); }
+.dv-loading[hidden] { display: none; }
+.dv-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 50%;
+  color: var(--ink); font-size: 24px; line-height: 1; cursor: pointer;
+  width: 40px; height: 40px; z-index: 2;
+}
+.dv-nav:hover { border-color: var(--accent); color: var(--accent-deep); }
+.dv-prev { left: 10px; }
+.dv-next { right: 10px; }
+
+@media (max-width: 720px) {
+  .dv-rail { display: none; }
+  .dv.rail-hidden .dv-rail { display: none; }
+  .dv-stage { padding: 10px 44px; }
+  .dv-title { max-width: 40vw; font-size: 15px; }
+  #dvRailBtn { display: none; }
+}
