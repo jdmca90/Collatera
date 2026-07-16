@@ -462,11 +462,11 @@ footer a { color: var(--accent-deep); }
 .deck-meta { font-size: 12.5px; color: var(--muted); }
 
 /* ---------- passphrase gate ---------- */
-.gate {
+.decks-gate {
   display: none; position: fixed; inset: 0; z-index: 120;
   background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 20px;
 }
-.gate.open { display: flex; }
+.decks-gate.open { display: flex; }
 .gate-panel {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 26px 24px; width: 100%; max-width: 380px; text-align: center;
