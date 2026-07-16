@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slide Decks · Collatera</title>
+<meta name="description" content="A personal repository of presentation slide decks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+
+<!-- Search + filter chips (the shared header/banner are injected by site.js above) -->
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" class="search-input" type="search" placeholder="Search titles, notes, tags…" autocomplete="off" aria-label="Search the slide decks">
+  </div>
+  <div class="chips" id="chips" role="tablist" aria-label="Filter by category or tag"></div>
+</div>
+
+<main>
+  <div class="count" id="count"></div>
+  <div class="grid decks" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <strong>Nothing found</strong>
+    Try a different word, or pick a different category or tag above.
+  </div>
+</main>
+
+<footer>collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</footer>
+
+<!-- ---------- Password gate ---------- -->
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-panel">
+    <div class="gate-lock" aria-hidden="true">&#128274;</div>
+    <div class="gate-title" id="gateTitle">This deck is locked</div>
+    <div class="gate-sub" id="gateSub">Enter the passphrase to open it.</div>
+    <input class="gate-input" id="gateInput" type="password" autocomplete="off"
+           placeholder="Passphrase" aria-label="Passphrase">
+    <div class="gate-err" id="gateErr" role="alert" hidden>That passphrase doesn't match. Try again.</div>
+    <div class="gate-actions">
+      <button class="gate-btn ghost" id="gateCancel" type="button">Cancel</button>
+      <button class="gate-btn solid" id="gateGo" type="button">Open deck</button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- Deck viewer ---------- -->
+<div class="dv" id="dv" role="dialog" aria-modal="true" aria-labelledby="dvTitle">
+  <div class="dv-bar">
+    <button class="dv-btn" id="dvRailBtn" aria-label="Show or hide slide thumbnails" aria-pressed="true">&#9776;</button>
+    <span class="dv-title" id="dvTitle"></span>
+    <span class="spacer"></span>
+    <span class="dv-counter" id="dvCounter">— / —</span>
+    <button class="dv-btn" id="dvFull" aria-label="Toggle fullscreen">&#9974;</button>
+    <button class="dv-btn" id="dvClose" aria-label="Close deck">&#10005;</button>
+  </div>
+  <div class="dv-body">
+    <div class="dv-rail" id="dvRail" aria-label="Slide thumbnails"></div>
+    <div class="dv-stage" id="dvStage">
+      <button class="dv-nav dv-prev" id="dvPrev" aria-label="Previous slide">&#8249;</button>
+      <div class="dv-canvas-wrap" id="dvCanvasWrap">
+        <canvas id="dvCanvas"></canvas>
+        <div class="dv-loading" id="dvLoading">Loading deck…</div>
+      </div>
+      <button class="dv-nav dv-next" id="dvNext" aria-label="Next slide">&#8250;</button>
+    </div>
+  </div>
+</div>
+
+<!-- shared header / nav / banner -->
+<script>window.COLLATERA_SECTION = "Slide Decks";</script>
+<script src="/assets/site.js"></script>
+
+<!-- pdf.js (UMD build; exposes window.pdfjsLib) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+/* =================================================================
+   ====   YOUR DECKS LIVE IN  /data/decks.json  —  YOU SHOULD    ====
+   ====   NOT NEED TO EDIT THIS FILE TO ADD A DECK.              ====
+   =================================================================
+
+   Each deck entry in decks.json has:
+     file:  "/decks/files/your-deck.pdf"   the PDF itself
+     cover: "/decks/covers/your-deck.jpg"  page-1 image shown on the card
+     title: "What it's called"             shown on the card
+     cat:   "Journal club"                 ONE primary category
+     tags:  ["STEMI", "DAPT"]              ANY number of cross-cutting tags
+     note:  "A short description."         optional
+     date:  "2025-01-09"                   optional, shown on the card
+     slides: 45                            optional, shown on the card
+
+   The passphrase gate is a convenience, not security: the PDFs sit at
+   public URLs in a public repo. Don't put anything here you'd mind a
+   stranger reading.
+   ================================================================= */
+
+const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/* SHA-256 of the passphrase. Same approach as the uploader gate.
+   To change it, run in any browser console:
+     crypto.subtle.digest("SHA-256", new TextEncoder().encode("newpass"))
+       .then(b => console.log([...new Uint8Array(b)]
+         .map(x => x.toString(16).padStart(2,"0")).join("")));            */
+const PASS_HASH = "242ab4ac31522e28fb16163c45c0c19e4402c4a32bcb3b144e7c2edce675b150";
+
+let CATEGORIES = [];
+let DECKS = [];
+let ALL_TAGS = [];
+
+const catColors = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const colorFor = (cat) => {
+  const i = CATEGORIES.indexOf(cat);
+  return i >= 0 ? catColors[i % catColors.length] : "var(--border)";
+};
+
+const grid    = document.getElementById("grid");
+const chipsEl = document.getElementById("chips");
+const countEl = document.getElementById("count");
+const emptyEl = document.getElementById("empty");
+const searchEl= document.getElementById("search");
+
+let activeFilter = { type: "all", value: null };
+let query = "";
+let visible = [];
+
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ----- chip row: All · Recent · Most used · | · categories · | · tags ----- */
+function chipButton(label, type, value, isTag) {
+  const b = document.createElement("button");
+  b.className = "chip" + (isTag ? " is-tag" : "");
+  b.textContent = label;
+  b.setAttribute("role","tab");
+  const pressed = activeFilter.type === type && activeFilter.value === value;
+  b.setAttribute("aria-pressed", pressed ? "true" : "false");
+  b.onclick = () => {
+    activeFilter = { type, value };
+    [...chipsEl.querySelectorAll(".chip")].forEach(c => c.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    render();
+  };
+  return b;
+}
+function buildChips() {
+  chipsEl.appendChild(chipButton("All", "all", null, false));
+  const recent = chipButton("Recent", "recent", null, false);
+  recent.classList.add("is-mode"); recent.classList.remove("is-tag");
+  const most = chipButton("Most used", "mostused", null, false);
+  most.classList.add("is-mode"); most.classList.remove("is-tag");
+  chipsEl.appendChild(recent); chipsEl.appendChild(most);
+  const sep0 = document.createElement("span");
+  sep0.className = "chip-sep"; sep0.setAttribute("aria-hidden","true");
+  chipsEl.appendChild(sep0);
+  CATEGORIES.forEach(cat => chipsEl.appendChild(chipButton(cat, "cat", cat, false)));
+  if (ALL_TAGS.length) {
+    const sep = document.createElement("span");
+    sep.className = "chip-sep"; sep.setAttribute("aria-hidden","true");
+    chipsEl.appendChild(sep);
+    ALL_TAGS.forEach(tag => chipsEl.appendChild(chipButton(tag, "tag", tag, true)));
+  }
+}
+
+/* ----- render the grid ----- */
+function matchesFilter(d) {
+  if (activeFilter.type === "cat") return d.cat === activeFilter.value;
+  if (activeFilter.type === "tag") return (d.tags || []).includes(activeFilter.value);
+  return true;
+}
+function prettyDate(iso) {
+  if (!iso) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[+m[2]-1]} ${+m[3]}, ${m[1]}`;
+}
+function render() {
+  const q = query.trim().toLowerCase();
+  const views = CollateraViews.all();
+  const mode = activeFilter.type;
+
+  visible = DECKS.filter(d => {
+    if (!matchesFilter(d)) return false;
+    const hay = (d.title + " " + d.cat + " " + (d.note||"") + " " + (d.tags||[]).join(" ")).toLowerCase();
+    if (q && !hay.includes(q)) return false;
+    if (mode === "recent" || mode === "mostused") return !!views[d.file];
+    return true;
+  });
+
+  if (mode === "recent") {
+    visible.sort((a,b) => (views[b.file]?.t||0) - (views[a.file]?.t||0));
+  } else if (mode === "mostused") {
+    visible.sort((a,b) => (views[b.file]?.c||0) - (views[a.file]?.c||0));
+  } else {
+    visible.sort((a,b) => CollateraViews.score(views[b.file]) - CollateraViews.score(views[a.file]));
+  }
+
+  grid.innerHTML = "";
+  visible.forEach((d, i) => {
+    const card = document.createElement("button");
+    card.className = "card deckcard";
+    card.style.setProperty("--cat", colorFor(d.cat));
+    card.style.animationDelay = (Math.min(i, 18) * 0.03) + "s";
+    card.onclick = () => requestDeck(i);
+    const meta = [prettyDate(d.date), d.slides ? d.slides + " slides" : ""].filter(Boolean).join(" · ");
+    card.innerHTML = `
+      <span class="deck-lock" aria-hidden="true">&#128274;</span>
+      <img class="thumb deck-thumb" src="${encodeURI(d.cover || "")}" alt="" loading="lazy"
+           onerror="this.style.opacity=.25;this.alt='';">
+      <div class="card-body">
+        <span class="card-cat" style="background:${colorFor(d.cat)}">${esc(d.cat)}</span>
+        <span class="card-title">${esc(d.title)}</span>
+        ${meta ? `<span class="deck-meta">${esc(meta)}</span>` : ""}
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  const n = visible.length;
+  let label = `${n} ${n === 1 ? "deck" : "decks"}`;
+  if (activeFilter.type === "cat") label += ` in ${activeFilter.value}`;
+  if (activeFilter.type === "tag") label += ` tagged #${activeFilter.value}`;
+  if (mode === "recent") label += ` · recently viewed`;
+  if (mode === "mostused") label += ` · most used`;
+  if (q) label += ` matching “${query.trim()}”`;
+  countEl.textContent = label;
+  emptyEl.style.display = n ? "none" : "block";
+  grid.style.display = n ? "grid" : "none";
+}
+
+/* =================================================================
+   PASSPHRASE GATE
+   Unlocks for the browser session only (sessionStorage), so you type
+   it once per visit rather than once per deck.
+   ================================================================= */
+const gate      = document.getElementById("gate");
+const gateInput = document.getElementById("gateInput");
+const gateErr   = document.getElementById("gateErr");
+const gateSub   = document.getElementById("gateSub");
+const UNLOCK_KEY = "collatera_decks_unlocked_v1";
+let pendingIndex = null;
+
+const isUnlocked = () => {
+  try { return sessionStorage.getItem(UNLOCK_KEY) === "1"; } catch { return false; }
+};
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function requestDeck(i) {
+  if (isUnlocked()) { openDeck(i); return; }
+  pendingIndex = i;
+  gateErr.hidden = true;
+  gateInput.value = "";
+  gateSub.textContent = `“${visible[i].title}” is locked.`;
+  gate.classList.add("open");
+  document.body.style.overflow = "hidden";
+  setTimeout(() => gateInput.focus(), 30);
+}
+function closeGate() {
+  gate.classList.remove("open");
+  if (!document.getElementById("dv").classList.contains("open")) document.body.style.overflow = "";
+  pendingIndex = null;
+}
+async function submitGate() {
+  const hex = await sha256Hex(gateInput.value);
+  if (hex !== PASS_HASH) {
+    gateErr.hidden = false;
+    gateInput.value = "";
+    gateInput.focus();
+    return;
+  }
+  try { sessionStorage.setItem(UNLOCK_KEY, "1"); } catch {}
+  const i = pendingIndex;
+  gate.classList.remove("open");
+  pendingIndex = null;
+  openDeck(i);
+}
+document.getElementById("gateGo").onclick = submitGate;
+document.getElementById("gateCancel").onclick = closeGate;
+gateInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitGate(); });
+gate.onclick = (e) => { if (e.target === gate) closeGate(); };
+
+/* =================================================================
+   DECK VIEWER  (pdf.js)
+   ================================================================= */
+const dv        = document.getElementById("dv");
+const dvCanvas  = document.getElementById("dvCanvas");
+const dvWrap    = document.getElementById("dvCanvasWrap");
+const dvRail    = document.getElementById("dvRail");
+const dvTitle   = document.getElementById("dvTitle");
+const dvCounter = document.getElementById("dvCounter");
+const dvLoading = document.getElementById("dvLoading");
+
+let pdfDoc = null, pageNum = 1, pageCount = 0;
+let renderTask = null, pendingPage = null, railObserver = null;
+
+async function openDeck(i) {
+  const d = visible[i];
+  if (!d) return;
+  CollateraViews.record(d.file);
+
+  dv.classList.add("open");
+  document.body.style.overflow = "hidden";
+  dvTitle.textContent = d.title;
+  dvCounter.textContent = "— / —";
+  dvRail.innerHTML = "";
+  dvLoading.hidden = false;
+  dvLoading.textContent = "Loading deck…";
+  document.getElementById("dvClose").focus();
+
+  if (railObserver) { railObserver.disconnect(); railObserver = null; }
+  if (pdfDoc) { try { await pdfDoc.destroy(); } catch {} pdfDoc = null; }
+
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+    const task = pdfjsLib.getDocument({ url: encodeURI(d.file) });
+    task.onProgress = ({ loaded, total }) => {
+      if (total) dvLoading.textContent = `Loading deck… ${Math.round(loaded/total*100)}%`;
+    };
+    pdfDoc = await task.promise;
+    pageCount = pdfDoc.numPages;
+    pageNum = 1;
+    dvLoading.hidden = true;
+    await renderPage(1);
+    buildRail();
+  } catch (err) {
+    dvLoading.hidden = false;
+    dvLoading.textContent = "Couldn't open this deck. Check that the PDF exists at " + d.file;
+  }
+}
+
+async function renderPage(n) {
+  if (!pdfDoc) return;
+  if (renderTask) { pendingPage = n; return; }
+  pageNum = n;
+  dvCounter.textContent = `${n} / ${pageCount}`;
+  markRail(n);
+
+  const page = await pdfDoc.getPage(n);
+  const base = page.getViewport({ scale: 1 });
+  const box  = dvWrap.getBoundingClientRect();
+  const dpr  = Math.min(window.devicePixelRatio || 1, 2);
+  const scale = Math.min(box.width / base.width, box.height / base.height) || 1;
+  const vp = page.getViewport({ scale: scale * dpr });
+
+  dvCanvas.width  = Math.floor(vp.width);
+  dvCanvas.height = Math.floor(vp.height);
+  dvCanvas.style.width  = Math.floor(vp.width / dpr) + "px";
+  dvCanvas.style.height = Math.floor(vp.height / dpr) + "px";
+
+  renderTask = page.render({ canvasContext: dvCanvas.getContext("2d"), viewport: vp });
+  try { await renderTask.promise; } catch {}
+  renderTask = null;
+
+  if (pendingPage !== null) { const p = pendingPage; pendingPage = null; renderPage(p); }
+}
+
+/* Thumbnail rail — rendered lazily, only when a thumb scrolls into view,
+   so a 45-slide deck doesn't rasterise 45 pages up front. */
+function buildRail() {
+  dvRail.innerHTML = "";
+  railObserver = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      railObserver.unobserve(el);
+      renderThumb(el, +el.dataset.page);
+    });
+  }, { root: dvRail, rootMargin: "300px" });
+
+  for (let i = 1; i <= pageCount; i++) {
+    const b = document.createElement("button");
+    b.className = "dv-thumb" + (i === pageNum ? " current" : "");
+    b.dataset.page = i;
+    b.setAttribute("aria-label", `Slide ${i}`);
+    b.innerHTML = `<canvas></canvas><span class="dv-thumb-n">${i}</span>`;
+    b.onclick = () => renderPage(i);
+    dvRail.appendChild(b);
+    railObserver.observe(b);
+  }
+}
+async function renderThumb(btn, n) {
+  try {
+    const page = await pdfDoc.getPage(n);
+    const base = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: 150 / base.width });
+    const c = btn.querySelector("canvas");
+    c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    btn.classList.add("ready");
+  } catch {}
+}
+function markRail(n) {
+  dvRail.querySelectorAll(".dv-thumb").forEach(t => {
+    const on = +t.dataset.page === n;
+    t.classList.toggle("current", on);
+    if (on) t.scrollIntoView({ block: "nearest" });
+  });
+}
+
+function step(d) {
+  const n = pageNum + d;
+  if (n < 1 || n > pageCount) return;
+  renderPage(n);
+}
+async function closeDeck() {
+  dv.classList.remove("open");
+  document.body.style.overflow = "";
+  if (railObserver) { railObserver.disconnect(); railObserver = null; }
+  if (renderTask) { try { renderTask.cancel(); } catch {} renderTask = null; }
+  if (pdfDoc) { try { await pdfDoc.destroy(); } catch {} pdfDoc = null; }
+  dvRail.innerHTML = "";
+}
+document.getElementById("dvClose").onclick = closeDeck;
+document.getElementById("dvPrev").onclick = () => step(-1);
+document.getElementById("dvNext").onclick = () => step(1);
+document.getElementById("dvRailBtn").onclick = (e) => {
+  const hidden = dv.classList.toggle("rail-hidden");
+  e.currentTarget.setAttribute("aria-pressed", hidden ? "false" : "true");
+  if (pdfDoc) renderPage(pageNum);
+};
+document.getElementById("dvFull").onclick = () => {
+  if (!document.fullscreenElement) dv.requestFullscreen?.();
+  else document.exitFullscreen?.();
+};
+
+document.addEventListener("keydown", (e) => {
+  if (gate.classList.contains("open")) { if (e.key === "Escape") closeGate(); return; }
+  if (!dv.classList.contains("open")) return;
+  if (e.key === "Escape" && !document.fullscreenElement) closeDeck();
+  if (e.key === "ArrowLeft"  || e.key === "PageUp")   { e.preventDefault(); step(-1); }
+  if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { e.preventDefault(); step(1); }
+  if (e.key === "Home") { e.preventDefault(); renderPage(1); }
+  if (e.key === "End")  { e.preventDefault(); renderPage(pageCount); }
+});
+
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  if (!dv.classList.contains("open") || !pdfDoc) return;
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => renderPage(pageNum), 150);
+});
+
+/* ----- search ----- */
+searchEl.addEventListener("input", (e) => { query = e.target.value; render(); });
+
+/* ----- load the decks from decks.json, then go ----- */
+fetch("/data/decks.json")
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then(data => {
+    CATEGORIES = data.categories || [];
+    DECKS = data.decks || [];
+    ALL_TAGS = [...new Set(DECKS.flatMap(d => d.tags || []))].sort((a,b)=>a.localeCompare(b));
+    buildChips();
+    render();
+  })
+  .catch(err => {
+    grid.style.display = "none";
+    emptyEl.style.display = "block";
+    emptyEl.innerHTML = `<strong>Couldn't load the deck list</strong><br>Check that /data/decks.json exists and is valid JSON.<br><span style="opacity:.7">${esc(err.message)}</span>`;
+  });
+</script>
+</body>
+</html>
