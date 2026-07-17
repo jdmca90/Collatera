@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Collatera</title>
+<link rel="icon" href="/assets/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+<style>
+  /* =================================================================
+     DECK UPLOADER — page-local styles.
+
+     EVERY class here is prefixed `du-`. This page loads the global
+     styles.css, so any bare class name (.gate, .card, .btn, .grid)
+     risks colliding with a global rule and silently breaking the page.
+     Keep the prefix.
+     ================================================================= */
+
+  main.du-wrap { max-width: 1080px; margin: 0 auto; padding: 48px 20px 100px; }
+
+  /* ---------- gates ---------- */
+  .du-gate { max-width: 380px; margin: 100px auto; text-align: center; }
+  .du-gate h1 { font-size: 22px; margin-bottom: 8px; }
+  .du-gate p { color: var(--muted); font-size: 14px; margin-bottom: 18px; line-height: 1.5; }
+  .du-input {
+    width: 100%; font: inherit; font-size: 15px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .du-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .du-btn {
+    font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer;
+    background: var(--accent-deep); color: #fff; border: none;
+    border-radius: 10px; padding: 10px 18px;
+  }
+  .du-btn:hover { opacity: .9; }
+  .du-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .du-btn.du-ghost {
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+  }
+  .du-btn.du-ghost:hover { color: var(--ink); border-color: var(--accent); opacity: 1; }
+  .du-err { color: #B4483A; font-size: 13.5px; margin-top: 10px; }
+  .du-hint { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+  /* ---------- header ---------- */
+  .du-head { margin-bottom: 26px; }
+  .du-head h1 {
+    font-family: "Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif;
+    font-size: 26px; font-weight: 700; margin-bottom: 4px;
+  }
+  .du-head p { color: var(--muted); font-size: 14px; }
+  .du-back { font-size: 13.5px; color: var(--muted); text-decoration: none; }
+  .du-back:hover { color: var(--accent-deep); }
+
+  /* ---------- two-column panel ---------- */
+  .du-panel {
+    display: grid; grid-template-columns: 380px 1fr; gap: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 8px 28px var(--shadow);
+  }
+  @media (max-width: 880px) { .du-panel { grid-template-columns: 1fr; } }
+
+  .du-left { padding: 22px; border-right: 1px solid var(--border); }
+  @media (max-width: 880px) { .du-left { border-right: none; border-bottom: 1px solid var(--border); } }
+  .du-right { padding: 22px; }
+
+  /* ---------- drop zone ---------- */
+  .du-drop {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 34px 16px; text-align: center; color: var(--muted);
+    cursor: pointer; transition: border-color .15s, background .15s;
+    font-size: 14px; line-height: 1.5;
+  }
+  .du-drop:hover { border-color: var(--accent); }
+  .du-drop.du-drag { border-color: var(--accent-deep); background: var(--accent-tint); }
+  .du-drop strong { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+
+  /* ---------- cover preview ---------- */
+  .du-preview { margin-top: 18px; }
+  .du-cover-frame {
+    aspect-ratio: 16 / 9; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .du-cover-frame img { width: 100%; height: 100%; object-fit: contain; }
+  .du-cover-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 0 14px; }
+  .du-cover-meta {
+    font-size: 12px; color: var(--muted); margin-top: 8px;
+    display: flex; justify-content: space-between; gap: 10px;
+  }
+
+  .du-spin {
+    width: 22px; height: 22px; border: 2px solid var(--border);
+    border-top-color: var(--accent-deep); border-radius: 50%;
+    animation: du-rot .7s linear infinite;
+  }
+  @keyframes du-rot { to { transform: rotate(360deg); } }
+
+  /* ---------- form ---------- */
+  .du-field { margin-bottom: 15px; }
+  .du-field label {
+    display: block; font-size: 12.5px; font-weight: 600;
+    color: var(--muted); margin-bottom: 5px; letter-spacing: .01em;
+  }
+  .du-field input, .du-field select, .du-field textarea {
+    width: 100%; font: inherit; font-size: 14.5px; color: var(--ink);
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 9px; padding: 9px 11px;
+  }
+  .du-field textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+  .du-field input:focus, .du-field select:focus, .du-field textarea:focus {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  .du-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .du-sub { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.45; }
+  .du-slug {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; color: var(--accent-deep);
+    background: var(--accent-tint); border-radius: 6px;
+    padding: 5px 8px; margin-top: 6px; word-break: break-all;
+  }
+
+  /* ---------- tag chips ---------- */
+  .du-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .du-tag {
+    font-size: 12px; background: var(--accent-tint); color: var(--accent-deep);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 3px 9px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .du-tag button {
+    background: none; border: none; color: inherit; cursor: pointer;
+    font-size: 13px; line-height: 1; padding: 0; opacity: .65;
+  }
+  .du-tag button:hover { opacity: 1; }
+
+  /* ---------- actions / status ---------- */
+  .du-actions {
+    margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .du-status { font-size: 13.5px; line-height: 1.5; margin-top: 14px; }
+  .du-status.du-ok   { color: var(--accent-deep); }
+  .du-status.du-bad  { color: #B4483A; }
+  .du-status.du-work { color: var(--muted); }
+  .du-steps { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.7; }
+  .du-steps div::before { content: "○ "; }
+  .du-steps div.du-done::before { content: "● "; color: var(--accent-deep); }
+  .du-steps div.du-fail::before { content: "✕ "; color: #B4483A; }
+</style>
+</head>
+<body>
+
+<main class="du-wrap">
+
+  <!-- ================= GATE 1: passphrase ================= -->
+  <div class="du-gate" id="duGatePw">
+    <h1>Collatera admin</h1>
+    <p>Slide deck uploader.</p>
+    <input type="password" id="duPwInput" class="du-input" placeholder="Passphrase" autocomplete="off">
+    <div style="margin-top:14px"><button id="duPwBtn" class="du-btn">Continue</button></div>
+    <div class="du-err" id="duPwErr" style="display:none">That passphrase doesn't match.</div>
+  </div>
+
+  <!-- ================= GATE 2: GitHub token ================= -->
+  <div class="du-gate" id="duGateToken" style="display:none">
+    <a class="du-back" href="/decks/">&larr; Return to decks</a>
+    <h1 style="margin-top:18px">GitHub token</h1>
+    <p>Paste a fine-grained personal access token scoped to just this repo
+       (Contents: read and write). It's kept for this browser tab only —
+       never saved, never committed.</p>
+    <input type="password" id="duTokenInput" class="du-input" placeholder="github_pat_..." autocomplete="off">
+    <div style="margin-top:14px"><button id="duTokenBtn" class="du-btn">Continue</button></div>
+    <div class="du-err" id="duTokenErr" style="display:none"></div>
+  </div>
+
+  <!-- ================= UPLOADER ================= -->
+  <div id="duApp" style="display:none">
+
+    <div class="du-head">
+      <a class="du-back" href="/decks/">&larr; Return to decks</a>
+      <h1 style="margin-top:12px">Add a slide deck</h1>
+      <p>Publishes straight to collatera.org — PDF, cover image, and manifest entry in one go.</p>
+    </div>
+
+    <div class="du-panel">
+
+      <!-- ---------- left: file + cover ---------- -->
+      <div class="du-left">
+        <div class="du-drop" id="duDrop">
+          <strong>Drop a PDF here</strong>
+          or click to choose. Export your deck to PDF first —
+          PPTX isn't accepted.
+        </div>
+        <input type="file" id="duFile" accept="application/pdf,.pdf" style="display:none">
+
+        <div class="du-preview">
+          <div class="du-cover-frame" id="duCoverFrame">
+            <div class="du-cover-empty" id="duCoverEmpty">
+              The cover is generated from page&nbsp;1 once you add a PDF.
+            </div>
+            <img id="duCoverImg" style="display:none" alt="Cover preview">
+          </div>
+          <div class="du-cover-meta">
+            <span id="duCoverInfo">No cover yet</span>
+            <span id="duPdfInfo"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- right: metadata ---------- -->
+      <div class="du-right">
+        <div class="du-field">
+          <label for="duTitle">Title</label>
+          <input type="text" id="duTitle" placeholder="P2Y12 pretreatment in STEMI: the Bern-PCI registry">
+        </div>
+
+        <div class="du-row">
+          <div class="du-field">
+            <label for="duCat">Category</label>
+            <select id="duCat"></select>
+          </div>
+          <div class="du-field">
+            <label for="duDate">Date</label>
+            <input type="date" id="duDate">
+          </div>
+        </div>
+
+        <div class="du-field">
+          <label for="duTagInput">Tags</label>
+          <input type="text" id="duTagInput" placeholder="Type a tag, press Enter">
+          <div class="du-tags" id="duTagList"></div>
+        </div>
+
+        <div class="du-row">
+          <div class="du-field">
+            <label for="duSlides">Slides</label>
+            <input type="number" id="duSlides" min="1" placeholder="auto">
+            <div class="du-sub">Auto-detected from the PDF.</div>
+          </div>
+          <div class="du-field">
+            <label for="duSlugEdit">Filename slug</label>
+            <input type="text" id="duSlugEdit" placeholder="auto from title">
+            <div class="du-sub">Letters, numbers and hyphens only.</div>
+          </div>
+        </div>
+
+        <div class="du-field">
+          <label>Will be committed as</label>
+          <div class="du-slug" id="duSlugPreview">/decks/files/…</div>
+        </div>
+
+        <div class="du-field">
+          <label for="duNote">Note</label>
+          <textarea id="duNote" placeholder="Citation, one-line takeaway, or context."></textarea>
+        </div>
+
+        <div class="du-actions">
+          <button class="du-btn" id="duPublish" disabled>Publish deck</button>
+          <button class="du-btn du-ghost" id="duReset">Clear</button>
+        </div>
+
+        <div class="du-status" id="duStatus"></div>
+        <div class="du-steps" id="duSteps" style="display:none">
+          <div id="duStep1">Upload PDF</div>
+          <div id="duStep2">Upload cover image</div>
+          <div id="duStep3">Update decks.json</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+/* =================================================================
+   CONFIG
+   ================================================================= */
+const REPO_OWNER = "jdmca90";
+const REPO_NAME  = "Collatera";      /* exact case — Pages is case-sensitive */
+const BRANCH     = "main";
+const DECKS_JSON_PATH = "data/decks.json";
+const FILES_DIR   = "decks/files";
+const COVERS_DIR  = "decks/covers";
+
+/* SHA-256 of the admin passphrase — same one as the image uploader. */
+const PASSWORD_HASH = "242ab4ac31522e28fb16163c45c0c19e4402c4a32bcb3b144e7c2edce675b150";
+
+const COVER_WIDTH   = 600;
+const COVER_QUALITY = 0.72;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* =================================================================
+   GATE 1 — passphrase
+   ================================================================= */
+const duGatePw = document.getElementById("duGatePw");
+const duPwInput = document.getElementById("duPwInput");
+const duPwErr = document.getElementById("duPwErr");
+
+async function tryPassword() {
+  if (await sha256Hex(duPwInput.value) === PASSWORD_HASH) {
+    duGatePw.style.display = "none";
+    proceedToToken();
+  } else {
+    duPwErr.style.display = "block";
+  }
+}
+document.getElementById("duPwBtn").onclick = tryPassword;
+duPwInput.addEventListener("keydown", e => { if (e.key === "Enter") tryPassword(); });
+
+/* =================================================================
+   GATE 2 — GitHub token (sessionStorage only)
+   ================================================================= */
+const duGateToken = document.getElementById("duGateToken");
+const duTokenInput = document.getElementById("duTokenInput");
+const duTokenErr = document.getElementById("duTokenErr");
+const TOKEN_KEY = "collatera_admin_token";
+
+function proceedToToken() {
+  if (sessionStorage.getItem(TOKEN_KEY)) { startUploader(); return; }
+  duGateToken.style.display = "block";
+}
+
+async function verifyAndStoreToken(token) {
+  let r;
+  try {
+    r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch (e) {
+    /* Network-layer failure: the request never got a response. Safari
+       reports these as a bare "Load failed", which tells you nothing.
+       Say so explicitly rather than passing the useless string through. */
+    throw new Error(`Couldn't reach api.github.com (${e.message}). ` +
+                    `This is a network/CORS failure, not a bad token.`);
+  }
+  if (!r.ok) throw new Error(`Token check failed (HTTP ${r.status}). Check the token's scope and expiry.`);
+  sessionStorage.setItem(TOKEN_KEY, token);
+}
+
+document.getElementById("duTokenBtn").onclick = async () => {
+  duTokenErr.style.display = "none";
+  try {
+    await verifyAndStoreToken(duTokenInput.value.trim());
+    duGateToken.style.display = "none";
+    startUploader();
+  } catch (err) {
+    duTokenErr.textContent = err.message;
+    duTokenErr.style.display = "block";
+  }
+};
+
+/* =================================================================
+   GitHub Contents API helpers
+   ================================================================= */
+function ghHeaders() {
+  return {
+    Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`,
+    Accept: "application/vnd.github+json",
+    "Content-Type": "application/json"
+  };
+}
+
+function apiUrl(path) {
+  const safe = path.split("/").map(encodeURIComponent).join("/");
+  return `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${safe}`;
+}
+
+/* THE ORPHAN FIX.
+   The image uploader decided create-vs-update by looking at the manifest.
+   If a file existed in the repo but had no manifest entry, it tried to
+   CREATE over an existing blob and GitHub answered 422. This asks the
+   repo itself, which is the only source of truth about what's there. */
+async function ghGetSha(path) {
+  const r = await fetch(`${apiUrl(path)}?ref=${BRANCH}`, { headers: ghHeaders() });
+  if (r.status === 404) return null;            /* genuinely absent → create */
+  if (!r.ok) throw new Error(`Lookup of ${path} failed (HTTP ${r.status}).`);
+  const j = await r.json();
+  return j.sha;                                  /* present → update with sha */
+}
+
+async function ghPut(path, base64, message) {
+  const sha = await ghGetSha(path);
+  const body = { message, content: base64, branch: BRANCH };
+  if (sha) body.sha = sha;
+  const r = await fetch(apiUrl(path), {
+    method: "PUT", headers: ghHeaders(), body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    let detail = "";
+    try { detail = (await r.json()).message || ""; } catch (e) {}
+    throw new Error(`Commit of ${path} failed (HTTP ${r.status}). ${detail}`);
+  }
+  return r.json();
+}
+
+async function ghGetJson(path) {
+  const r = await fetch(`${apiUrl(path)}?ref=${BRANCH}`, { headers: ghHeaders() });
+  if (!r.ok) throw new Error(`Couldn't read ${path} (HTTP ${r.status}).`);
+  const j = await r.json();
+  const text = new TextDecoder().decode(
+    Uint8Array.from(atob(j.content.replace(/\n/g, "")), c => c.charCodeAt(0))
+  );
+  return { data: JSON.parse(text), sha: j.sha };
+}
+
+/* Chunked — btoa on a multi-MB string in one go can blow the call stack. */
+function bufToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+
+function strToBase64(str) {
+  return bufToBase64(new TextEncoder().encode(str).buffer);
+}
+
+/* =================================================================
+   State
+   ================================================================= */
+let pdfFile = null;
+let pdfBuffer = null;
+let coverBlob = null;
+let tags = [];
+let categories = [];
+
+const $ = id => document.getElementById(id);
+
+/* =================================================================
+   Slug handling
+   ================================================================= */
+function slugify(s) {
+  return s.toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
+function currentSlug() {
+  const manual = $("duSlugEdit").value.trim();
+  const base = manual ? slugify(manual) : slugify($("duTitle").value);
+  const date = $("duDate").value;
+  if (!base) return "";
+  return date ? `${date}-${base}` : base;
+}
+
+function refreshSlug() {
+  const s = currentSlug();
+  $("duSlugPreview").textContent = s
+    ? `/${FILES_DIR}/${s}.pdf\n/${COVERS_DIR}/${s}.jpg`
+    : "/decks/files/…";
+  $("duPublish").disabled = !(s && pdfFile && coverBlob && $("duTitle").value.trim());
+}
+
+["duTitle", "duDate", "duSlugEdit"].forEach(id =>
+  $(id).addEventListener("input", refreshSlug));
+
+/* =================================================================
+   Tags
+   ================================================================= */
+function renderTags() {
+  $("duTagList").innerHTML = "";
+  tags.forEach((t, i) => {
+    const el = document.createElement("span");
+    el.className = "du-tag";
+    el.textContent = t;
+    const x = document.createElement("button");
+    x.type = "button";
+    x.textContent = "×";
+    x.onclick = () => { tags.splice(i, 1); renderTags(); };
+    el.appendChild(x);
+    $("duTagList").appendChild(el);
+  });
+}
+$("duTagInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === ",") {
+    e.preventDefault();
+    const v = e.target.value.trim().replace(/,$/, "");
+    if (v && !tags.includes(v)) { tags.push(v); renderTags(); }
+    e.target.value = "";
+  }
+});
+
+/* =================================================================
+   PDF → cover
+   ================================================================= */
+const duDrop = $("duDrop");
+duDrop.onclick = () => $("duFile").click();
+duDrop.addEventListener("dragover", e => { e.preventDefault(); duDrop.classList.add("du-drag"); });
+duDrop.addEventListener("dragleave", () => duDrop.classList.remove("du-drag"));
+duDrop.addEventListener("drop", e => {
+  e.preventDefault();
+  duDrop.classList.remove("du-drag");
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+$("duFile").addEventListener("change", e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+async function handleFile(f) {
+  if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
+    setStatus("bad", "That's not a PDF. Export the deck to PDF first.");
+    return;
+  }
+  pdfFile = f;
+  setStatus("work", "Reading PDF…");
+  $("duPdfInfo").textContent = `${(f.size / 1048576).toFixed(1)} MB`;
+  duDrop.innerHTML = `<strong>${f.name}</strong>${(f.size / 1048576).toFixed(1)} MB — click to replace`;
+
+  try {
+    pdfBuffer = await f.arrayBuffer();
+    /* pdf.js transfers/detaches the buffer it's given, so hand it a copy
+       and keep the original intact for the commit. */
+    const pdf = await pdfjsLib.getDocument({ data: pdfBuffer.slice(0) }).promise;
+
+    $("duSlides").value = pdf.numPages;
+    if (!$("duTitle").value.trim()) {
+      $("duTitle").value = f.name.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ");
+    }
+    if (!$("duDate").value) $("duDate").value = new Date().toISOString().slice(0, 10);
+
+    await renderCover(pdf);
+    setStatus("ok", "Cover generated. Check the metadata, then publish.");
+  } catch (e) {
+    setStatus("bad", `Couldn't read that PDF: ${e.message}`);
+  }
+  refreshSlug();
+}
+
+async function renderCover(pdf) {
+  const frame = $("duCoverFrame");
+  $("duCoverEmpty").innerHTML = '<div class="du-spin"></div>';
+
+  const page = await pdf.getPage(1);
+  const base = page.getViewport({ scale: 1 });
+  const viewport = page.getViewport({ scale: COVER_WIDTH / base.width });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(viewport.width);
+  canvas.height = Math.round(viewport.height);
+  const ctx = canvas.getContext("2d");
+
+  /* Slides are usually transparent-backed; flatten to white or the JPEG
+     turns black where nothing was drawn. */
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  coverBlob = await new Promise(res => canvas.toBlob(res, "image/jpeg", COVER_QUALITY));
+
+  $("duCoverImg").src = URL.createObjectURL(coverBlob);
+  $("duCoverImg").style.display = "block";
+  $("duCoverEmpty").style.display = "none";
+  $("duCoverInfo").textContent =
+    `${canvas.width}×${canvas.height} · ${(coverBlob.size / 1024).toFixed(0)} KB`;
+  refreshSlug();
+}
+
+/* =================================================================
+   Publish
+   ================================================================= */
+function setStatus(kind, msg) {
+  const el = $("duStatus");
+  el.className = `du-status du-${kind}`;
+  el.innerHTML = msg;
+}
+function markStep(n, state) {
+  const el = $(`duStep${n}`);
+  el.classList.remove("du-done", "du-fail");
+  if (state) el.classList.add(state);
+}
+
+$("duPublish").onclick = async () => {
+  const slug = currentSlug();
+  const title = $("duTitle").value.trim();
+  if (!slug || !pdfFile || !coverBlob || !title) return;
+
+  $("duPublish").disabled = true;
+  $("duSteps").style.display = "block";
+  [1, 2, 3].forEach(n => markStep(n, null));
+
+  const pdfPath   = `${FILES_DIR}/${slug}.pdf`;
+  const coverPath = `${COVERS_DIR}/${slug}.jpg`;
+
+  try {
+    /* Warn before silently overwriting an existing deck. */
+    if (await ghGetSha(pdfPath)) {
+      if (!confirm(`A file already exists at /${pdfPath}.\n\nOverwrite it?`)) {
+        setStatus("work", "Cancelled. Change the slug or date to publish alongside it.");
+        $("duPublish").disabled = false;
+        return;
+      }
+    }
+
+    setStatus("work", "Uploading PDF…");
+    await ghPut(pdfPath, bufToBase64(pdfBuffer), `Add deck: ${title}`);
+    markStep(1, "du-done");
+
+    setStatus("work", "Uploading cover…");
+    const coverBuf = await coverBlob.arrayBuffer();
+    await ghPut(coverPath, bufToBase64(coverBuf), `Add deck cover: ${title}`);
+    markStep(2, "du-done");
+
+    setStatus("work", "Updating decks.json…");
+    const { data } = await ghGetJson(DECKS_JSON_PATH);
+    const entry = {
+      file:  `/${pdfPath}`,
+      cover: `/${coverPath}`,
+      title,
+      cat:   $("duCat").value,
+      tags:  tags.slice(),
+      date:  $("duDate").value || "",
+      slides: parseInt($("duSlides").value, 10) || 0,
+      note:  $("duNote").value.trim()
+    };
+    /* Replace an existing entry for the same file rather than duplicating. */
+    const i = data.decks.findIndex(d => d.file === entry.file);
+    if (i >= 0) data.decks[i] = entry; else data.decks.unshift(entry);
+
+    await ghPut(DECKS_JSON_PATH,
+      strToBase64(JSON.stringify(data, null, 2) + "\n"),
+      `Add deck entry: ${title}`);
+    markStep(3, "du-done");
+
+    setStatus("ok",
+      `Published. It'll appear at <a href="/decks/" target="_blank">collatera.org/decks</a> ` +
+      `within a minute or so, once Pages rebuilds.`);
+  } catch (e) {
+    setStatus("bad", e.message);
+    [1, 2, 3].forEach(n => {
+      if (!$(`duStep${n}`).classList.contains("du-done")) markStep(n, "du-fail");
+    });
+    $("duPublish").disabled = false;
+  }
+};
+
+$("duReset").onclick = () => {
+  pdfFile = null; pdfBuffer = null; coverBlob = null; tags = [];
+  ["duTitle", "duSlugEdit", "duNote", "duSlides", "duTagInput"].forEach(id => $(id).value = "");
+  $("duDate").value = new Date().toISOString().slice(0, 10);
+  renderTags();
+  $("duCoverImg").style.display = "none";
+  $("duCoverEmpty").style.display = "block";
+  $("duCoverEmpty").textContent = "The cover is generated from page 1 once you add a PDF.";
+  $("duCoverInfo").textContent = "No cover yet";
+  $("duPdfInfo").textContent = "";
+  duDrop.innerHTML = "<strong>Drop a PDF here</strong>or click to choose. Export your deck to PDF first — PPTX isn't accepted.";
+  $("duSteps").style.display = "none";
+  setStatus("", "");
+  refreshSlug();
+};
+
+/* =================================================================
+   Start
+   ================================================================= */
+async function startUploader() {
+  $("duApp").style.display = "block";
+  $("duDate").value = new Date().toISOString().slice(0, 10);
+  try {
+    const { data } = await ghGetJson(DECKS_JSON_PATH);
+    categories = data.categories || [];
+  } catch (e) {
+    categories = ["Journal club", "Conference", "M&M", "Fellows' lecture", "Case"];
+    setStatus("bad", `Couldn't read decks.json (${e.message}). Using default categories.`);
+  }
+  $("duCat").innerHTML = categories.map(c => `<option>${c}</option>`).join("");
+  refreshSlug();
+}
+</script>
+</body>
+</html>
