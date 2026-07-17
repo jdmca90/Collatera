@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Self-Education Resource Hub · Collatera</title>
-<meta name="description" content="Self-Education Resource Hub — in development.">
+<meta name="description" content="A curated hub of free cardiology self-education resources.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,11 +12,20 @@
 </head>
 <body>
 
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" class="search-input" type="search" placeholder="Search resources, topics, modalities…" autocomplete="off" aria-label="Search resources">
+  </div>
+  <div class="chips" id="chips" role="tablist" aria-label="Filter by category"></div>
+</div>
+
 <main>
-  <div class="coming-soon">
-    <span class="cs-badge">In development</span>
-    <h1 class="cs-title">Self-Education Resource Hub</h1>
-    <p class="cs-body">A curated hub of learning resources is being assembled. Check back soon.</p>
+  <div class="count" id="count"></div>
+  <div class="grid se-grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <strong>Nothing found</strong>
+    Try a different word, or pick a different category above.
   </div>
 </main>
 
@@ -24,6 +33,132 @@
 
 <script>window.COLLATERA_SECTION = "Self-Education Resource Hub";</script>
 <script src="/assets/site.js"></script>
+
+<script>
+/* =================================================================
+   ====   YOUR RESOURCE CATALOG                                  ====
+   ====   To add or edit entries, edit the RESOURCES list below.  ====
+   ====   Each entry: cat, name, desc, url.                       ====
+   ====   cat MUST be one of the CATEGORIES below — it picks the  ====
+   ====   glyph. Card colour rotates automatically through        ====
+   ====   --c1..--c6 in list order; you don't set it by hand.     ====
+   ================================================================= */
+
+const CATEGORIES = ["ECG", "POCUS", "Advanced imaging", "Interventional", "General"];
+
+const RESOURCES = [
+  {"cat":"ECG", "name":"LITFL ECG Library", "desc":"Over 100 ECG topics with clinical cases and downloadable tracings", "url":"https://litfl.com/ecg-library/"},
+  {"cat":"ECG", "name":"Dr. Smith's ECG Blog", "desc":"Occlusion MI and subtle ischaemia, with new cases most weeks", "url":"https://drsmithsecgblog.com/"},
+  {"cat":"ECG", "name":"ECG Wave-Maven", "desc":"Around 600 self-assessment cases from BIDMC, sorted by topic and difficulty", "url":"https://ecg.bidmc.harvard.edu/maven/"},
+  {"cat":"ECG", "name":"ECG Made Easier", "desc":"Interactive step-through of a systematic ECG read", "url":"https://litfl.com/ecg-made-easier/"},
+
+  {"cat":"POCUS", "name":"Core Ultrasound — 5 Minute Sono", "desc":"Short cardiac videos: windows, tamponade, RV strain, diastology, VTI", "url":"https://coreultrasound.com/5minsono-cardiac/"},
+  {"cat":"POCUS", "name":"POCUS 101 — Cardiac Guide", "desc":"Image-dense walkthrough of the focused cardiac exam", "url":"https://www.pocus101.com/cardiac-ultrasound-echocardiography-made-easy-step-by-step-guide/"},
+  {"cat":"POCUS", "name":"Utah Anesthesia FOCUS", "desc":"FOCUS versus formal echo, plus an advanced TTE track", "url":"https://echo.anesthesia.med.utah.edu/tee/focus-content/"},
+  {"cat":"POCUS", "name":"Stanford Focused Bedside TTE", "desc":"Self-paced course on physics, TTE, lung ultrasound and Doppler", "url":"https://online.stanford.edu/courses/som-y0019-focused-bedside-tte-and-ultrasound"},
+  {"cat":"POCUS", "name":"The POCUS Atlas", "desc":"Pathology image archive with a linked evidence atlas", "url":"https://www.thepocusatlas.com/"},
+  {"cat":"POCUS", "name":"Resuscitative TEE Project", "desc":"Rescue TEE technique and curated learning resources", "url":"https://www.resuscitativetee.com/learningresources"},
+
+  {"cat":"Advanced imaging", "name":"HKU Cardiac MR (edX)", "desc":"CMR course built with SCMR; around 50 downloadable cases, free to audit", "url":"https://www.edx.org/learn/medicine/university-of-hong-kong-advanced-cardiac-imaging-cardiac-magnetic-resonance-cmr"},
+  {"cat":"Advanced imaging", "name":"HKU Cardiac CT (edX)", "desc":"Companion CT course covering CTA, CT-FFR and TAVR planning", "url":"https://www.edx.org/learn/medicine/university-of-hong-kong-advanced-cardiac-imaging-cardiac-computed-tomography-ct"},
+  {"cat":"Advanced imaging", "name":"Visible Heart — CMR Tutorial", "desc":"Minnesota primer sitting inside their human cardiac anatomy atlas", "url":"https://www.vhlab.umn.edu/atlas/cardiac-mri-tutorial/index.shtml"},
+
+  {"cat":"Interventional", "name":"Manual of PCI (video series)", "desc":"Brilakis walking chapter by chapter through PCI, on YouTube", "url":"https://www.youtube.com/playlist?list=PLrg6KBVL0GBqabghGLCgqbplSrGQEiHh4"},
+  {"cat":"Interventional", "name":"TCTMD", "desc":"Conference coverage, slide decks, submitted cases and live-case video", "url":"https://www.tctmd.com/"},
+  {"cat":"Interventional", "name":"PCR Online — Webinars", "desc":"Post-graduate webinars from the EuroPCR community", "url":"https://www.pcronline.com/Courses/Online-Education"},
+
+  {"cat":"General", "name":"CardioNerds", "desc":"Case-based cardiology podcast with expert deep dives", "url":"https://www.cardionerds.com/"},
+  {"cat":"General", "name":"CardioNerds Infographics", "desc":"Hundreds of infographics indexed by cardiovascular topic", "url":"https://www.cardionerds.com/infographics/"},
+  {"cat":"General", "name":"This Week in Cardiology", "desc":"Mandrola's weekly trial appraisal — skeptical, not cynical", "url":"https://www.medscape.com/index/list_10295_0"},
+  {"cat":"General", "name":"Parallax", "desc":"Long-form interviews with cardiology's leaders, hosted by Ankur Kalra", "url":"https://www.radcliffecardiology.com/podcasts/parallax"},
+  {"cat":"General", "name":"Internet Book of Critical Care", "desc":"Farkas' free textbook; strong ECG, shock and device chapters", "url":"https://emcrit.org/ibcc/toc/"},
+  {"cat":"General", "name":"Radcliffe Cardiology", "desc":"Open-access reviews, including US Cardiology Review", "url":"https://www.radcliffecardiology.com/"}
+];
+
+/* =================================================================
+   ====   You normally do NOT need to edit anything below here. ====
+   ================================================================= */
+
+const GLYPHS = {
+  "ECG": '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 34 H14 Q19 25 24 34 H27.5 L30.5 38 L35 10 L39.5 45 L42.5 34 H46 Q51 21 56 34 H60"/></svg>',
+  "POCUS": '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="26.5" y="8" width="11" height="13" rx="3.5"/><path d="M26.5 21 L29.5 30 H34.5 L37.5 21"/><path d="M35 8 C39 3 45 5 43.5 11.5"/><path d="M26 37 A 8 8 0 0 0 38 37"/><path d="M20 44 A 16 16 0 0 0 44 44"/><path d="M14 51 A 24 24 0 0 0 50 51"/></svg>',
+  "Advanced imaging": '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 50 A 22 22 0 1 1 40 50"/><path d="M26.5 39.5 A 11 11 0 1 1 37.5 39.5"/><path d="M28.5 32 H35.5 L41 54 H23 Z"/></svg>',
+  "Interventional": '<svg viewBox="0 0 64 64" fill="currentColor" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M21.5 7 C15.5 14 13 25 14.5 38 C15.3 45 17 51 19.8 56 C18 50 16.8 44 16.6 38 C15.8 26 18 15.5 25.5 7.5 Z"/><path d="M15.4 30 C12 35 10.5 41 11 48 C11.8 42 13.3 36.6 16.4 32.4 Z"/><path d="M31.6 5 C29.5 20 29 36 29.8 56 C31.5 40 32.5 22 35.4 5 Z"/><path d="M30.6 15 C36 20 40.5 28 42.5 40 C39.8 29 35.6 21.5 30 17.8 Z"/><path d="M29.9 30 C34 35 36.6 42 37.4 52 C35.4 43 32.6 36.6 29.3 32.6 Z"/><path d="M34.5 6 C42 8.5 48 13.5 50.5 21 C51.9 25.5 52 32 50 39 C50.8 32 50.4 26 48.8 21.9 C46 14.8 40.6 10 33.8 8.6 Z"/><path d="M49.6 20 C46 26 44 33.5 43.8 44 C42.7 34 43.6 26.4 47.3 19.3 Z"/></svg>',
+  "General": '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 20 C18 16 27 17 32 22 C37 17 46 16 56 20 L56 46 C46 44 37 45 32 50 C27 45 18 44 8 46 Z"/><path d="M32 41 C26 36.5 22.5 33 22.5 29.5 C22.5 26.5 24.8 24.5 27.5 24.5 C29.4 24.5 31 25.5 32 27.2 C33 25.5 34.6 24.5 36.5 24.5 C39.2 24.5 41.5 26.5 41.5 29.5 C41.5 33 38 36.5 32 41 Z"/></svg>'
+};
+
+const catColors = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+
+const grid = document.getElementById("grid");
+const chipsEl = document.getElementById("chips");
+const countEl = document.getElementById("count");
+const emptyEl = document.getElementById("empty");
+const searchEl = document.getElementById("search");
+
+let activeCat = null;
+let query = "";
+
+function chipButton(label, value) {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = label;
+  b.setAttribute("role", "tab");
+  b.setAttribute("aria-pressed", activeCat === value ? "true" : "false");
+  b.onclick = () => {
+    activeCat = value;
+    [...chipsEl.querySelectorAll(".chip")].forEach(c => c.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", "true");
+    render();
+  };
+  return b;
+}
+
+function buildChips() {
+  chipsEl.appendChild(chipButton("All", null));
+  const sep = document.createElement("span");
+  sep.className = "chip-sep"; sep.setAttribute("aria-hidden", "true");
+  chipsEl.appendChild(sep);
+  CATEGORIES.forEach(c => chipsEl.appendChild(chipButton(c, c)));
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[ch]));
+}
+
+function render() {
+  const q = query.trim().toLowerCase();
+
+  const visible = RESOURCES
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => {
+      if (activeCat && r.cat !== activeCat) return false;
+      if (!q) return true;
+      return (r.name + " " + r.desc + " " + r.cat).toLowerCase().includes(q);
+    });
+
+  grid.innerHTML = "";
+  visible.forEach(({ r, i }, n) => {
+    const a = document.createElement("a");
+    a.className = "se-card";
+    a.href = r.url; a.target = "_blank"; a.rel = "noopener";
+    a.style.setProperty("--cat", catColors[i % catColors.length]);
+    a.style.animationDelay = (Math.min(n, 18) * 0.03) + "s";
+    a.innerHTML = `<span class="se-glyph">${GLYPHS[r.cat] || ""}</span>
+      <span class="se-title">${esc(r.name)}</span>
+      <span class="se-desc">${esc(r.desc)}</span>`;
+    grid.appendChild(a);
+  });
+
+  const t = visible.length;
+  let label = `${t} ${t === 1 ? "resource" : "resources"}`;
+  if (activeCat) label += ` in ${activeCat}`;
+  if (q) label += ` matching “${query.trim()}”`;
+  countEl.textContent = label;
+  emptyEl.style.display = t ? "none" : "block";
+  grid.style.display = t ? "grid" : "none";
+}
+
+searchEl.addEventListener("input", (e) => { query = e.target.value; render(); });
+buildChips(); render();
+</script>
 </body>
 </html>
- 
