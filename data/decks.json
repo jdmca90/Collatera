@@ -8,6 +8,16 @@
   ],
   "decks": [
     {
+      "file": "/decks/files/2026-07-17-poster-demo-gme-caa-acs.pdf",
+      "cover": "/decks/covers/2026-07-17-poster-demo-gme-caa-acs.jpg",
+      "title": "[Poster Demo] GME CAA ACS",
+      "cat": "Journal club",
+      "tags": [],
+      "date": "2026-07-17",
+      "slides": 1,
+      "note": ""
+    },
+    {
       "file": "/decks/files/2026-07-17-poster-demo-maccs-2025-1.pdf",
       "cover": "/decks/covers/2026-07-17-poster-demo-maccs-2025-1.jpg",
       "title": "[Poster Demo] MACCS 2025 #1",
