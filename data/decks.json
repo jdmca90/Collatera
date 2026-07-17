@@ -8,6 +8,16 @@
   ],
   "decks": [
     {
+      "file": "/decks/files/2026-07-17-poster-demo-maccs-2025-1.pdf",
+      "cover": "/decks/covers/2026-07-17-poster-demo-maccs-2025-1.jpg",
+      "title": "[Poster Demo] MACCS 2025 #1",
+      "cat": "Journal club",
+      "tags": [],
+      "date": "2026-07-17",
+      "slides": 1,
+      "note": ""
+    },
+    {
       "file": "/decks/files/2026-07-17-echo-conf-ai-quantification-2-13-25.pdf",
       "cover": "/decks/covers/2026-07-17-echo-conf-ai-quantification-2-13-25.jpg",
       "title": "Echo Conf - AI Quantification 2.13.25",
