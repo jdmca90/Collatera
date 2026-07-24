@@ -8,6 +8,16 @@
   ],
   "decks": [
     {
+      "file": "/decks/files/2026-11-13-scai-first-presentation.pdf",
+      "cover": "/decks/covers/2026-11-13-scai-first-presentation.jpg",
+      "title": "SCAI First Presentation",
+      "cat": "Journal club",
+      "tags": [],
+      "date": "2026-11-13",
+      "slides": 17,
+      "note": ""
+    },
+    {
       "file": "/decks/files/2026-07-17-poster-demo-gme-caa-acs.pdf",
       "cover": "/decks/covers/2026-07-17-poster-demo-gme-caa-acs.jpg",
       "title": "[Poster Demo] GME CAA ACS",
