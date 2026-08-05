@@ -47,32 +47,32 @@
 const CATEGORIES = ["ECG", "POCUS", "Advanced imaging", "Interventional", "General"];
 
 const RESOURCES = [
-  {"cat":"ECG", "name":"LITFL ECG Library", "desc":"Over 100 ECG topics with clinical cases and downloadable tracings", "url":"https://litfl.com/ecg-library/"},
-  {"cat":"ECG", "name":"Dr. Smith's ECG Blog", "desc":"Occlusion MI and subtle ischaemia, with new cases most weeks", "url":"https://drsmithsecgblog.com/"},
-  {"cat":"ECG", "name":"ECG Wave-Maven", "desc":"Around 600 self-assessment cases from BIDMC, sorted by topic and difficulty", "url":"https://ecg.bidmc.harvard.edu/maven/"},
-  {"cat":"ECG", "name":"ECG Made Easier", "desc":"Interactive step-through of a systematic ECG read", "url":"https://litfl.com/ecg-made-easier/"},
+  {"id":"res_88m5v6lc", "cat":"ECG", "name":"LITFL ECG Library", "desc":"Over 100 ECG topics with clinical cases and downloadable tracings", "url":"https://litfl.com/ecg-library/"},
+  {"id":"res_2eixmzoh", "cat":"ECG", "name":"Dr. Smith's ECG Blog", "desc":"Occlusion MI and subtle ischaemia, with new cases most weeks", "url":"https://drsmithsecgblog.com/"},
+  {"id":"res_ogqv78is", "cat":"ECG", "name":"ECG Wave-Maven", "desc":"Around 600 self-assessment cases from BIDMC, sorted by topic and difficulty", "url":"https://ecg.bidmc.harvard.edu/maven/"},
+  {"id":"res_7h4d6qfi", "cat":"ECG", "name":"ECG Made Easier", "desc":"Interactive step-through of a systematic ECG read", "url":"https://litfl.com/ecg-made-easier/"},
 
-  {"cat":"POCUS", "name":"Core Ultrasound — 5 Minute Sono", "desc":"Short cardiac videos: windows, tamponade, RV strain, diastology, VTI", "url":"https://coreultrasound.com/5minsono-cardiac/"},
-  {"cat":"POCUS", "name":"POCUS 101 — Cardiac Guide", "desc":"Image-dense walkthrough of the focused cardiac exam", "url":"https://www.pocus101.com/cardiac-ultrasound-echocardiography-made-easy-step-by-step-guide/"},
-  {"cat":"POCUS", "name":"Utah Anesthesia FOCUS", "desc":"FOCUS versus formal echo, plus an advanced TTE track", "url":"https://echo.anesthesia.med.utah.edu/tee/focus-content/"},
-  {"cat":"POCUS", "name":"Stanford Focused Bedside TTE", "desc":"Self-paced course on physics, TTE, lung ultrasound and Doppler", "url":"https://online.stanford.edu/courses/som-y0019-focused-bedside-tte-and-ultrasound"},
-  {"cat":"POCUS", "name":"The POCUS Atlas", "desc":"Pathology image archive with a linked evidence atlas", "url":"https://www.thepocusatlas.com/"},
-  {"cat":"POCUS", "name":"Resuscitative TEE Project", "desc":"Rescue TEE technique and curated learning resources", "url":"https://www.resuscitativetee.com/learningresources"},
+  {"id":"res_jby39owg", "cat":"POCUS", "name":"Core Ultrasound — 5 Minute Sono", "desc":"Short cardiac videos: windows, tamponade, RV strain, diastology, VTI", "url":"https://coreultrasound.com/5minsono-cardiac/"},
+  {"id":"res_mh8ptskk", "cat":"POCUS", "name":"POCUS 101 — Cardiac Guide", "desc":"Image-dense walkthrough of the focused cardiac exam", "url":"https://www.pocus101.com/cardiac-ultrasound-echocardiography-made-easy-step-by-step-guide/"},
+  {"id":"res_l7tnsb8u", "cat":"POCUS", "name":"Utah Anesthesia FOCUS", "desc":"FOCUS versus formal echo, plus an advanced TTE track", "url":"https://echo.anesthesia.med.utah.edu/tee/focus-content/"},
+  {"id":"res_jvn8ct4k", "cat":"POCUS", "name":"Stanford Focused Bedside TTE", "desc":"Self-paced course on physics, TTE, lung ultrasound and Doppler", "url":"https://online.stanford.edu/courses/som-y0019-focused-bedside-tte-and-ultrasound"},
+  {"id":"res_aexb133z", "cat":"POCUS", "name":"The POCUS Atlas", "desc":"Pathology image archive with a linked evidence atlas", "url":"https://www.thepocusatlas.com/"},
+  {"id":"res_5v2ipwqn", "cat":"POCUS", "name":"Resuscitative TEE Project", "desc":"Rescue TEE technique and curated learning resources", "url":"https://www.resuscitativetee.com/learningresources"},
 
-  {"cat":"Advanced imaging", "name":"HKU Cardiac MR (edX)", "desc":"CMR course built with SCMR; around 50 downloadable cases, free to audit", "url":"https://www.edx.org/learn/medicine/university-of-hong-kong-advanced-cardiac-imaging-cardiac-magnetic-resonance-cmr"},
-  {"cat":"Advanced imaging", "name":"HKU Cardiac CT (edX)", "desc":"Companion CT course covering CTA, CT-FFR and TAVR planning", "url":"https://www.edx.org/learn/medicine/university-of-hong-kong-advanced-cardiac-imaging-cardiac-computed-tomography-ct"},
-  {"cat":"Advanced imaging", "name":"Visible Heart — CMR Tutorial", "desc":"Minnesota primer sitting inside their human cardiac anatomy atlas", "url":"https://www.vhlab.umn.edu/atlas/cardiac-mri-tutorial/index.shtml"},
+  {"id":"res_ejwevzcg", "cat":"Advanced imaging", "name":"HKU Cardiac MR (edX)", "desc":"CMR course built with SCMR; around 50 downloadable cases, free to audit", "url":"https://www.edx.org/learn/medicine/university-of-hong-kong-advanced-cardiac-imaging-cardiac-magnetic-resonance-cmr"},
+  {"id":"res_68qsyxrv", "cat":"Advanced imaging", "name":"HKU Cardiac CT (edX)", "desc":"Companion CT course covering CTA, CT-FFR and TAVR planning", "url":"https://www.edx.org/learn/medicine/university-of-hong-kong-advanced-cardiac-imaging-cardiac-computed-tomography-ct"},
+  {"id":"res_bs6uafp0", "cat":"Advanced imaging", "name":"Visible Heart — CMR Tutorial", "desc":"Minnesota primer sitting inside their human cardiac anatomy atlas", "url":"https://www.vhlab.umn.edu/atlas/cardiac-mri-tutorial/index.shtml"},
 
-  {"cat":"Interventional", "name":"Manual of PCI (video series)", "desc":"Brilakis walking chapter by chapter through PCI, on YouTube", "url":"https://www.youtube.com/playlist?list=PLrg6KBVL0GBqabghGLCgqbplSrGQEiHh4"},
-  {"cat":"Interventional", "name":"TCTMD", "desc":"Conference coverage, slide decks, submitted cases and live-case video", "url":"https://www.tctmd.com/"},
-  {"cat":"Interventional", "name":"PCR Online — Webinars", "desc":"Post-graduate webinars from the EuroPCR community", "url":"https://www.pcronline.com/Courses/Online-Education"},
+  {"id":"res_ufqj1mo1", "cat":"Interventional", "name":"Manual of PCI (video series)", "desc":"Brilakis walking chapter by chapter through PCI, on YouTube", "url":"https://www.youtube.com/playlist?list=PLrg6KBVL0GBqabghGLCgqbplSrGQEiHh4"},
+  {"id":"res_zb8h4n2z", "cat":"Interventional", "name":"TCTMD", "desc":"Conference coverage, slide decks, submitted cases and live-case video", "url":"https://www.tctmd.com/"},
+  {"id":"res_3bx6a860", "cat":"Interventional", "name":"PCR Online — Webinars", "desc":"Post-graduate webinars from the EuroPCR community", "url":"https://www.pcronline.com/Courses/Online-Education"},
 
-  {"cat":"General", "name":"CardioNerds", "desc":"Case-based cardiology podcast with expert deep dives", "url":"https://www.cardionerds.com/"},
-  {"cat":"General", "name":"CardioNerds Infographics", "desc":"Hundreds of infographics indexed by cardiovascular topic", "url":"https://www.cardionerds.com/infographics/"},
-  {"cat":"General", "name":"This Week in Cardiology", "desc":"Mandrola's weekly trial appraisal — skeptical, not cynical", "url":"https://www.medscape.com/index/list_10295_0"},
-  {"cat":"General", "name":"Parallax", "desc":"Long-form interviews with cardiology's leaders, hosted by Ankur Kalra", "url":"https://www.radcliffecardiology.com/podcasts/parallax"},
-  {"cat":"General", "name":"Internet Book of Critical Care", "desc":"Farkas' free textbook; strong ECG, shock and device chapters", "url":"https://emcrit.org/ibcc/toc/"},
-  {"cat":"General", "name":"Radcliffe Cardiology", "desc":"Open-access reviews, including US Cardiology Review", "url":"https://www.radcliffecardiology.com/"}
+  {"id":"res_ctpkr94j", "cat":"General", "name":"CardioNerds", "desc":"Case-based cardiology podcast with expert deep dives", "url":"https://www.cardionerds.com/"},
+  {"id":"res_5zpk1n2e", "cat":"General", "name":"CardioNerds Infographics", "desc":"Hundreds of infographics indexed by cardiovascular topic", "url":"https://www.cardionerds.com/infographics/"},
+  {"id":"res_7g5g66z4", "cat":"General", "name":"This Week in Cardiology", "desc":"Mandrola's weekly trial appraisal — skeptical, not cynical", "url":"https://www.medscape.com/index/list_10295_0"},
+  {"id":"res_7i1p66aa", "cat":"General", "name":"Parallax", "desc":"Long-form interviews with cardiology's leaders, hosted by Ankur Kalra", "url":"https://www.radcliffecardiology.com/podcasts/parallax"},
+  {"id":"res_dljq86x9", "cat":"General", "name":"Internet Book of Critical Care", "desc":"Farkas' free textbook; strong ECG, shock and device chapters", "url":"https://emcrit.org/ibcc/toc/"},
+  {"id":"res_m9le6mbg", "cat":"General", "name":"Radcliffe Cardiology", "desc":"Open-access reviews, including US Cardiology Review", "url":"https://www.radcliffecardiology.com/"}
 ];
 
 /* =================================================================
