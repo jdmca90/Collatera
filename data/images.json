@@ -17,6 +17,7 @@
   ],
   "images": [
     {
+      "id": "img_z3jb00le",
       "file": "/images/ACLS ACS Algo.jpg",
       "title": "ACS Algo (ACLS)",
       "cat": "ACLS",
@@ -26,6 +27,7 @@
       "note": ""
     },
     {
+      "id": "img_nj88n60h",
       "file": "/images/ACLS Algo.jpg",
       "title": "Cardiac Arrest Algo  (ACLS)",
       "cat": "ACLS",
@@ -35,6 +37,7 @@
       "note": ""
     },
     {
+      "id": "img_ps2t3mth",
       "file": "/images/ACLS Bradycardia.jpg",
       "title": "Brady Algo (ACLS)",
       "cat": "ACLS",
@@ -44,6 +47,7 @@
       "note": ""
     },
     {
+      "id": "img_pysdccup",
       "file": "/images/ACLS Circular Algo.jpg",
       "title": "Circular Algorithm (ACLS)",
       "cat": "ACLS",
@@ -53,6 +57,7 @@
       "note": ""
     },
     {
+      "id": "img_6dukdi0k",
       "file": "/images/ACLS Doses Details.jpg",
       "title": "ACLS Meds",
       "cat": "ACLS",
@@ -62,6 +67,7 @@
       "note": ""
     },
     {
+      "id": "img_b99o76im",
       "file": "/images/ACLS EMS.jpg",
       "title": "EMS Activation (ACLS)",
       "cat": "ACLS",
@@ -71,6 +77,7 @@
       "note": ""
     },
     {
+      "id": "img_apbtaa9r",
       "file": "/images/ACLS Post-Arrest Algo.jpg",
       "title": "Post Arrest Algo (ACLS)",
       "cat": "ACLS",
@@ -80,6 +87,7 @@
       "note": ""
     },
     {
+      "id": "img_2ygznigq",
       "file": "/images/ACLS Pregnancy Algo.jpg",
       "title": "Pregnancy Algo (ACLS)",
       "cat": "ACLS",
@@ -89,6 +97,7 @@
       "note": ""
     },
     {
+      "id": "img_vznceprn",
       "file": "/images/ACLS Stroke Algo.jpg",
       "title": "Stroke Algo  (ACLS)",
       "cat": "Stroke",
@@ -98,6 +107,7 @@
       "note": ""
     },
     {
+      "id": "img_ffd9n03a",
       "file": "/images/ACLS Tachycardia Algo.jpg",
       "title": "Tachy Algo (ACLS)",
       "cat": "ACLS",
@@ -107,6 +117,7 @@
       "note": ""
     },
     {
+      "id": "img_3u4np36f",
       "file": "/images/ACLS VAD Algo.jpg",
       "title": "VAD Algo (ACLS)",
       "cat": "ACLS",
@@ -117,6 +128,7 @@
       "note": ""
     },
     {
+      "id": "img_izndsewh",
       "file": "/images/ACLSmeds.jpg",
       "title": "Pharm Summary (ACLS)",
       "cat": "ACLS",
@@ -127,6 +139,7 @@
       "note": ""
     },
     {
+      "id": "img_fnhk6t5q",
       "file": "/images/aclsroles.jpg",
       "title": "Team Roles (ACLS)",
       "cat": "ACLS",
@@ -134,6 +147,7 @@
       "note": ""
     },
     {
+      "id": "img_e2qy17xu",
       "file": "/images/acstypes.jpg",
       "title": "ACS Types",
       "cat": "Cath / Angio",
@@ -143,6 +157,7 @@
       "note": ""
     },
     {
+      "id": "img_disb95iq",
       "file": "/images/Acute Stroke.jpg",
       "title": "AHA Stroke Algo",
       "cat": "Stroke",
@@ -152,6 +167,7 @@
       "note": ""
     },
     {
+      "id": "img_124uo6i1",
       "file": "/images/afib hypercoag.png",
       "title": "AFib Hypercoaguability",
       "cat": "EP",
@@ -161,6 +177,7 @@
       "note": ""
     },
     {
+      "id": "img_4c8tw1pu",
       "file": "/images/Afib Inflammation trigger.png",
       "title": "AFib Inflammation",
       "cat": "EP",
@@ -170,6 +187,7 @@
       "note": ""
     },
     {
+      "id": "img_6206krlj",
       "file": "/images/afib stages 2.jpg",
       "title": "AFib Stages 1",
       "cat": "EP",
@@ -179,6 +197,7 @@
       "note": ""
     },
     {
+      "id": "img_8gjhlw8x",
       "file": "/images/afib stages.jpg",
       "title": "AFib Stages 2",
       "cat": "EP",
@@ -188,6 +207,7 @@
       "note": ""
     },
     {
+      "id": "img_xme322mz",
       "file": "/images/aortasizes1.jpg",
       "title": "Aorta Sizes 1",
       "cat": "Anatomy",
@@ -198,6 +218,7 @@
       "note": ""
     },
     {
+      "id": "img_jxn6s0ls",
       "file": "/images/aortasizes2.jpg",
       "title": "Aorta Sizes 2",
       "cat": "Anatomy",
@@ -207,6 +228,7 @@
       "note": ""
     },
     {
+      "id": "img_0ga9zefl",
       "file": "/images/aortasizes3.jpg",
       "title": "Aorta Sizes 3",
       "cat": "Anatomy",
@@ -216,6 +238,7 @@
       "note": ""
     },
     {
+      "id": "img_u35rzlhj",
       "file": "/images/Aortic Regurg 1.jpg",
       "title": "Aortic Regurgitation 1",
       "cat": "Echo",
@@ -225,6 +248,7 @@
       "note": ""
     },
     {
+      "id": "img_f6z2srl1",
       "file": "/images/Aortic Regurg 2.jpg",
       "title": "Aortic Regurgitation 2",
       "cat": "Echo",
@@ -234,6 +258,7 @@
       "note": ""
     },
     {
+      "id": "img_6utqz5ia",
       "file": "/images/AorticStenosis.png",
       "title": "Aortic Stenosis",
       "cat": "Echo",
@@ -243,6 +268,7 @@
       "note": ""
     },
     {
+      "id": "img_052qp0pz",
       "file": "/images/artherosclerosis.png",
       "title": "Atherosclerosis 1",
       "cat": "Pathophys",
@@ -252,6 +278,7 @@
       "note": ""
     },
     {
+      "id": "img_sk6obllc",
       "file": "/images/artherosclerosis2.png",
       "title": "Atherosclerosis 2",
       "cat": "Pathophys",
@@ -261,6 +288,7 @@
       "note": ""
     },
     {
+      "id": "img_dicjg8pu",
       "file": "/images/artherosclerosis3.png",
       "title": "Atherosclerosis 3",
       "cat": "Pathophys",
@@ -270,6 +298,7 @@
       "note": ""
     },
     {
+      "id": "img_gr7b3xbs",
       "file": "/images/AS stages.png",
       "title": "AS Stages",
       "cat": "Valve",
@@ -279,6 +308,7 @@
       "note": ""
     },
     {
+      "id": "img_9o5rt9pm",
       "file": "/images/ASE_LV_Size.png",
       "title": "LV Size",
       "cat": "Echo",
@@ -288,6 +318,7 @@
       "note": ""
     },
     {
+      "id": "img_fu8zjl59",
       "file": "/images/atherosclerosis4.png",
       "title": "Atherosclerosis 4",
       "cat": "Pathophys",
@@ -297,6 +328,7 @@
       "note": ""
     },
     {
+      "id": "img_ws7qc901",
       "file": "/images/bifurcation lesion.png",
       "title": "Bifurcation Lesion Algo",
       "cat": "Cath / Angio",
@@ -307,6 +339,7 @@
       "note": ""
     },
     {
+      "id": "img_nu18n33r",
       "file": "/images/bifurcation lesions.jpg",
       "title": "Medina Bifurcation",
       "cat": "Cath / Angio",
@@ -316,6 +349,7 @@
       "note": ""
     },
     {
+      "id": "img_25qhtzhp",
       "file": "/images/BLS Algo.jpg",
       "title": "BLS Algo",
       "cat": "ACLS",
@@ -325,6 +359,7 @@
       "note": ""
     },
     {
+      "id": "img_vsmvqxf7",
       "file": "/images/Cardiac Arrest Survival.jpg",
       "title": "Cardiac Arrest Survival",
       "cat": "ACLS",
@@ -332,6 +367,7 @@
       "note": ""
     },
     {
+      "id": "img_9zm45cks",
       "file": "/images/Chain of Survival.png",
       "title": "Chain of Survival",
       "cat": "ACLS",
@@ -339,6 +375,7 @@
       "note": ""
     },
     {
+      "id": "img_89sk4hf4",
       "file": "/images/coronary projections 1.png",
       "title": "Coronary Projections 1",
       "cat": "Cath / Angio",
@@ -348,6 +385,7 @@
       "note": ""
     },
     {
+      "id": "img_fzwoc9yt",
       "file": "/images/coronary projections 2.jpg",
       "title": "Coronary Projections 2",
       "cat": "Cath / Angio",
@@ -357,6 +395,7 @@
       "note": ""
     },
     {
+      "id": "img_styplw16",
       "file": "/images/cprcoronaryperfusion.jpg",
       "title": "Coronary Perfusion during CPR",
       "cat": "ACLS",
@@ -366,6 +405,7 @@
       "note": ""
     },
     {
+      "id": "img_5qlyd9gi",
       "file": "/images/diastology.jpg",
       "title": "Diastology (old algo)",
       "cat": "Echo",
@@ -376,6 +416,7 @@
       "note": ""
     },
     {
+      "id": "img_lik2hkif",
       "file": "/images/diastology2.jpg",
       "title": "Diastology (NEW algo)",
       "cat": "Echo",
@@ -386,6 +427,7 @@
       "note": ""
     },
     {
+      "id": "img_ycyz63g2",
       "file": "/images/ecgaxis3d.jpg",
       "title": "ECG lead axis",
       "cat": "ECG",
@@ -393,6 +435,7 @@
       "note": ""
     },
     {
+      "id": "img_0d2b90j5",
       "file": "/images/endtidalco2.jpg",
       "title": "End Tidal CO2 (ACLS)",
       "cat": "ACLS",
@@ -400,6 +443,7 @@
       "note": ""
     },
     {
+      "id": "img_a4vqx8id",
       "file": "/images/fibrinolyticcontraindications.jpg",
       "title": "Fibrinolytic Contraindications",
       "cat": "Stroke",
@@ -410,6 +454,7 @@
       "note": ""
     },
     {
+      "id": "img_1eq7v9nk",
       "file": "/images/ftr.jpg",
       "title": "Functional TR",
       "cat": "Echo",
@@ -419,6 +464,7 @@
       "note": ""
     },
     {
+      "id": "img_3k2uq1ud",
       "file": "/images/HCM risk.png",
       "title": "HCM Penetrance",
       "cat": "Pathophys",
@@ -426,6 +472,7 @@
       "note": ""
     },
     {
+      "id": "img_dcqrvnvq",
       "file": "/images/hfpef cmo.png",
       "title": "HFpEF DDx",
       "cat": "HF",
@@ -435,6 +482,7 @@
       "note": ""
     },
     {
+      "id": "img_4klij9du",
       "file": "/images/IABP 1.jpg",
       "title": "IABP 1",
       "cat": "Shock",
@@ -445,6 +493,7 @@
       "note": ""
     },
     {
+      "id": "img_znxfhdi5",
       "file": "/images/IABP 2.jpeg",
       "title": "IABP 2",
       "cat": "Shock",
@@ -455,6 +504,7 @@
       "note": ""
     },
     {
+      "id": "img_8wvl5tjc",
       "file": "/images/Impella 2.jpeg",
       "title": "Impella 2",
       "cat": "Shock",
@@ -465,6 +515,7 @@
       "note": ""
     },
     {
+      "id": "img_mhwz489l",
       "file": "/images/Impella CP RP.jpeg",
       "title": "Imella CP / RP",
       "cat": "Shock",
@@ -475,6 +526,7 @@
       "note": ""
     },
     {
+      "id": "img_tkgq1hek",
       "file": "/images/Impella Device Config.png",
       "title": "Impella Configuration",
       "cat": "Shock",
@@ -485,6 +537,7 @@
       "note": ""
     },
     {
+      "id": "img_omc2io22",
       "file": "/images/Impella vs IABP.jpg",
       "title": "Impella vs IABP",
       "cat": "Shock",
@@ -496,6 +549,7 @@
       "note": ""
     },
     {
+      "id": "img_twm43vmd",
       "file": "/images/Impella.jpg",
       "title": "Impella",
       "cat": "Shock",
@@ -506,6 +560,7 @@
       "note": ""
     },
     {
+      "id": "img_fc8b2ndn",
       "file": "/images/inflammation arrhythmias.png",
       "title": "Inflammation Arrhythmogenicity",
       "cat": "Pathophys",
@@ -513,6 +568,7 @@
       "note": ""
     },
     {
+      "id": "img_2ceezsdh",
       "file": "/images/ischemiasymptoms.jpg",
       "title": "Ischemia Symptoms",
       "cat": "Cath / Angio",
@@ -522,6 +578,7 @@
       "note": ""
     },
     {
+      "id": "img_c27hm2wb",
       "file": "/images/LASize.png",
       "title": "LA Size",
       "cat": "Echo",
@@ -531,6 +588,7 @@
       "note": ""
     },
     {
+      "id": "img_gvye6ois",
       "file": "/images/Lefevre bifurcation.jpeg",
       "title": "Lefevre Bifurcation",
       "cat": "Cath / Angio",
@@ -540,6 +598,7 @@
       "note": ""
     },
     {
+      "id": "img_s46ffyyw",
       "file": "/images/LFLG AS.png",
       "title": "LFLG AS",
       "cat": "Valve",
@@ -550,6 +609,7 @@
       "note": ""
     },
     {
+      "id": "img_3bnvq95l",
       "file": "/images/lvhypertrophy.jpg",
       "title": "LV Hypertrophy",
       "cat": "Echo",
@@ -559,6 +619,7 @@
       "note": ""
     },
     {
+      "id": "img_syltj9ev",
       "file": "/images/MCS types.png",
       "title": "MCS Options",
       "cat": "Shock",
@@ -568,6 +629,7 @@
       "note": ""
     },
     {
+      "id": "img_hedu1fdq",
       "file": "/images/MitralProsthesis.png",
       "title": "Mitral Prosthesis",
       "cat": "Echo",
@@ -578,6 +640,7 @@
       "note": ""
     },
     {
+      "id": "img_mnbbbfq1",
       "file": "/images/MitralRegurgitationAlgo.jpg",
       "title": "MR Grading Algorithm",
       "cat": "Echo",
@@ -588,6 +651,7 @@
       "note": ""
     },
     {
+      "id": "img_wudrbz9n",
       "file": "/images/Mitralregurgitationtable.png",
       "title": "MR Grading Table",
       "cat": "Echo",
@@ -598,6 +662,7 @@
       "note": ""
     },
     {
+      "id": "img_z3f1vzw8",
       "file": "/images/MitralStenosis.jpg",
       "title": "Mitral Stenosis",
       "cat": "Echo",
@@ -608,6 +673,7 @@
       "note": ""
     },
     {
+      "id": "img_jwo2opxx",
       "file": "/images/morphine in acs.jpg",
       "title": "Morphine in ACS",
       "cat": "ACLS",
@@ -617,6 +683,7 @@
       "note": ""
     },
     {
+      "id": "img_3aftjd2p",
       "file": "/images/Neuroprognostication.jpg",
       "title": "Neuroprognostication (ACLS) 1",
       "cat": "ACLS",
@@ -624,6 +691,7 @@
       "note": ""
     },
     {
+      "id": "img_t9joefvn",
       "file": "/images/Neuroprognostication2.jpg",
       "title": "Neuroprognostication (ACLS) 2",
       "cat": "ACLS",
@@ -631,6 +699,7 @@
       "note": ""
     },
     {
+      "id": "img_cwo3skzi",
       "file": "/images/obesity afib.jpg",
       "title": "AFib Obesity",
       "cat": "Pathophys",
@@ -640,6 +709,7 @@
       "note": ""
     },
     {
+      "id": "img_qkn9jyx2",
       "file": "/images/pci1.gif",
       "title": "PCI Example",
       "cat": "Cath / Angio",
@@ -649,6 +719,7 @@
       "note": ""
     },
     {
+      "id": "img_0ul9vlfb",
       "file": "/images/pci2.jpeg",
       "title": "PCI Example",
       "cat": "Cath / Angio",
@@ -658,6 +729,7 @@
       "note": ""
     },
     {
+      "id": "img_1f66rjao",
       "file": "/images/phalgo.jpg",
       "title": "PH Dx Algorithm",
       "cat": "HemoDyn",
@@ -668,6 +740,7 @@
       "note": ""
     },
     {
+      "id": "img_00gcxn8g",
       "file": "/images/pregnancymeds.jpg",
       "title": "Pregnancy Meds",
       "cat": "Preg/Cong",
@@ -677,6 +750,7 @@
       "note": ""
     },
     {
+      "id": "img_n50gzdw2",
       "file": "/images/Prosthetic AV stenosis.png",
       "title": "Prosthetic AV Stenosis",
       "cat": "Echo",
@@ -687,6 +761,7 @@
       "note": ""
     },
     {
+      "id": "img_g3rhnlgy",
       "file": "/images/ProstheticAR.png",
       "title": "Prosthetic AV Regurgitation",
       "cat": "Echo",
@@ -696,6 +771,7 @@
       "note": ""
     },
     {
+      "id": "img_ptq76n14",
       "file": "/images/ProstheticAV.png",
       "title": "Prosthetic AV Stenosis",
       "cat": "Echo",
@@ -705,6 +781,7 @@
       "note": ""
     },
     {
+      "id": "img_2p543cqr",
       "file": "/images/ProstheticMR.png",
       "title": "Prosthetic MV Algo",
       "cat": "Echo",
@@ -714,6 +791,7 @@
       "note": ""
     },
     {
+      "id": "img_hjspjyy6",
       "file": "/images/ProstheticMR2.png",
       "title": "Prostehtic MV Table",
       "cat": "Echo",
@@ -723,6 +801,7 @@
       "note": ""
     },
     {
+      "id": "img_seqvgbhg",
       "file": "/images/ProstheticPPM.png",
       "title": "Prosthetic PPM",
       "cat": "Echo",
@@ -730,6 +809,7 @@
       "note": ""
     },
     {
+      "id": "img_q7dztuq4",
       "file": "/images/PulmonicRegurgitation.jpg",
       "title": "Pulmonic Regurgitation",
       "cat": "Echo",
@@ -739,6 +819,7 @@
       "note": ""
     },
     {
+      "id": "img_tfacyw4y",
       "file": "/images/PVI ablation.jpg",
       "title": "PVI Ablation",
       "cat": "EP",
@@ -748,6 +829,7 @@
       "note": ""
     },
     {
+      "id": "img_yutu450s",
       "file": "/images/qtc prolongation.png",
       "title": "QTc Prolongation",
       "cat": "Pathophys",
@@ -755,6 +837,7 @@
       "note": ""
     },
     {
+      "id": "img_wouuvzfu",
       "file": "/images/rap.png",
       "title": "RAP",
       "cat": "Echo",
@@ -764,6 +847,7 @@
       "note": ""
     },
     {
+      "id": "img_ap3cvskw",
       "file": "/images/rapalgo.jpg",
       "title": "RAP Quantification",
       "cat": "Echo",
@@ -773,6 +857,7 @@
       "note": ""
     },
     {
+      "id": "img_2pem173a",
       "file": "/images/RASize.png",
       "title": "RA Size",
       "cat": "Echo",
@@ -782,6 +867,7 @@
       "note": ""
     },
     {
+      "id": "img_26421nzr",
       "file": "/images/RHC Waveforms.jpg",
       "title": "RHC Waveforms",
       "cat": "HemoDyn",
@@ -791,6 +877,7 @@
       "note": ""
     },
     {
+      "id": "img_v6osgd9l",
       "file": "/images/rhfunction.jpg",
       "title": "RH Function",
       "cat": "HF",
@@ -800,6 +887,7 @@
       "note": ""
     },
     {
+      "id": "img_cglozrej",
       "file": "/images/RVFunction.png",
       "title": "RA Function",
       "cat": "Echo",
@@ -809,6 +897,7 @@
       "note": ""
     },
     {
+      "id": "img_5q0cbzwv",
       "file": "/images/RVSize.png",
       "title": "RV Size",
       "cat": "Echo",
@@ -818,6 +907,7 @@
       "note": ""
     },
     {
+      "id": "img_24sgytqi",
       "file": "/images/SCAD.jpeg",
       "title": "SCAD",
       "cat": "Cath / Angio",
@@ -827,6 +917,7 @@
       "note": ""
     },
     {
+      "id": "img_gu40z5aw",
       "file": "/images/SCAI Stages.png",
       "title": "SCAI Stages",
       "cat": "Shock",
@@ -834,6 +925,7 @@
       "note": ""
     },
     {
+      "id": "img_ukcthrlj",
       "file": "/images/standard coronary views.jpeg",
       "title": "Coronary Projections 3",
       "cat": "Cath / Angio",
@@ -843,6 +935,7 @@
       "note": ""
     },
     {
+      "id": "img_dyyimv13",
       "file": "/images/statin dosing.png",
       "title": "Statin Dosing",
       "cat": "Lipids",
@@ -853,6 +946,7 @@
       "note": ""
     },
     {
+      "id": "img_11wyss2y",
       "file": "/images/statin intolerance.png",
       "title": "Statin Intolerance Pathway",
       "cat": "Lipids",
@@ -863,6 +957,7 @@
       "note": ""
     },
     {
+      "id": "img_t44bklfq",
       "file": "/images/statin primary prevention.jpg",
       "title": "Statin Primary Prevention",
       "cat": "Lipids",
@@ -873,6 +968,7 @@
       "note": ""
     },
     {
+      "id": "img_9rc9qqah",
       "file": "/images/statin secondary prevention.jpg",
       "title": "Statin Secondary Prevention",
       "cat": "Lipids",
@@ -883,6 +979,7 @@
       "note": ""
     },
     {
+      "id": "img_2ldfu2eo",
       "file": "/images/stelevation.jpg",
       "title": "ST Elevation",
       "cat": "EP",
@@ -892,6 +989,7 @@
       "note": ""
     },
     {
+      "id": "img_qdt65ybd",
       "file": "/images/stent vs bypass.gif",
       "title": "PCI vs CABG Example",
       "cat": "Cath / Angio",
@@ -901,6 +999,7 @@
       "note": ""
     },
     {
+      "id": "img_i1ek2zyk",
       "file": "/images/stroke center levels.png",
       "title": "Stroke Centers",
       "cat": "Stroke",
@@ -908,6 +1007,7 @@
       "note": ""
     },
     {
+      "id": "img_0o391abl",
       "file": "/images/Stroke HTN Management.png",
       "title": "Stroke HTN Management",
       "cat": "Stroke",
@@ -917,6 +1017,7 @@
       "note": ""
     },
     {
+      "id": "img_l9yukmh2",
       "file": "/images/stroke thrombolytics.png",
       "title": "Thrombolytics",
       "cat": "Stroke",
@@ -926,6 +1027,7 @@
       "note": ""
     },
     {
+      "id": "img_oczwawp1",
       "file": "/images/subcu ICD indications.png",
       "title": "Subcutaneous ICD indications",
       "cat": "EP",
@@ -935,6 +1037,7 @@
       "note": ""
     },
     {
+      "id": "img_6ghbw14f",
       "file": "/images/TEE Probe Positioning.png",
       "title": "TEE Probe Positioning",
       "cat": "Echo",
@@ -942,6 +1045,7 @@
       "note": ""
     },
     {
+      "id": "img_f7sp9vkv",
       "file": "/images/TEE views 1.jpg",
       "title": "TEE Views 1",
       "cat": "Echo",
@@ -949,6 +1053,7 @@
       "note": ""
     },
     {
+      "id": "img_b2louc9b",
       "file": "/images/transcutaneouspacing.jpg",
       "title": "Transcutaneous Pacing",
       "cat": "EP",
@@ -958,6 +1063,7 @@
       "note": ""
     },
     {
+      "id": "img_8wcsyac9",
       "file": "/images/TricuspidProsthesis.png",
       "title": "TV Prosthesis",
       "cat": "Echo",
@@ -967,6 +1073,7 @@
       "note": ""
     },
     {
+      "id": "img_dtyw32vl",
       "file": "/images/TricuspidRegurgitation.jpg",
       "title": "Tricuspid Regurgitation",
       "cat": "Echo",
@@ -976,6 +1083,7 @@
       "note": ""
     },
     {
+      "id": "img_65mr1fza",
       "file": "/images/TricuspidStenosis.jpg",
       "title": "Tricuspid Stenosis",
       "cat": "Echo",
@@ -985,6 +1093,7 @@
       "note": ""
     },
     {
+      "id": "img_vo0sl3pm",
       "file": "/images/TRtable.png",
       "title": "TR Quantification Table",
       "cat": "Echo",
@@ -994,6 +1103,7 @@
       "note": ""
     },
     {
+      "id": "img_7b97g1kd",
       "file": "/images/tteviews.jpg",
       "title": "TTE Views",
       "cat": "Echo",
@@ -1001,6 +1111,7 @@
       "note": ""
     },
     {
+      "id": "img_z9u6oly9",
       "file": "/images/uterine displacement.png",
       "title": "Uterine Displacement Maneuver",
       "cat": "Shock",
@@ -1010,6 +1121,7 @@
       "note": ""
     },
     {
+      "id": "img_47ed6lnr",
       "file": "/images/vadconfigurations.jpg",
       "title": "VAD Configurations",
       "cat": "HF",
@@ -1019,6 +1131,7 @@
       "note": ""
     },
     {
+      "id": "img_bzlj6lq7",
       "file": "/images/vadexample.jpg",
       "title": "VAD Example",
       "cat": "HF",
@@ -1028,6 +1141,7 @@
       "note": ""
     },
     {
+      "id": "img_luznrou5",
       "file": "/images/vascularwall.jpg",
       "title": "Vascular Wall",
       "cat": "Anatomy",
@@ -1035,6 +1149,7 @@
       "note": ""
     },
     {
+      "id": "img_vhyjkitk",
       "file": "/images/vasoreactivity testing.png",
       "title": "Vasoreactivity Testing",
       "cat": "Cath / Angio",
@@ -1044,6 +1159,7 @@
       "note": ""
     },
     {
+      "id": "img_znllqbkf",
       "file": "/images/vfsurvival.jpg",
       "title": "VF Survival",
       "cat": "ACLS",
@@ -1053,6 +1169,7 @@
       "note": ""
     },
     {
+      "id": "img_qahxno6p",
       "file": "/images/wallsegment1.jpg",
       "title": "Wall Segments 1",
       "cat": "Echo",
@@ -1062,6 +1179,7 @@
       "note": ""
     },
     {
+      "id": "img_q2ohokce",
       "file": "/images/wallsegment2.jpg",
       "title": "Wall Segments 2",
       "cat": "Echo",
@@ -1071,6 +1189,7 @@
       "note": ""
     },
     {
+      "id": "img_c1236wce",
       "file": "/images/wallsegment3.jpg",
       "title": "Wall Segments 3",
       "cat": "Echo",
@@ -1080,6 +1199,7 @@
       "note": ""
     },
     {
+      "id": "img_5vtm3652",
       "file": "/images/gdmt-in-ckd-esrd.jpg",
       "title": "GDMT in CKD/ESRD",
       "cat": "HF",
@@ -1090,6 +1210,7 @@
       "note": ""
     },
     {
+      "id": "img_2u7pq267",
       "file": "/images/chagas-cardiomyopathy.jpg",
       "title": "Chagas Cardiomyopathy",
       "cat": "HF",
@@ -1097,6 +1218,7 @@
       "note": ""
     },
     {
+      "id": "img_98ygr745",
       "file": "/images/pvc-localization.jpg",
       "title": "PVC localization",
       "cat": "ECG",
@@ -1104,6 +1226,7 @@
       "note": ""
     },
     {
+      "id": "img_z91vtozb",
       "file": "/images/ppm-lead-examples.jpg",
       "title": "PPM Lead examples",
       "cat": "EP",
@@ -1113,6 +1236,7 @@
       "note": ""
     },
     {
+      "id": "img_4fgcmo0i",
       "file": "/images/ppm-magnet-function.jpg",
       "title": "PPM Magnet Function",
       "cat": "EP",
@@ -1123,6 +1247,7 @@
       "note": ""
     },
     {
+      "id": "img_58nl3hk6",
       "file": "/images/tvp-summary.jpg",
       "title": "TVP Summary",
       "cat": "EP",
@@ -1132,6 +1257,7 @@
       "note": ""
     },
     {
+      "id": "img_t7p57meb",
       "file": "/images/cath-projection-axis.jpg",
       "title": "Cath Projection Axis",
       "cat": "Cath / Angio",
@@ -1141,6 +1267,7 @@
       "note": ""
     },
     {
+      "id": "img_9fjalnk7",
       "file": "/images/antihypertensives-in-pregnancy.jpg",
       "title": "Antihypertensives in Pregnancy",
       "cat": "Preg/Cong",
@@ -1151,6 +1278,7 @@
       "note": ""
     },
     {
+      "id": "img_qsrk8m94",
       "file": "/images/hf-phenotypes.jpg",
       "title": "HF phenotypes",
       "cat": "HF",
@@ -1162,6 +1290,7 @@
       "note": ""
     },
     {
+      "id": "img_pl1ybtyw",
       "file": "/images/pre-op-cardiovascular-risk-stratification-evaluation.jpg",
       "title": "Pre-op Cardiovascular Risk Stratification / Evaluation",
       "cat": "Pathophys",
@@ -1171,6 +1300,7 @@
       "note": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000001285#sec-7"
     },
     {
+      "id": "img_wj44y9ar",
       "file": "/images/raas-inhibition.jpg",
       "title": "RAAS Inhibition",
       "cat": "HF",
@@ -1180,6 +1310,7 @@
       "note": "https://www.ccjm.org/content/92/10/619"
     },
     {
+      "id": "img_vz4xp49x",
       "file": "/images/rhc-hemodynamics.jpg",
       "title": "RHC Hemodynamics",
       "cat": "Cath / Angio",
@@ -1192,6 +1323,7 @@
       "note": ""
     },
     {
+      "id": "img_fh6n3a1p",
       "file": "/images/antiplatelet-medications-moa.jpg",
       "title": "Antiplatelet Medications MOA",
       "cat": "Pathophys",
@@ -1202,6 +1334,7 @@
       "note": ""
     },
     {
+      "id": "img_vyulydtp",
       "file": "/images/wall-segments-on-tte.jpg",
       "title": "Wall Segments on TTE",
       "cat": "Echo",
@@ -1211,6 +1344,7 @@
       "note": ""
     },
     {
+      "id": "img_d8u43qfn",
       "file": "/images/bicuspid-av-sievers.jpg",
       "title": "Bicuspid AV Sievers",
       "cat": "Pathophys",
@@ -1220,6 +1354,7 @@
       "note": ""
     },
     {
+      "id": "img_zrejmtlm",
       "file": "/images/atrial-tachycardia-foci-localization.jpg",
       "title": "Atrial Tachycardia Foci Localization",
       "cat": "EP",
@@ -1229,6 +1364,7 @@
       "note": ""
     },
     {
+      "id": "img_d42ci9u6",
       "file": "/images/stress-test-modalities.jpg",
       "title": "Stress Test Modalities",
       "cat": "Pathophys",
@@ -1239,6 +1375,7 @@
       "note": ""
     },
     {
+      "id": "img_uyyvh78k",
       "file": "/images/stress-test-modality-contraindications.jpg",
       "title": "Stress Test Modality Contraindications",
       "cat": "Pathophys",
@@ -1249,6 +1386,7 @@
       "note": ""
     },
     {
+      "id": "img_su5qca1u",
       "file": "/images/acute-chest-pain-evaluation.jpg",
       "title": "Acute Chest Pain Evaluation",
       "cat": "Pathophys",
