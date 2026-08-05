@@ -432,7 +432,8 @@ document.getElementById("publishBtn").onclick = async () => {
 
     const { sha: latestSha, content: latestContent } = await getFile(IMAGES_JSON_PATH);
     const latestJson = JSON.parse(latestContent);
-    latestJson.images.push({ file: filename, title, cat, tags: [...selectedTags], note });
+    const newId = "img_" + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => "0123456789abcdefghijklmnopqrstuvwxyz"[b % 36]).join("");
+    latestJson.images.push({ id: newId, file: filename, title, cat, tags: [...selectedTags], note });
     const newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(latestJson, null, 2))));
     await putFile(IMAGES_JSON_PATH, newContentB64, `Add to images.json: ${title}`, latestSha);
 
