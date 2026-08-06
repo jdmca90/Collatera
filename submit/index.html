@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Submit — Collatera</title>
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<script>window.COLLATERA_SECTION = "Submit";</script>
+<script src="/assets/site.js"></script>
+
+<main class="sub-main">
+  <!-- signed out -->
+  <div id="subOut" class="sub-card" hidden>
+    <h2 class="sub-h">Sign in to submit</h2>
+    <p class="sub-p">Submissions are reviewed before anything is published.
+       Use the account button in the header to sign in.</p>
+  </div>
+
+  <!-- signed in -->
+  <div id="subIn" hidden>
+    <div class="sub-card">
+      <h2 class="sub-h">Submit to the library</h2>
+
+      <label class="sub-lbl" for="subKind">What are you submitting?</label>
+      <select id="subKind">
+        <option value="image">Reference image</option>
+        <option value="deck" disabled>Slide deck (coming soon)</option>
+        <option value="resource" disabled>Resource link (coming soon)</option>
+        <option value="guideline" disabled>Guideline link (coming soon)</option>
+      </select>
+
+      <label class="sub-lbl" for="subFile">Image file <span class="sub-req">required</span></label>
+      <input id="subFile" type="file" accept="image/*">
+      <div id="subPreviewWrap" class="sub-preview" hidden><img id="subPreview" alt="Preview"></div>
+
+      <label class="sub-lbl" for="subTitle">Title <span class="sub-req">required</span></label>
+      <input id="subTitle" type="text" maxlength="120" placeholder="e.g. Mitral Valve Anatomy">
+
+      <label class="sub-lbl" for="subCat">Category <span class="sub-req">required</span></label>
+      <select id="subCat"><option value="">Choose a category…</option></select>
+
+      <label class="sub-lbl">Tags <span class="sub-req">at least one</span></label>
+      <div id="subTagRow" class="sub-tags"></div>
+      <div class="sub-newtag">
+        <input id="subNewTag" type="text" maxlength="28" placeholder="Add a tag and press Enter">
+      </div>
+      <div id="subChosen" class="sub-chosen"></div>
+
+      <label class="sub-lbl" for="subNote">Comments <span class="sub-opt">optional</span></label>
+      <textarea id="subNote" rows="3" maxlength="600"
+        placeholder="Anything I should know — source, context, why it's useful"></textarea>
+
+      <button id="subSend" class="sub-btn" type="button">Submit for review</button>
+      <div id="subMsg" class="sub-msg" role="status"></div>
+    </div>
+
+    <div class="sub-card">
+      <h2 class="sub-h">Your submissions</h2>
+      <div id="subList" class="sub-list">Loading…</div>
+    </div>
+  </div>
+</main>
+
+<style>
+.sub-main{max-width:760px;margin:22px auto 60px;padding:0 18px}
+.sub-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
+.sub-h{font-size:20px;margin-bottom:6px}
+.sub-p{color:var(--muted);font-size:.95em}
+.sub-lbl{display:block;margin:16px 0 6px;font-size:.88em;color:var(--muted)}
+.sub-req{color:var(--accent-deep);font-size:.92em}
+.sub-opt{opacity:.7;font-size:.92em}
+.sub-main input[type=text],.sub-main select,.sub-main textarea,.sub-main input[type=file]{
+  width:100%;box-sizing:border-box;padding:.6em .7em;border:1px solid var(--border);
+  border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.sub-main textarea{resize:vertical}
+.sub-preview{margin-top:10px}
+.sub-preview img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--border)}
+.sub-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.sub-tag{border:1px solid var(--border);background:var(--bg);color:var(--muted);
+  border-radius:999px;padding:.28em .8em;font:inherit;font-size:.88em;cursor:pointer}
+.sub-tag.on{background:var(--accent);border-color:var(--accent);color:var(--pill-ink);font-weight:600}
+.sub-chosen{font-size:.85em;color:var(--muted);min-height:1.2em;margin-top:6px}
+.sub-btn{margin-top:20px;width:100%;padding:.75em;border:none;border-radius:10px;
+  background:var(--accent);color:var(--pill-ink);font:inherit;font-weight:700;cursor:pointer}
+.sub-btn:disabled{opacity:.6;cursor:default}
+.sub-msg{margin-top:10px;font-size:.9em;min-height:1.2em}
+.sub-msg.ok{color:var(--accent-deep)} .sub-msg.err{color:#B23B3B}
+.sub-list{font-size:.92em}
+.sub-row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+  padding:.5em 0;border-bottom:1px solid var(--border)}
+.sub-row:last-child{border-bottom:none}
+.sub-status{font-size:.85em;padding:.15em .7em;border-radius:999px;white-space:nowrap}
+.st-pending{background:var(--accent-tint);color:var(--accent-deep)}
+.st-approved{background:#DFF3E4;color:#1D7A4C}
+.st-rejected{background:#F7E0E0;color:#B23B3B}
+.sub-why{font-size:.85em;color:var(--muted);margin-top:.2em}
+</style>
+
+<script>
+const KNOWN_CATS = [];
+let ALL_TAGS = [], chosen = new Set(), ME = null;
+
+const $ = id => document.getElementById(id);
+function msg(t, ok){ const m=$("subMsg"); m.textContent=t; m.className="sub-msg "+(ok?"ok":"err"); }
+
+/* preselect the kind from ?kind= when arriving from a section */
+(function presetKind(){
+  const k = new URLSearchParams(location.search).get("kind");
+  if (k) { const el=$("subKind"); if ([...el.options].some(o=>o.value===k && !o.disabled)) el.value=k; }
+})();
+
+/* pull categories + existing tags from the live library */
+async function loadLibraryMeta(){
+  try{
+    const r = await fetch("/data/images.json");
+    const d = await r.json();
+    (d.categories||[]).forEach(c=>{
+      const o=document.createElement("option"); o.value=c; o.textContent=c; $("subCat").appendChild(o);
+    });
+    ALL_TAGS = [...new Set((d.images||[]).flatMap(i=>i.tags||[]))].sort((a,b)=>a.localeCompare(b));
+    renderTagRow();
+  }catch(e){ msg("Couldn't load categories — "+e.message, false); }
+}
+function renderTagRow(){
+  const row=$("subTagRow"); row.innerHTML="";
+  ALL_TAGS.forEach(t=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="sub-tag"+(chosen.has(t)?" on":""); b.textContent=t;
+    b.onclick=()=>{ chosen.has(t)?chosen.delete(t):chosen.add(t); renderTagRow(); renderChosen(); };
+    row.appendChild(b);
+  });
+}
+function renderChosen(){
+  $("subChosen").textContent = chosen.size ? "Selected: "+[...chosen].join(", ") : "No tags selected yet.";
+}
+$("subNewTag").addEventListener("keydown",e=>{
+  if(e.key!=="Enter") return;
+  e.preventDefault();
+  const v=e.target.value.trim(); if(!v) return;
+  if(!ALL_TAGS.includes(v)) ALL_TAGS.push(v);
+  chosen.add(v); e.target.value=""; renderTagRow(); renderChosen();
+});
+
+/* live preview */
+$("subFile").addEventListener("change",e=>{
+  const f=e.target.files[0];
+  if(!f){ $("subPreviewWrap").hidden=true; return; }
+  $("subPreview").src=URL.createObjectURL(f); $("subPreviewWrap").hidden=false;
+});
+
+/* submit */
+$("subSend").onclick = async () => {
+  const sb = window.sb; if(!sb || !ME) return;
+  const file=$("subFile").files[0];
+  const title=$("subTitle").value.trim();
+  const cat=$("subCat").value;
+  const note=$("subNote").value.trim();
+  if(!file)  return msg("Choose an image file.", false);
+  if(!title) return msg("A title is required.", false);
+  if(!cat)   return msg("Choose a category.", false);
+  if(!chosen.size) return msg("Add at least one tag.", false);
+  if(file.size > 12*1024*1024) return msg("That file is larger than 12 MB — please resize it first.", false);
+
+  $("subSend").disabled=true; msg("Uploading…", true);
+  const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const path=`${ME}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const up = await sb.storage.from("submissions").upload(path, file, { upsert:false });
+  if(up.error){ $("subSend").disabled=false; return msg("Upload failed — "+up.error.message, false); }
+
+  const ins = await sb.from("submissions").insert({
+    user_id: ME, kind: $("subKind").value, storage_path: path,
+    title, cat, tags:[...chosen], note: note||null
+  });
+  $("subSend").disabled=false;
+  if(ins.error) return msg("Couldn't record the submission — "+ins.error.message, false);
+
+  msg("Submitted. It'll appear below as pending until reviewed.", true);
+  $("subFile").value=""; $("subTitle").value=""; $("subCat").value="";
+  $("subNote").value=""; chosen=new Set(); $("subPreviewWrap").hidden=true;
+  renderTagRow(); renderChosen(); loadMine();
+};
+
+/* the submitter's own queue */
+async function loadMine(){
+  const sb=window.sb; if(!sb||!ME) return;
+  const { data, error } = await sb.from("submissions")
+    .select("title, cat, status, reject_reason, reject_note, created_at")
+    .order("created_at",{ascending:false});
+  const box=$("subList");
+  if(error){ box.textContent="Couldn't load your submissions."; return; }
+  if(!data.length){ box.textContent="Nothing submitted yet."; return; }
+  box.innerHTML="";
+  data.forEach(r=>{
+    const row=document.createElement("div"); row.className="sub-row";
+    const why = r.status==="rejected" && (r.reject_reason||r.reject_note)
+      ? `<div class="sub-why">${[r.reject_reason,r.reject_note].filter(Boolean).join(" — ")}</div>` : "";
+    row.innerHTML=`<div><strong>${r.title}</strong>
+        <div class="sub-why">${r.cat} · ${new Date(r.created_at).toLocaleDateString()}</div>${why}</div>
+      <span class="sub-status st-${r.status}">${r.status}</span>`;
+    box.appendChild(row);
+  });
+}
+
+/* boot */
+(function init(){
+  if(!window.sbReady){ setTimeout(init,50); return; }
+  window.sbReady.then(async sb=>{
+    const paint = async () => {
+      const { data:{ session } } = await sb.auth.getSession();
+      ME = session?.user?.id || null;
+      $("subIn").hidden = !ME; $("subOut").hidden = !!ME;
+      if(ME){ await loadLibraryMeta(); renderChosen(); loadMine(); }
+    };
+    await paint();
+    sb.auth.onAuthStateChange(paint);
+  });
+})();
+</script>
+</body>
+</html>
