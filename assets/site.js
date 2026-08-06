@@ -165,10 +165,10 @@ window.CollateraViews = {
   const style = document.createElement("style");
   style.textContent = `
     .menu-btn.is-logo{padding:.15em;line-height:0;display:inline-flex;align-items:center;justify-content:center}
-    .menu-logo{width:2.1em;height:2.1em;border-radius:50%;display:block}
+    .menu-logo{width:2.5em;height:2.5em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
-      background:var(--acct,#1B5E85);color:#fff;border:2px solid var(--acct-edge,#FAD8E9);font:inherit;line-height:1.2;
+      background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge,#FAD8E9);font:inherit;line-height:1.2;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
       max-width:15em;transition:border-radius .12s, width .12s}
     .cauth-pill:hover{filter:brightness(1.08)}
@@ -190,7 +190,7 @@ window.CollateraViews = {
       white-space:nowrap}
 
     .cauth-panel{position:fixed;z-index:1200;
-      width:min(94vw,340px);background:var(--acct-open,#0F3A54);color:#fff;
+      width:min(94vw,340px);background:var(--acct-open,#0F3A54);color:var(--acct-ink,#fff);
       border:7px solid var(--acct-edge,#FAD8E9);border-top:none;
       border-radius:0 0 16px 16px;padding:.7rem 1.1rem .6rem;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 16px 44px rgba(0,0,0,.34);
@@ -212,13 +212,14 @@ window.CollateraViews = {
     .cauth-inlbl{font-size:.95em;color:var(--acct-lbl,#F0B8D4);text-align:right;
       letter-spacing:.01em;line-height:1.35}
     .cauth-panel input,.cauth-panel textarea{width:100%;min-width:0;box-sizing:border-box;
-      background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.32);
+      background:var(--acct-field,rgba(255,255,255,.13));
+      border:1px solid var(--acct-line,rgba(255,255,255,.32));
       color:var(--acct-val,#8ECBF2);border-radius:8px;padding:.34em .5em;
       font:inherit;font-size:1.02em}
     .cauth-panel #cauthPos{font-weight:700}
     .cauth-panel textarea{resize:vertical;min-height:1.4em;line-height:1.35}
     .cauth-panel input::placeholder,.cauth-panel textarea::placeholder{
-      color:rgba(255,255,255,.5);font-weight:400}
+      color:var(--acct-mute,rgba(255,255,255,.5));font-weight:400}
     .cauth-panel input[readonly],.cauth-panel textarea[readonly]{background:transparent;
       border-color:transparent;padding:0;cursor:default;resize:none;height:auto;min-height:0}
     .cauth-edit{display:none}
@@ -229,16 +230,16 @@ window.CollateraViews = {
     .cauth-panel textarea{resize:vertical;min-height:4.2em}
     .cauth-count{font-size:.72em;color:rgba(255,255,255,.7);text-align:right;margin-top:.15rem}
     .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
-      background:var(--acct-lbl,#F0B8D4);color:#0F3A54;font:inherit;font-weight:700;cursor:pointer}
+      background:var(--acct-lbl,#F0B8D4);color:var(--acct-open,#0F3A54);font:inherit;font-weight:700;cursor:pointer}
     .cauth-save:disabled{opacity:.6;cursor:default}
     .cauth-rule{border:none;height:1px;margin:.55rem 0 .35rem;
       background:linear-gradient(to right,transparent,var(--acct-edge,#FAD8E9),transparent);
       opacity:.75}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
       color:var(--acct-val,#8ECBF2);padding:.22em .5em;cursor:pointer;text-decoration:none;border-radius:6px;font-size:.9em}
-    .cauth-link:hover{background:rgba(255,255,255,.14);color:#fff}
+    .cauth-link:hover{background:var(--acct-hover,rgba(255,255,255,.14));color:var(--acct-ink,#fff)}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
-    .cauth-note.ok{color:#BFEBC8} .cauth-note.err{color:#FFC9C9}
+    .cauth-note.ok{color:var(--acct-ok,#BFEBC8)} .cauth-note.err{color:var(--acct-err,#FFC9C9)}
 
     .cauth-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
       align-items:center;justify-content:center;z-index:1300}
