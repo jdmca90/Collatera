@@ -168,13 +168,19 @@ window.CollateraViews = {
     .menu-logo{width:2.1em;height:2.1em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
-      background:var(--acct,#1B5E85);color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
+      background:var(--acct,#1B5E85);color:#fff;border:7px solid var(--acct-edge,#FAD8E9);font:inherit;line-height:1.2;
       max-width:15em;box-shadow:0 2px 8px rgba(0,0,0,.22);transition:border-radius .12s, width .12s}
     .cauth-pill:hover{filter:brightness(1.08)}
     .cauth-pill:focus-visible{outline:2px solid var(--accent-deep,#1C6390);outline-offset:3px}
     .cauth-pill.is-open{border-bottom-left-radius:0;border-bottom-right-radius:0;
       border-bottom-color:transparent;box-shadow:none;max-width:none;
-      background:var(--acct-open,#0F3A54)}
+      background:var(--acct-open,#0F3A54);
+      display:grid;grid-template-columns:4.4em 1fr;column-gap:.5em;
+      align-items:baseline;padding:.6em 1.1rem .55em;text-align:left}
+    .cauth-pill.is-open .cauth-pill-lead{font-style:normal;font-size:.85em;
+      color:var(--acct-user,#F49E9E);text-align:right;opacity:1}
+    .cauth-pill.is-open .cauth-pill-email{font-size:.95em;font-weight:700;
+      color:var(--acct-val,#8ECBF2);max-width:none;text-align:left}
     .cauth-pill-lead{font-size:.78em;font-style:italic;opacity:.95;white-space:nowrap}
     .cauth-pill-email{font-size:.84em;max-width:16em;overflow:hidden;text-overflow:ellipsis;
       white-space:nowrap}
@@ -183,26 +189,35 @@ window.CollateraViews = {
 
     .cauth-panel{position:fixed;z-index:1200;
       width:min(94vw,340px);background:var(--acct-open,#0F3A54);color:#fff;
-      border:2px solid #fff;border-top:none;
-      border-radius:0 0 14px 14px;padding:.85rem 1.1rem 1rem;
+      border:7px solid var(--acct-edge,#FAD8E9);border-top:none;
+      border-radius:0 0 16px 16px;padding:.85rem 1.1rem 1rem;
       box-shadow:0 16px 44px rgba(0,0,0,.34);display:none;text-align:left}
     .cauth-panel.open{display:block}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
+    .cauth-avatarwrap{display:flex;justify-content:center;margin:.15rem 0 .6rem}
+    .cauth-avatar{width:66px;height:66px;border-radius:50%;
+      border:3px solid var(--acct-edge,#FAD8E9);background:rgba(255,255,255,.10);
+      background-size:cover;background-position:center;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.5rem;color:var(--acct-edge,#FAD8E9)}
+    .cauth-avatar::after{content:"\\1F464";opacity:.55}
+    .cauth-avatar.has-img::after{content:""}
     .cauth-row{display:grid;grid-template-columns:4.4em 1fr;align-items:baseline;
       column-gap:.5em;margin:.45rem 0}
     .cauth-row-bio{align-items:start}
+    .cauth-row-bio .cauth-inlbl{padding-top:.1em}
     .cauth-inlbl{font-size:.85em;color:var(--acct-lbl,#F0B8D4);text-align:right;
-      letter-spacing:.01em}
+      letter-spacing:.01em;line-height:1.35}
     .cauth-panel input,.cauth-panel textarea{width:100%;min-width:0;box-sizing:border-box;
       background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.32);
       color:var(--acct-val,#8ECBF2);border-radius:8px;padding:.34em .5em;
       font:inherit;font-size:.92em}
     .cauth-panel #cauthPos{font-weight:700}
-    .cauth-panel textarea{resize:vertical;min-height:3.2em;line-height:1.35}
+    .cauth-panel textarea{resize:vertical;min-height:2.8em;line-height:1.35}
     .cauth-panel input::placeholder,.cauth-panel textarea::placeholder{
       color:rgba(255,255,255,.5);font-weight:400}
     .cauth-panel input[readonly],.cauth-panel textarea[readonly]{background:transparent;
-      border-color:transparent;padding-left:0;cursor:default;resize:none}
+      border-color:transparent;padding:0;cursor:default;resize:none}
     .cauth-edit{display:none}
     .cauth-lbl{display:block;font-size:.78em;color:var(--muted,#6B6860);margin:.6rem 0 .2rem}
     .cauth-panel select,.cauth-panel input,.cauth-panel textarea{width:100%;box-sizing:border-box;
@@ -215,7 +230,7 @@ window.CollateraViews = {
     .cauth-save:disabled{opacity:.6;cursor:default}
     .cauth-rule{border:none;border-top:1px solid rgba(255,255,255,.22);margin:.85rem 0 .45rem}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
-      color:var(--acct-lbl,#F0B8D4);padding:.45em .5em;cursor:pointer;text-decoration:none;border-radius:6px}
+      color:var(--acct-lbl,#F0B8D4);padding:.24em .5em;cursor:pointer;text-decoration:none;border-radius:6px;font-size:.88em}
     .cauth-link:hover{background:rgba(255,255,255,.14);color:#fff}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
     .cauth-note.ok{color:#BFEBC8} .cauth-note.err{color:#FFC9C9}
@@ -251,6 +266,9 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthOpenLogin">Sign in</button>
     </div>
     <div id="cauthIn" hidden>
+      <div class="cauth-avatarwrap">
+        <div class="cauth-avatar" id="cauthAvatar" aria-hidden="true"></div>
+      </div>
       <div class="cauth-row">
         <label class="cauth-inlbl" for="cauthPos">Position:</label>
         <input id="cauthPos" list="cauthPosList" maxlength="${TITLE_MAX}" autocomplete="off"
@@ -296,6 +314,8 @@ window.CollateraViews = {
   document.body.appendChild(scrim);
 
   const openPanel  = () => {
+    const lead0 = $("cauthPillLead");
+    if (lead0 && window.collateraUser) lead0.textContent = "User:";
     panel.classList.add("open");            // measure with layout applied
     if (avatarBtn) {
       const pw = panel.getBoundingClientRect().width;
@@ -309,6 +329,8 @@ window.CollateraViews = {
   };
   const closePanel = () => {
     panel.classList.remove("open");
+    const lead1 = $("cauthPillLead");
+    if (lead1 && window.collateraUser) lead1.textContent = "Signed in as:";
     if (avatarBtn) { avatarBtn.classList.remove("is-open"); avatarBtn.style.width = ""; }
     setEditing(false);
     avatarBtn?.setAttribute("aria-expanded","false");
