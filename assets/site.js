@@ -136,3 +136,128 @@ window.CollateraViews = {
   },
   clear() { try { localStorage.removeItem(VIEWS_KEY); } catch {} }
 };
+/* =================================================================
+   AUTH  (Supabase) — accounts unlock the personal layer
+   Loads the Supabase client, adds a "Log in" control to the header,
+   and a small sign-in modal. Content stays public; signing in only
+   unlocks favorites / recents / profile. The publishable key below
+   is meant to be public — row-level security is what guards data.
+   Exposes: window.sb (client), window.sbReady (Promise) for pages.
+   ================================================================= */
+(() => {
+  const SUPABASE_URL = "https://pxustifbonzhldrepcyp.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_XmuebDlA0AtVPpFxQCfaUA_3mR-1S3n";
+
+  // resolves once the client exists AND the first session check is done,
+  // so page code can safely `await window.sbReady` before using window.sb
+  let _resolveReady;
+  window.sbReady = new Promise(r => { _resolveReady = r; });
+
+  /* ---- scoped styles (cauth- prefix => no global class clash) ---- */
+  const style = document.createElement("style");
+  style.textContent = `
+    #cauthWrap{display:inline-flex;align-items:center;gap:.4em}
+    .cauth-who{font-size:.82em;opacity:.8;max-width:16ch;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap}
+    .cauth-btn{font:inherit;cursor:pointer;border:1px solid var(--line,#cbd3d3);
+      background:transparent;color:inherit;border-radius:999px;padding:.28em .8em;white-space:nowrap}
+    .cauth-btn:hover{background:rgba(133,204,204,.18)}
+    .cauth-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
+      align-items:center;justify-content:center;z-index:1000}
+    .cauth-scrim.open{display:flex}
+    .cauth-modal{background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);border-radius:14px;
+      padding:1.4rem;width:min(92vw,340px);box-shadow:0 14px 46px rgba(0,0,0,.32)}
+    .cauth-modal h2{margin:.1rem 0 1rem;font-size:1.15rem}
+    .cauth-field{display:block;margin:.55rem 0;font-size:.9em}
+    .cauth-field input{width:100%;box-sizing:border-box;margin-top:.25em;padding:.6em .7em;
+      border:1px solid var(--line,#cbd3d3);border-radius:8px;font:inherit;background:#fff;color:#111}
+    .cauth-actions{display:flex;gap:.5rem;margin-top:1rem}
+    .cauth-actions button{flex:1;padding:.62em;border-radius:8px;font:inherit;cursor:pointer}
+    .cauth-primary{background:var(--accent,#85CCCC);border:none;color:#0a2b2b;font-weight:600}
+    .cauth-primary:disabled{opacity:.6;cursor:default}
+    .cauth-cancel{background:transparent;border:1px solid var(--line,#cbd3d3);color:inherit}
+    .cauth-msg{min-height:1.2em;margin-top:.6rem;font-size:.84em;color:#c0392b}
+  `;
+  document.head.appendChild(style);
+
+  /* ---- header control, inserted just before the theme button ---- */
+  const wrap = document.createElement("span");
+  wrap.id = "cauthWrap";
+  wrap.innerHTML =
+    `<span class="cauth-who" id="cauthWho" hidden></span>` +
+    `<button class="cauth-btn" id="cauthBtn" type="button">Log in</button>`;
+  const themeBtn = document.getElementById("themeBtn");
+  if (themeBtn && themeBtn.parentNode) themeBtn.parentNode.insertBefore(wrap, themeBtn);
+
+  /* ---- sign-in modal ---- */
+  const scrim = document.createElement("div");
+  scrim.className = "cauth-scrim"; scrim.id = "cauthScrim";
+  scrim.innerHTML = `
+    <div class="cauth-modal" role="dialog" aria-modal="true" aria-labelledby="cauthTitle">
+      <h2 id="cauthTitle">Sign in</h2>
+      <label class="cauth-field">Email
+        <input id="cauthEmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
+      </label>
+      <label class="cauth-field">Password
+        <input id="cauthPass" type="password" autocomplete="current-password">
+      </label>
+      <div class="cauth-msg" id="cauthMsg" role="alert"></div>
+      <div class="cauth-actions">
+        <button class="cauth-cancel" id="cauthCancel" type="button">Cancel</button>
+        <button class="cauth-primary" id="cauthSubmit" type="button">Sign in</button>
+      </div>
+    </div>`;
+  document.body.appendChild(scrim);
+
+  const $ = id => document.getElementById(id);
+  const openModal  = () => { $("cauthMsg").textContent = ""; scrim.classList.add("open"); $("cauthEmail").focus(); };
+  const closeModal = () => scrim.classList.remove("open");
+  $("cauthCancel").onclick = closeModal;
+  scrim.addEventListener("click", e => { if (e.target === scrim) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  function paint(session) {
+    const who = $("cauthWho"), btn = $("cauthBtn");
+    if (session && session.user) {
+      who.textContent = session.user.email || "signed in";
+      who.hidden = false; btn.textContent = "Log out";
+    } else {
+      who.hidden = true; btn.textContent = "Log in";
+    }
+  }
+
+  /* ---- load supabase-js, then wire it all up ---- */
+  const libEl = document.createElement("script");
+  libEl.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  libEl.onload = async () => {
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    window.sb = sb;
+
+    const { data: { session } } = await sb.auth.getSession();
+    paint(session);
+    _resolveReady(sb);
+    sb.auth.onAuthStateChange((_evt, s) => paint(s));
+
+    $("cauthBtn").onclick = async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) await sb.auth.signOut();   // signed in  -> sign out
+      else openModal();                        // signed out -> show form
+    };
+
+    async function doLogin() {
+      const email = $("cauthEmail").value.trim();
+      const pass  = $("cauthPass").value;
+      const msg   = $("cauthMsg");
+      if (!email || !pass) { msg.textContent = "Enter your email and password."; return; }
+      $("cauthSubmit").disabled = true; msg.textContent = "Signing in\u2026";
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      $("cauthSubmit").disabled = false;
+      if (error) { msg.textContent = error.message || "Sign-in failed."; return; }
+      $("cauthPass").value = ""; closeModal();
+    }
+    $("cauthSubmit").onclick = doLogin;
+    $("cauthPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  };
+  libEl.onerror = () => { const b = $("cauthBtn"); if (b) { b.title = "Sign-in unavailable (library failed to load)"; } };
+  document.head.appendChild(libEl);
+})();
