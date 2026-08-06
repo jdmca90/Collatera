@@ -173,27 +173,34 @@ window.CollateraViews = {
     .cauth-pill:hover{filter:brightness(1.08)}
     .cauth-pill:focus-visible{outline:2px solid var(--accent-deep,#1C6390);outline-offset:3px}
     .cauth-pill.is-open{border-bottom-left-radius:0;border-bottom-right-radius:0;
-      border-bottom-color:transparent;box-shadow:none;max-width:none}
+      border-bottom-color:transparent;box-shadow:none;max-width:none;
+      background:var(--acct-open,#0F3A54)}
     .cauth-pill-lead{font-size:.78em;font-style:italic;opacity:.95;white-space:nowrap}
     .cauth-pill-email{font-size:.84em;max-width:16em;overflow:hidden;text-overflow:ellipsis;
       white-space:nowrap}
     .cauth-pill-email{font-size:.84em;max-width:14em;overflow:hidden;text-overflow:ellipsis;
       white-space:nowrap}
 
-    .cauth-panel{position:fixed;top:4rem;right:.75rem;z-index:1200;
-      width:min(94vw,320px);background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A);
-      border:1px solid var(--border,#D8D4CC);border-radius:14px;padding:1rem;
-      box-shadow:0 16px 44px rgba(0,0,0,.30);display:none;text-align:left}
+    .cauth-panel{position:fixed;z-index:1200;
+      width:min(94vw,340px);background:var(--acct-open,#0F3A54);color:#fff;
+      border:2px solid #fff;border-top:none;
+      border-radius:0 0 14px 14px;padding:.85rem 1.1rem 1rem;
+      box-shadow:0 16px 44px rgba(0,0,0,.34);display:none;text-align:left}
     .cauth-panel.open{display:block}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
-    .cauth-row{display:flex;align-items:baseline;gap:.45em;margin:.35rem 0}
-    .cauth-row-bio{align-items:flex-start}
-    .cauth-inlbl{flex:none;font-size:.86em;opacity:.85}
-    .cauth-panel input,.cauth-panel textarea{flex:1;min-width:0;background:rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:8px;padding:.35em .5em;
-      font:inherit;font-size:.9em}
-    .cauth-panel textarea{resize:vertical;min-height:3em}
-    .cauth-panel input::placeholder,.cauth-panel textarea::placeholder{color:rgba(255,255,255,.6)}
+    .cauth-row{display:grid;grid-template-columns:4.4em 1fr;align-items:baseline;
+      column-gap:.5em;margin:.45rem 0}
+    .cauth-row-bio{align-items:start}
+    .cauth-inlbl{font-size:.85em;color:var(--acct-lbl,#F0B8D4);text-align:right;
+      letter-spacing:.01em}
+    .cauth-panel input,.cauth-panel textarea{width:100%;min-width:0;box-sizing:border-box;
+      background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.32);
+      color:var(--acct-val,#8ECBF2);border-radius:8px;padding:.34em .5em;
+      font:inherit;font-size:.92em}
+    .cauth-panel #cauthPos{font-weight:700}
+    .cauth-panel textarea{resize:vertical;min-height:3.2em;line-height:1.35}
+    .cauth-panel input::placeholder,.cauth-panel textarea::placeholder{
+      color:rgba(255,255,255,.5);font-weight:400}
     .cauth-panel input[readonly],.cauth-panel textarea[readonly]{background:transparent;
       border-color:transparent;padding-left:0;cursor:default;resize:none}
     .cauth-edit{display:none}
@@ -204,12 +211,12 @@ window.CollateraViews = {
     .cauth-panel textarea{resize:vertical;min-height:4.2em}
     .cauth-count{font-size:.72em;color:rgba(255,255,255,.7);text-align:right;margin-top:.15rem}
     .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
-      background:#fff;color:var(--acct,#1B5E85);font:inherit;font-weight:600;cursor:pointer}
+      background:var(--acct-lbl,#F0B8D4);color:#0F3A54;font:inherit;font-weight:700;cursor:pointer}
     .cauth-save:disabled{opacity:.6;cursor:default}
-    .cauth-rule{border:none;border-top:1px solid rgba(255,255,255,.28);margin:.9rem 0 .5rem}
+    .cauth-rule{border:none;border-top:1px solid rgba(255,255,255,.22);margin:.85rem 0 .45rem}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
-      color:#fff;padding:.45em .5em;cursor:pointer;text-decoration:none;border-radius:6px}
-    .cauth-link:hover{background:rgba(255,255,255,.16)}
+      color:var(--acct-lbl,#F0B8D4);padding:.45em .5em;cursor:pointer;text-decoration:none;border-radius:6px}
+    .cauth-link:hover{background:rgba(255,255,255,.14);color:#fff}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
     .cauth-note.ok{color:#BFEBC8} .cauth-note.err{color:#FFC9C9}
 
