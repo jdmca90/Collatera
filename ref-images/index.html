@@ -166,7 +166,7 @@ function render() {
     card.onclick = () => openLightbox(i);
     card.innerHTML = `
       <img class="thumb" src="${encodeURI(img.file)}" alt="${img.title}" loading="lazy"
-           onerror="this.style.opacity=.4;this.alt='Image not found — check the file name';">
+           onerror="this.style.opacity=.4;this.alt='Image not found \u2014 check the file name';">
       <div class="card-body">
         <span class="card-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>
         <span class="card-title">${img.title}</span>
@@ -179,53 +179,9 @@ function render() {
   let label = `${n} ${n === 1 ? "image" : "images"}`;
   if (activeFilter.type === "cat") label += ` in ${activeFilter.value}`;
   if (activeFilter.type === "tag") label += ` tagged #${activeFilter.value}`;
-  if (mode === "starred") label += ` · starred`;
-  if (mode === "recentviewed") label += ` · recently viewed`;
-  if (q) label += ` matching “${query.trim()}”`;
-  countEl.textContent = label;
-  emptyEl.style.display = n ? "none" : "block";
-  grid.style.display = n ? "grid" : "none";
-}
-
-  if (mode === "recent") {
-    visible.sort((a,b) => (views[b.file]?.t||0) - (views[a.file]?.t||0));
-  } else if (mode === "mostused") {
-    visible.sort((a,b) => (views[b.file]?.c||0) - (views[a.file]?.c||0));
-  } else {
-    // default: viewed items float up by blended score; unviewed keep original order
-    visible.sort((a,b) => CollateraViews.score(views[b.file]) - CollateraViews.score(views[a.file]));
-  }
-// signed-in: float starred items to the front (stable within each group)
-  if (ME && FAVES.size) {
-    const fav = [], rest = [];
-    for (const im of visible) (FAVES.has(im.id) ? fav : rest).push(im);
-    visible = fav.concat(rest);
-  }
-  grid.innerHTML = "";
-  visible.forEach((img, i) => {
-    const card = document.createElement("button");
-    card.className = "card";
-    card.style.setProperty("--cat", colorFor(img.cat));
-    card.style.animationDelay = (Math.min(i, 18) * 0.03) + "s";
-    card.onclick = () => openLightbox(i);
-    card.innerHTML = `
-      <img class="thumb" src="${encodeURI(img.file)}" alt="${img.title}" loading="lazy"
-           onerror="this.style.opacity=.4;this.alt='Image not found — check the file name';">
-      <div class="card-body">
-        <span class="card-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>
-        <span class="card-title">${img.title}</span>
-      </div>`;
-    if (ME) card.appendChild(makeStar(img));
-    grid.appendChild(card);
-  });
-
-  const n = visible.length;
-  let label = `${n} ${n === 1 ? "image" : "images"}`;
-  if (activeFilter.type === "cat") label += ` in ${activeFilter.value}`;
-  if (activeFilter.type === "tag") label += ` tagged #${activeFilter.value}`;
-  if (mode === "recent") label += ` · recently viewed`;
-  if (mode === "mostused") label += ` · most used`;
-  if (q) label += ` matching “${query.trim()}”`;
+  if (mode === "starred") label += ` \u00b7 starred`;
+  if (mode === "recentviewed") label += ` \u00b7 recently viewed`;
+  if (q) label += ` matching \u201c${query.trim()}\u201d`;
   countEl.textContent = label;
   emptyEl.style.display = n ? "none" : "block";
   grid.style.display = n ? "grid" : "none";
@@ -377,7 +333,8 @@ async function loadFaves(){
     });
   });
 })();
-})();
+
+
 /* =================================================================
    RECENTS + mode-chip visibility — account-based "Recently viewed".
    Records each image open into recent_views, loads a user's recents,
@@ -421,6 +378,7 @@ function updateModeChips(){
   const _origOpen = openLightbox;
   openLightbox = function(i){ _origOpen(i); recordView(visible[i]); };
 })();
+
 </script>
 </body>
 </html>
