@@ -13,9 +13,11 @@
   --ink:       #2E2C2A;   /* body text        */
   --muted:     #6B6860;   /* secondary text   */
   --border:    #D8D4CC;   /* hairlines        */
-  --accent:        #85CCCC;  /* teal base   */
-  --accent-deep:   #3F8F8F;  /* teal deep (text on tint) */
-  --accent-tint:   #E7F4F4;  /* teal tint   */
+  --accent:        #2885C1;  /* logo blue base */
+  --accent-deep:   #1C6390;  /* logo blue deep (text on tint) */
+  --accent-tint:   #E4F0F9;  /* logo blue tint */
+  --pink:          #FAD8E9;  /* logo pink — search panel tint */
+  --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
 --shadow:    rgba(46,44,42,0.10);
   --radius:    16px;
   --pill-ink:  #1F1D1B;  /* fixed dark text for society/category pills — pill backgrounds don't change with theme, so this shouldn't either */
@@ -28,14 +30,16 @@
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] {
     --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
-    --border:#3F3B33; --accent:#85CCCC; --accent-deep:#A9DEDE;
-    --accent-tint:#2C3A3A; --shadow:rgba(0,0,0,0.35);
+    --border:#3F3B33; --accent:#5AA9DC; --accent-deep:#9BCDEC;
+    --accent-tint:#20374A; --pink:#3A2A33; --pink-line:#6E4A5E;
+    --shadow:rgba(0,0,0,0.35);
   }
 }
 :root[data-theme="dark"] {
   --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
-  --border:#3F3B33; --accent:#85CCCC; --accent-deep:#A9DEDE;
-  --accent-tint:#2C3A3A; --shadow:rgba(0,0,0,0.35);
+  --border:#3F3B33; --accent:#5AA9DC; --accent-deep:#9BCDEC;
+  --accent-tint:#20374A; --pink:#3A2A33; --pink-line:#6E4A5E;
+  --shadow:rgba(0,0,0,0.35);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -200,7 +204,7 @@ header {
    ================================================================= */
 .controls {
   max-width: 1180px; margin: 18px auto; padding: 18px 20px 4px;
-  background: var(--accent-tint); border: 1px solid var(--accent);
+  background: var(--pink); border: 1px solid var(--pink-line);
   border-radius: var(--radius);
 }
 
@@ -216,7 +220,7 @@ header {
   font: inherit; font-size: 16px; outline: none; transition: .2s;
 }
 .search-input::placeholder { color: var(--muted); }
-.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+.search-input:focus { border-color: var(--pink-line); box-shadow: 0 0 0 4px var(--pink); }
 
 .chips {
   display: flex; align-items: center; gap: 8px; overflow-x: auto;
