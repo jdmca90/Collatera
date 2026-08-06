@@ -20,7 +20,13 @@
   --panel:         #DEEDF8;  /* search panel: pale logo-blue tint */
   --panel-ink:     #2E2C2A;  /* text inside the panel = normal ink */
   --panel-line:    #1F6EA3;  /* edge: slightly darker than the logo blue */
-  --title:         #E9A6C8;  /* page title — logo pink, darkened to read on cream */
+  --title:         #C4566B;  /* page title — deep coral */
+  /* account pill / menu (light mode: light surface, dark ink) */
+  --acct:       #E7F1FA;  --acct-open:  #F3F8FC;  --acct-ink:   #22303A;
+  --acct-edge:  #D98BB4;  --acct-lbl:   #B04A66;  --acct-val:   #1C6390;
+  --acct-user:  #C4566B;  --acct-field: #FFFFFF;  --acct-line:  #C9D6E0;
+  --acct-mute:  #7A8A96;  --acct-hover: rgba(28,99,144,.12);
+  --acct-ok:    #1D7A4C;  --acct-err:   #B23B3B;
   --pink:          #FAD8E9;  /* logo pink — search panel tint */
   --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
 --shadow:    rgba(46,44,42,0.10);
@@ -37,7 +43,12 @@
     --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
     --border:#3F3B33; --accent:#E9A6C8; --accent-deep:#F3C2DC;
     --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
-    --title:#FAD8E9; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+    --title:#F49E9E; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+    --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
+    --acct-edge:#FAD8E9; --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
+    --acct-user:#F49E9E; --acct-field:rgba(255,255,255,.13);
+    --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
+    --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
     --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
   }
 }
@@ -45,7 +56,12 @@
   --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
   --border:#3F3B33; --accent:#E9A6C8; --accent-deep:#F3C2DC;
   --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
-  --title:#FAD8E9; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+  --title:#F49E9E; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+  --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
+  --acct-edge:#FAD8E9; --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
+  --acct-user:#F49E9E; --acct-field:rgba(255,255,255,.13);
+  --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
+  --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
   --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
 }
 
@@ -92,13 +108,16 @@ header {
 /* hamburger menu button (top-left) */
 .menu-btn {
   flex: 0 0 auto;
-  width: 42px; height: 42px;
-  border: 1px solid var(--border); border-radius: 11px;
+  width: 51px; height: 51px;
+  border: 1px solid var(--border); border-radius: 13px;
   background: var(--bg); color: var(--ink);
   cursor: pointer; font-size: 20px; line-height: 1;
   display: grid; place-items: center; transition: .18s;
 }
 .menu-btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+/* logo sits on a dark disc so its pale ring keeps contrast on cream */
+.menu-btn.is-logo { background: #22303A; border-color: #22303A; }
+.menu-btn.is-logo:hover { border-color: var(--accent); }
 
 .brand-group {
   display: flex; align-items: baseline; gap: 0;
@@ -129,9 +148,10 @@ header {
   flex: 0 0 auto;
   border: 1px solid var(--border); background: var(--bg);
   color: var(--muted); border-radius: 999px;
-  width: 38px; height: 38px; cursor: pointer; font-size: 17px;
+  width: 42px; height: 42px; cursor: pointer; font-size: 18.5px;
   display: grid; place-items: center; transition: .2s;
 }
+.theme-btn { border-width: 2px; border-color: var(--brand); }
 .theme-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
 
 /* upload button (top-right, next to theme toggle) — same size as theme-btn */
