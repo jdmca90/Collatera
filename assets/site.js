@@ -53,8 +53,10 @@ header.innerHTML = `
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-      <button class="cauth-avatarbtn" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false" aria-label="Account">
-        <img class="brandmark" src="/assets/collatera-logo-v2.png" alt="Account">
+      <img class="brandmark" src="/assets/collatera-logo-v2.png" alt="Collatera logo">
+      <button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>
+        <span class="cauth-pill-email" id="cauthPillEmail" hidden></span>
       </button>
     </div>
   </div>`;
@@ -163,12 +165,15 @@ window.CollateraViews = {
   /* ---- scoped styles (cauth- prefix; no global class clash) ---- */
   const style = document.createElement("style");
   style.textContent = `
-    .cauth-avatarbtn{background:none;border:none;padding:0;cursor:pointer;line-height:0;
-      border-radius:50%;position:relative}
-    .cauth-avatarbtn:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:3px}
-    .cauth-dot{position:absolute;right:1px;bottom:1px;width:.62em;height:.62em;border-radius:50%;
-      background:#3FBF7F;border:2px solid var(--bg,#FAF7F0);display:none}
-    .cauth-avatarbtn.is-in .cauth-dot{display:block}
+    .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
+      background:#2B6E96;color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
+      max-width:15em;box-shadow:0 2px 8px rgba(0,0,0,.22)}
+    .cauth-pill:hover{background:#31789f}
+    .cauth-pill:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:3px}
+    .cauth-pill-lead{font-size:.78em;font-style:italic;opacity:.95;white-space:nowrap}
+    .cauth-pill-email{font-size:.84em;max-width:14em;overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap}
 
     .cauth-panel{position:absolute;top:calc(100% + .5rem);right:.75rem;z-index:1200;
       width:min(94vw,320px);background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);
@@ -212,11 +217,6 @@ window.CollateraViews = {
 
   const $ = id => document.getElementById(id);
   const avatarBtn = $("cauthAvatarBtn");
-  if (avatarBtn) {
-    const dot = document.createElement("span");
-    dot.className = "cauth-dot";
-    avatarBtn.appendChild(dot);
-  }
 
   /* ---- the dropdown panel ---- */
   const panel = document.createElement("div");
@@ -294,7 +294,15 @@ window.CollateraViews = {
   async function paint(sb, session){
     const user = session?.user || null;
     window.collateraUser = user;
-    avatarBtn?.classList.toggle("is-in", !!user);
+    const lead = $("cauthPillLead"), pmail = $("cauthPillEmail");
+    if (user) {
+      lead.textContent = "Signed in as:";
+      pmail.textContent = user.email || "";
+      pmail.hidden = false;
+    } else {
+      lead.textContent = "Sign in";
+      pmail.textContent = ""; pmail.hidden = true;
+    }
     $("cauthOut").hidden = !!user;
     $("cauthIn").hidden  = !user;
     if (!user) return;
