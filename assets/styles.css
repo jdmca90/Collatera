@@ -28,6 +28,8 @@
   --acct-field: #FFFFFF;  --acct-line:  #E0BCC8;  --acct-mute:  #9A8792;
   --acct-hover: rgba(168,69,92,.12);
   --acct-ok:    #1D7A4C;  --acct-err:   #B23B3B;
+  --banner-ink:    #2F7FB5;  /* dev banner — light blue accent */
+  --footer-ink:    #17557A;  /* footer — deep blue */
   --pink:          #FAD8E9;  /* logo pink — search panel tint */
   --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
 --shadow:    rgba(46,44,42,0.10);
@@ -51,6 +53,7 @@
     --acct-user:#F49E9E; --acct-field:rgba(255,255,255,.13);
     --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
     --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
+    --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
     --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
   }
 }
@@ -65,6 +68,7 @@
   --acct-user:#F49E9E; --acct-field:rgba(255,255,255,.13);
   --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
   --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
+  --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
   --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
 }
 
@@ -229,8 +233,8 @@ header {
    ================================================================= */
 .dev-banner {
   text-align: center;
-  font-size: 12.5px; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--muted);
+  font-size: 12.5px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--banner-ink);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 7px 16px;
@@ -484,7 +488,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 18px 20px 80px; }
    ================================================================= */
 footer {
   max-width: 1180px; margin: 0 auto; padding: 0 20px 50px;
-  color: var(--muted); font-size: 13px; text-align: center;
+  color: var(--footer-ink); font-size: 13px; font-weight: 700; text-align: center;
 }
 footer a { color: var(--accent-deep); }
 
