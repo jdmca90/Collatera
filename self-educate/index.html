@@ -181,8 +181,7 @@ function render() {
   grid.style.display = t ? "grid" : "none";
 }
 
-searchEl.addEventListener("input", (e) => { query = e.target.value; render(); });
-buildChips(); render();
+
 
 const CFAV_SOURCE = "resource";
 
@@ -304,6 +303,11 @@ document.addEventListener("collatera:recents-cleared", () => { RECENTS = new Map
   });
 })();
 
+
+/* bootstrap last: the shared favorites block above must be
+   initialised before buildChips()/render() reference it */
+searchEl.addEventListener("input", (e) => { query = e.target.value; render(); });
+buildChips(); render();
 </script>
 </body>
 </html>
