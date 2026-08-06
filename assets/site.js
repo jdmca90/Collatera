@@ -168,7 +168,7 @@ window.CollateraViews = {
     .menu-logo{width:2.5em;height:2.5em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.5em .95em;border-radius:14px;cursor:pointer;
-      background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge,#FAD8E9);font:inherit;line-height:1.2;
+      background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge2,#FAD8E9);font:inherit;line-height:1.2;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
       max-width:15em;transition:border-radius .12s, width .12s}
     .cauth-pill:hover{filter:brightness(1.08)}
@@ -177,8 +177,8 @@ window.CollateraViews = {
       border-bottom-left-radius:0;border-bottom-right-radius:0;max-width:none;
       background:var(--acct-open,#0F3A54);
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54);
-      display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;
-      align-items:baseline;gap:.4em;padding:1.25em 1.7rem 1.15em;text-align:center}
+      display:flex;flex-direction:column;justify-content:center;
+      align-items:center;gap:.15em;padding:1.9em 1.7rem 1.75em;text-align:center}
     .cauth-pill.is-open .cauth-pill-lead{font-style:normal;font-size:1.06em;
       font-weight:600;color:var(--acct-user,#F49E9E);opacity:1}
     .cauth-pill.is-open .cauth-pill-email{font-size:1.06em;font-weight:700;
@@ -241,6 +241,10 @@ window.CollateraViews = {
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
       color:var(--acct-val,#8ECBF2);padding:.22em .5em;cursor:pointer;text-decoration:none;border-radius:6px;font-size:.9em}
     .cauth-link:hover{background:var(--acct-hover,rgba(255,255,255,.14));color:var(--acct-ink,#fff)}
+    .cauth-admin{color:var(--acct-admin,#F49E9E);font-weight:600}
+    .cauth-admin:hover{color:var(--acct-admin,#F49E9E)}
+    .cauth-rule-admin{margin:.55rem 0 .5rem;
+      background:linear-gradient(to right,transparent,var(--acct-admin,#F49E9E),transparent)}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
     .cauth-note.ok{color:var(--acct-ok,#BFEBC8)} .cauth-note.err{color:var(--acct-err,#FFC9C9)}
 
@@ -291,14 +295,21 @@ window.CollateraViews = {
         <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="2" placeholder="&lt;none&gt;"></textarea>
       </div>
       <div class="cauth-count" id="cauthBioCount">0 / ${BIO_MAX}</div>
+      <div class="cauth-row cauth-pwrow" id="cauthPwRow" hidden>
+        <label class="cauth-inlbl" for="cauthPw">Password:</label>
+        <input id="cauthPw" type="password" autocomplete="new-password"
+               placeholder="leave blank to keep">
+      </div>
       <button class="cauth-save" id="cauthSave" type="button">Save</button>
       <div class="cauth-note" id="cauthNote"></div>
       <hr class="cauth-rule">
-      <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile</button>
+      <div id="cauthAdmin" hidden>
+        <a class="cauth-link cauth-admin" id="cauthReview" href="/review/">Review queue</a>
+        <a class="cauth-link cauth-admin" id="cauthUpload" href="${UPLOAD_URL}">Upload an image</a>
+        <hr class="cauth-rule cauth-rule-admin">
+      </div>
+      <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile / password</button>
       <a class="cauth-link" id="cauthSubmit2" href="/submit/">Submit to the library</a>
-      <a class="cauth-link" id="cauthReview" href="/review/" hidden>Review queue</a>
-      <a class="cauth-link" id="cauthUpload" href="${UPLOAD_URL}" hidden>Upload an image</a>
-      <button class="cauth-link" id="cauthPwBtn" type="button">Change password</button>
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
       <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
     </div>`;
@@ -382,9 +393,11 @@ window.CollateraViews = {
     [pos, bioEl].forEach(el => { el.readOnly = !on; });
     pos.setAttribute("list", on ? "cauthPosList" : "");
     $("cauthSave").style.display  = on ? "" : "none";
+    $("cauthPwRow").hidden = !on;
+    if (!on) $("cauthPw").value = "";
     $("cauthBioCount").style.display = on ? "" : "none";
     $("cauthEditBtn").style.display = on ? "none" : "";
-    $("cauthEditBtn").textContent = "Edit profile";
+    $("cauthEditBtn").textContent = "Edit profile / password";
     if (on) pos.focus();
   }
   bioEl.addEventListener("input", () => { $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`; });
@@ -406,9 +419,7 @@ window.CollateraViews = {
     $("cauthOut").hidden = !!user;
     $("cauthIn").hidden  = !user;
     if (!user) return;
-    const isAdmin = (user.email === ADMIN_EMAIL);
-    $("cauthUpload").hidden = !isAdmin;
-    $("cauthReview").hidden = !isAdmin;
+    $("cauthAdmin").hidden = (user.email !== ADMIN_EMAIL);
     const { data } = await sb.from("profiles")
       .select("title, position, bio").eq("user_id", user.id).maybeSingle();
     $("cauthPos").value = data?.position || data?.title || "";
@@ -451,17 +462,19 @@ window.CollateraViews = {
         bio: bioEl.value.trim().slice(0, BIO_MAX) || null,
         updated_at: new Date().toISOString()
       }, { onConflict: "user_id" });
+      let pwErr = null;
+      const pw = $("cauthPw").value;
+      if (!error && pw) {
+        if (pw.length < 6) pwErr = "Password must be at least 6 characters.";
+        else {
+          const r = await sb.auth.updateUser({ password: pw });
+          if (r.error) pwErr = r.error.message;
+        }
+      }
       $("cauthSave").disabled = false;
-      note(error ? (error.message || "Couldn't save.") : "Saved.", !error);
-      if (!error) setEditing(false);
-    };
-
-    $("cauthPwBtn").onclick = async () => {
-      const pw = prompt("New password (at least 6 characters):");
-      if (!pw) return;
-      if (pw.length < 6) { note("Password must be at least 6 characters.", false); return; }
-      const { error } = await sb.auth.updateUser({ password: pw });
-      note(error ? (error.message || "Couldn't change password.") : "Password changed.", !error);
+      if (error)      note(error.message || "Couldn't save.", false);
+      else if (pwErr) note(pwErr, false);
+      else { note(pw ? "Saved. Password changed." : "Saved.", true); setEditing(false); }
     };
 
     $("cauthClearBtn").onclick = async () => {
