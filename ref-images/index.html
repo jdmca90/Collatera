@@ -114,10 +114,13 @@ function chipButton(label, type, value, isTag) {
 }
 function buildChips() {
   chipsEl.appendChild(chipButton("All", "all", null, false));
-  // view-mode chips (per-device history)
-  const recent = chipButton("Recent", "recent", null, false); recent.classList.add("is-mode"); recent.classList.remove("is-tag");
-  const most = chipButton("Most used", "mostused", null, false); most.classList.add("is-mode"); most.classList.remove("is-tag");
-  chipsEl.appendChild(recent); chipsEl.appendChild(most);
+  // account-based modes (shown only when signed in)
+  const starred = chipButton("Starred", "starred", null, false);
+  starred.classList.add("is-mode"); starred.classList.remove("is-tag"); starred.id = "chipStarred";
+  const recent = chipButton("Recently viewed", "recentviewed", null, false);
+  recent.classList.add("is-mode"); recent.classList.remove("is-tag"); recent.id = "chipRecent";
+  chipsEl.appendChild(starred); chipsEl.appendChild(recent);
+  updateModeChips();
   const sep0 = document.createElement("span"); sep0.className = "chip-sep"; sep0.setAttribute("aria-hidden","true");
   chipsEl.appendChild(sep0);
   CATEGORIES.forEach(cat => chipsEl.appendChild(chipButton(cat, "cat", cat, false)));
@@ -134,22 +137,55 @@ function matchesFilter(img) {
   if (activeFilter.type === "all") return true;
   if (activeFilter.type === "cat") return img.cat === activeFilter.value;
   if (activeFilter.type === "tag") return (img.tags || []).includes(activeFilter.value);
-  if (activeFilter.type === "recent" || activeFilter.type === "mostused") return true; // sorted below
+  if (activeFilter.type === "starred") return FAVES.has(img.id);
+  if (activeFilter.type === "recentviewed") return RECENTS.has(img.id);
   return true;
 }
 function render() {
   const q = query.trim().toLowerCase();
-  const views = CollateraViews.all();
   const mode = activeFilter.type;
 
   visible = IMAGES.filter(img => {
     if (!matchesFilter(img)) return false;
     const hay = (img.title + " " + img.cat + " " + (img.note||"") + " " + (img.tags||[]).join(" ")).toLowerCase();
     if (q && !hay.includes(q)) return false;
-    // Recent / Most used show only items with view history
-    if (mode === "recent" || mode === "mostused") return !!views[img.file];
     return true;
   });
+
+  // recently-viewed: newest first. all / starred / cat / tag keep library order.
+  if (mode === "recentviewed") {
+    visible.sort((a,b) => (RECENTS.get(b.id)||0) - (RECENTS.get(a.id)||0));
+  }
+
+  grid.innerHTML = "";
+  visible.forEach((img, i) => {
+    const card = document.createElement("button");
+    card.className = "card";
+    card.style.setProperty("--cat", colorFor(img.cat));
+    card.style.animationDelay = (Math.min(i, 18) * 0.03) + "s";
+    card.onclick = () => openLightbox(i);
+    card.innerHTML = `
+      <img class="thumb" src="${encodeURI(img.file)}" alt="${img.title}" loading="lazy"
+           onerror="this.style.opacity=.4;this.alt='Image not found — check the file name';">
+      <div class="card-body">
+        <span class="card-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>
+        <span class="card-title">${img.title}</span>
+      </div>`;
+    if (ME) card.appendChild(makeStar(img));
+    grid.appendChild(card);
+  });
+
+  const n = visible.length;
+  let label = `${n} ${n === 1 ? "image" : "images"}`;
+  if (activeFilter.type === "cat") label += ` in ${activeFilter.value}`;
+  if (activeFilter.type === "tag") label += ` tagged #${activeFilter.value}`;
+  if (mode === "starred") label += ` · starred`;
+  if (mode === "recentviewed") label += ` · recently viewed`;
+  if (q) label += ` matching “${query.trim()}”`;
+  countEl.textContent = label;
+  emptyEl.style.display = n ? "none" : "block";
+  grid.style.display = n ? "grid" : "none";
+}
 
   if (mode === "recent") {
     visible.sort((a,b) => (views[b.file]?.t||0) - (views[a.file]?.t||0));
@@ -332,12 +368,58 @@ async function loadFaves(){
   }
 }
 
-(function initFavs(){
-  if (!window.sbReady) { setTimeout(initFavs, 50); return; }   // wait for site.js
+(function initUser(){
+  if (!window.sbReady) { setTimeout(initUser, 50); return; }   // wait for site.js
   window.sbReady.then(async (sb) => {
-    await loadFaves(); render();
-    sb.auth.onAuthStateChange(async () => { await loadFaves(); render(); });
+    await loadFaves(); await loadRecents(); updateModeChips(); render();
+    sb.auth.onAuthStateChange(async () => {
+      await loadFaves(); await loadRecents(); updateModeChips(); render();
+    });
   });
+})();
+})();
+/* =================================================================
+   RECENTS + mode-chip visibility — account-based "Recently viewed".
+   Records each image open into recent_views, loads a user's recents,
+   and shows/hides the Starred & Recently-viewed chips with login state.
+   ================================================================= */
+let RECENTS = new Map();   // item_id -> viewed_at (ms) for the signed-in user
+
+async function loadRecents(){
+  RECENTS = new Map();
+  if (!ME || !window.sb) return;
+  const { data, error } = await window.sb.from("recent_views")
+    .select("item_id, viewed_at").eq("source", "image");
+  if (!error && data) for (const row of data) RECENTS.set(row.item_id, new Date(row.viewed_at).getTime());
+}
+
+async function recordView(img){
+  if (!ME || !window.sb || !img) return;
+  RECENTS.set(img.id, Date.now());
+  const { error } = await window.sb.from("recent_views")
+    .upsert({ user_id: ME, item_id: img.id, source: "image", viewed_at: new Date().toISOString() },
+            { onConflict: "user_id,item_id" });
+  if (error) console.warn("recordView failed:", error.message);
+}
+
+function updateModeChips(){
+  const show = !!ME;
+  const cs = document.getElementById("chipStarred");
+  const cr = document.getElementById("chipRecent");
+  if (cs) cs.style.display = show ? "" : "none";
+  if (cr) cr.style.display = show ? "" : "none";
+  if (!show && (activeFilter.type === "starred" || activeFilter.type === "recentviewed")) {
+    activeFilter = { type: "all", value: null };
+    const chips = [...chipsEl.querySelectorAll(".chip")];
+    chips.forEach(c => c.setAttribute("aria-pressed","false"));
+    if (chips[0]) chips[0].setAttribute("aria-pressed","true");
+  }
+}
+
+/* record each image open to the account (local tracker still runs too) */
+(function patchOpenForRecents(){
+  const _origOpen = openLightbox;
+  openLightbox = function(i){ _origOpen(i); recordView(visible[i]); };
 })();
 </script>
 </body>
