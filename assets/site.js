@@ -53,8 +53,9 @@ header.innerHTML = `
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-      <a class="upload-btn" href="https://collatera.org/4f5bqdxxo937e7/" title="Upload" aria-label="Upload an image">+</a>
-      <img class="brandmark" src="/assets/collatera-logo.png" alt="Collatera logo">
+      <button class="cauth-avatarbtn" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false" aria-label="Account">
+        <img class="brandmark" src="/assets/collatera-logo-v2.png" alt="Account">
+      </button>
     </div>
   </div>`;
 
@@ -136,34 +137,63 @@ window.CollateraViews = {
   },
   clear() { try { localStorage.removeItem(VIEWS_KEY); } catch {} }
 };
+
 /* =================================================================
-   AUTH  (Supabase) — accounts unlock the personal layer
-   Loads the Supabase client, adds a "Log in" control to the header,
-   and a small sign-in modal. Content stays public; signing in only
-   unlocks favorites / recents / profile. The publishable key below
-   is meant to be public — row-level security is what guards data.
-   Exposes: window.sb (client), window.sbReady (Promise) for pages.
+   ACCOUNT  (Supabase) — sign-in + profile dropdown
+   The logo in the header is the account button. Signed out it offers
+   Sign in; signed in it opens a panel with the editable profile
+   (position / title / bio), change password, clear recent history,
+   and sign out. The upload link is shown to the admin account only.
+   Content stays public; signing in unlocks the personal layer.
+   The publishable key is meant to be public — RLS guards the data.
+   Exposes: window.sb, window.sbReady, window.collateraUser
    ================================================================= */
 (() => {
   const SUPABASE_URL = "https://pxustifbonzhldrepcyp.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_XmuebDlA0AtVPpFxQCfaUA_3mR-1S3n";
+  const ADMIN_EMAIL   = "jdmca90@gmail.com";
+  const UPLOAD_URL    = "https://collatera.org/4f5bqdxxo937e7/";
+  const POSITIONS     = ["Fellow","Resident","Medical Student","Cardiologist","Hospitalist","Other"];
+  const BIO_MAX = 300, TITLE_MAX = 40;
 
-  // resolves once the client exists AND the first session check is done,
-  // so page code can safely `await window.sbReady` before using window.sb
   let _resolveReady;
   window.sbReady = new Promise(r => { _resolveReady = r; });
+  window.collateraUser = null;
 
-  /* ---- scoped styles (cauth- prefix => no global class clash) ---- */
+  /* ---- scoped styles (cauth- prefix; no global class clash) ---- */
   const style = document.createElement("style");
   style.textContent = `
-    #cauthWrap{display:inline-flex;align-items:center;gap:.4em}
-    .cauth-who{font-size:.82em;opacity:.8;max-width:16ch;overflow:hidden;
-      text-overflow:ellipsis;white-space:nowrap}
-    .cauth-btn{font:inherit;cursor:pointer;border:1px solid var(--line,#cbd3d3);
-      background:transparent;color:inherit;border-radius:999px;padding:.28em .8em;white-space:nowrap}
-    .cauth-btn:hover{background:rgba(133,204,204,.18)}
+    .cauth-avatarbtn{background:none;border:none;padding:0;cursor:pointer;line-height:0;
+      border-radius:50%;position:relative}
+    .cauth-avatarbtn:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:3px}
+    .cauth-dot{position:absolute;right:1px;bottom:1px;width:.62em;height:.62em;border-radius:50%;
+      background:#3FBF7F;border:2px solid var(--bg,#FAF7F0);display:none}
+    .cauth-avatarbtn.is-in .cauth-dot{display:block}
+
+    .cauth-panel{position:absolute;top:calc(100% + .5rem);right:.75rem;z-index:1200;
+      width:min(94vw,320px);background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);
+      border:1px solid var(--line,#cbd3d3);border-radius:14px;padding:1rem;
+      box-shadow:0 16px 44px rgba(0,0,0,.30);display:none;text-align:left}
+    .cauth-panel.open{display:block}
+    .cauth-email{font-size:.86em;opacity:.75;word-break:break-all;margin-bottom:.8rem}
+    .cauth-lbl{display:block;font-size:.78em;opacity:.8;margin:.6rem 0 .2rem}
+    .cauth-panel select,.cauth-panel input,.cauth-panel textarea{width:100%;box-sizing:border-box;
+      padding:.5em .6em;border:1px solid var(--line,#cbd3d3);border-radius:8px;font:inherit;
+      background:#fff;color:#111}
+    .cauth-panel textarea{resize:vertical;min-height:4.2em}
+    .cauth-count{font-size:.72em;opacity:.6;text-align:right;margin-top:.15rem}
+    .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
+      background:var(--accent,#85CCCC);color:#0a2b2b;font:inherit;font-weight:600;cursor:pointer}
+    .cauth-save:disabled{opacity:.6;cursor:default}
+    .cauth-rule{border:none;border-top:1px solid var(--line,#cbd3d3);margin:.9rem 0 .5rem}
+    .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
+      color:inherit;padding:.45em .1em;cursor:pointer;text-decoration:none;border-radius:6px}
+    .cauth-link:hover{background:rgba(133,204,204,.18)}
+    .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
+    .cauth-note.ok{color:#1d7a4c} .cauth-note.err{color:#c0392b}
+
     .cauth-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
-      align-items:center;justify-content:center;z-index:1000}
+      align-items:center;justify-content:center;z-index:1300}
     .cauth-scrim.open{display:flex}
     .cauth-modal{background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);border-radius:14px;
       padding:1.4rem;width:min(92vw,340px);box-shadow:0 14px 46px rgba(0,0,0,.32)}
@@ -180,21 +210,51 @@ window.CollateraViews = {
   `;
   document.head.appendChild(style);
 
-  /* ---- header control, inserted just before the theme button ---- */
-  const wrap = document.createElement("span");
-  wrap.id = "cauthWrap";
-  wrap.innerHTML =
-    `<span class="cauth-who" id="cauthWho" hidden></span>` +
-    `<button class="cauth-btn" id="cauthBtn" type="button">Log in</button>`;
-  const themeBtn = document.getElementById("themeBtn");
-  if (themeBtn && themeBtn.parentNode) themeBtn.parentNode.insertBefore(wrap, themeBtn);
+  const $ = id => document.getElementById(id);
+  const avatarBtn = $("cauthAvatarBtn");
+  if (avatarBtn) {
+    const dot = document.createElement("span");
+    dot.className = "cauth-dot";
+    avatarBtn.appendChild(dot);
+  }
+
+  /* ---- the dropdown panel ---- */
+  const panel = document.createElement("div");
+  panel.className = "cauth-panel";
+  panel.id = "cauthPanel";
+  panel.innerHTML = `
+    <div id="cauthOut">
+      <div class="cauth-email">Not signed in</div>
+      <button class="cauth-link" id="cauthOpenLogin">Sign in</button>
+    </div>
+    <div id="cauthIn" hidden>
+      <div class="cauth-email" id="cauthEmailLine"></div>
+      <label class="cauth-lbl" for="cauthPos">Position</label>
+      <select id="cauthPos">
+        <option value="">—</option>
+        ${POSITIONS.map(p => `<option value="${p}">${p}</option>`).join("")}
+      </select>
+      <label class="cauth-lbl" for="cauthTitle">Title</label>
+      <input id="cauthTitle" type="text" maxlength="${TITLE_MAX}" placeholder="e.g. Interventional Fellow">
+      <label class="cauth-lbl" for="cauthBio">Bio</label>
+      <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="3" placeholder="A short bio"></textarea>
+      <div class="cauth-count" id="cauthBioCount">0 / ${BIO_MAX}</div>
+      <button class="cauth-save" id="cauthSave" type="button">Save</button>
+      <div class="cauth-note" id="cauthNote"></div>
+      <hr class="cauth-rule">
+      <a class="cauth-link" id="cauthUpload" href="${UPLOAD_URL}" hidden>Upload an image</a>
+      <button class="cauth-link" id="cauthPwBtn" type="button">Change password</button>
+      <button class="cauth-link" id="cauthClearBtn" type="button">Clear recent history</button>
+      <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
+    </div>`;
+  document.body.appendChild(panel);
 
   /* ---- sign-in modal ---- */
   const scrim = document.createElement("div");
   scrim.className = "cauth-scrim"; scrim.id = "cauthScrim";
   scrim.innerHTML = `
-    <div class="cauth-modal" role="dialog" aria-modal="true" aria-labelledby="cauthTitle">
-      <h2 id="cauthTitle">Sign in</h2>
+    <div class="cauth-modal" role="dialog" aria-modal="true" aria-labelledby="cauthTitleH">
+      <h2 id="cauthTitleH">Sign in</h2>
       <label class="cauth-field">Email
         <input id="cauthEmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
       </label>
@@ -209,45 +269,59 @@ window.CollateraViews = {
     </div>`;
   document.body.appendChild(scrim);
 
-  const $ = id => document.getElementById(id);
+  const openPanel  = () => { panel.classList.add("open"); avatarBtn?.setAttribute("aria-expanded","true"); };
+  const closePanel = () => { panel.classList.remove("open"); avatarBtn?.setAttribute("aria-expanded","false"); };
   const openModal  = () => { $("cauthMsg").textContent = ""; scrim.classList.add("open"); $("cauthEmail").focus(); };
   const closeModal = () => scrim.classList.remove("open");
+
+  if (avatarBtn) avatarBtn.onclick = (e) => {
+    e.stopPropagation();
+    panel.classList.contains("open") ? closePanel() : openPanel();
+  };
+  document.addEventListener("click", (e) => {
+    if (panel.classList.contains("open") && !panel.contains(e.target)) closePanel();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closePanel(); closeModal(); } });
   $("cauthCancel").onclick = closeModal;
   scrim.addEventListener("click", e => { if (e.target === scrim) closeModal(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+  $("cauthOpenLogin").onclick = () => { closePanel(); openModal(); };
 
-  function paint(session) {
-    const who = $("cauthWho"), btn = $("cauthBtn");
-    if (session && session.user) {
-      who.textContent = session.user.email || "signed in";
-      who.hidden = false; btn.textContent = "Log out";
-    } else {
-      who.hidden = true; btn.textContent = "Log in";
-    }
+  const bioEl = $("cauthBio"), noteEl = $("cauthNote");
+  bioEl.addEventListener("input", () => { $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`; });
+  function note(msg, ok){ noteEl.textContent = msg; noteEl.className = "cauth-note " + (ok ? "ok" : "err"); }
+
+  /* ---- paint signed-in / signed-out state ---- */
+  async function paint(sb, session){
+    const user = session?.user || null;
+    window.collateraUser = user;
+    avatarBtn?.classList.toggle("is-in", !!user);
+    $("cauthOut").hidden = !!user;
+    $("cauthIn").hidden  = !user;
+    if (!user) return;
+    $("cauthEmailLine").textContent = user.email || "signed in";
+    $("cauthUpload").hidden = (user.email !== ADMIN_EMAIL);
+    const { data } = await sb.from("profiles")
+      .select("title, position, bio").eq("user_id", user.id).maybeSingle();
+    $("cauthPos").value   = data?.position || "";
+    $("cauthTitle").value = data?.title || "";
+    bioEl.value           = data?.bio || "";
+    $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`;
+    note("", true);
   }
 
-  /* ---- load supabase-js, then wire it all up ---- */
+  /* ---- load supabase-js, then wire everything ---- */
   const libEl = document.createElement("script");
   libEl.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
   libEl.onload = async () => {
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     window.sb = sb;
-
     const { data: { session } } = await sb.auth.getSession();
-    paint(session);
+    await paint(sb, session);
     _resolveReady(sb);
-    sb.auth.onAuthStateChange((_evt, s) => paint(s));
+    sb.auth.onAuthStateChange(async (_e, s) => { await paint(sb, s); });
 
-    $("cauthBtn").onclick = async () => {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) await sb.auth.signOut();   // signed in  -> sign out
-      else openModal();                        // signed out -> show form
-    };
-
-    async function doLogin() {
-      const email = $("cauthEmail").value.trim();
-      const pass  = $("cauthPass").value;
-      const msg   = $("cauthMsg");
+    async function doLogin(){
+      const email = $("cauthEmail").value.trim(), pass = $("cauthPass").value, msg = $("cauthMsg");
       if (!email || !pass) { msg.textContent = "Enter your email and password."; return; }
       $("cauthSubmit").disabled = true; msg.textContent = "Signing in\u2026";
       const { error } = await sb.auth.signInWithPassword({ email, password: pass });
@@ -257,7 +331,40 @@ window.CollateraViews = {
     }
     $("cauthSubmit").onclick = doLogin;
     $("cauthPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+    $("cauthSave").onclick = async () => {
+      const u = window.collateraUser; if (!u) return;
+      $("cauthSave").disabled = true; note("Saving\u2026", true);
+      const { error } = await sb.from("profiles").upsert({
+        user_id: u.id,
+        position: $("cauthPos").value || null,
+        title: $("cauthTitle").value.trim().slice(0, TITLE_MAX) || null,
+        bio: bioEl.value.trim().slice(0, BIO_MAX) || null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id" });
+      $("cauthSave").disabled = false;
+      note(error ? (error.message || "Couldn't save.") : "Saved.", !error);
+    };
+
+    $("cauthPwBtn").onclick = async () => {
+      const pw = prompt("New password (at least 6 characters):");
+      if (!pw) return;
+      if (pw.length < 6) { note("Password must be at least 6 characters.", false); return; }
+      const { error } = await sb.auth.updateUser({ password: pw });
+      note(error ? (error.message || "Couldn't change password.") : "Password changed.", !error);
+    };
+
+    $("cauthClearBtn").onclick = async () => {
+      const u = window.collateraUser; if (!u) return;
+      if (!confirm("Clear your recently-viewed history? This can't be undone.")) return;
+      const { error } = await sb.from("recent_views").delete().eq("user_id", u.id);
+      if (error) { note(error.message || "Couldn't clear history.", false); return; }
+      note("Recent history cleared.", true);
+      document.dispatchEvent(new CustomEvent("collatera:recents-cleared"));
+    };
+
+    $("cauthOutBtn").onclick = async () => { await sb.auth.signOut(); closePanel(); };
   };
-  libEl.onerror = () => { const b = $("cauthBtn"); if (b) { b.title = "Sign-in unavailable (library failed to load)"; } };
+  libEl.onerror = () => { const b = $("cauthOpenLogin"); if (b) b.textContent = "Sign-in unavailable"; };
   document.head.appendChild(libEl);
 })();
