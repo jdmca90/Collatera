@@ -128,9 +128,10 @@ function chipButton(label,type,value,isTag){
 }
 function buildChips(){
   chipsEl.appendChild(chipButton("All","all",null,false));
-  const recent=chipButton("Recent","recent",null,false); recent.classList.add("is-mode");
-  const most=chipButton("Most used","mostused",null,false); most.classList.add("is-mode");
-  chipsEl.appendChild(recent); chipsEl.appendChild(most);
+  const starred=chipButton("Starred","starred",null,false); starred.classList.add("is-mode"); starred.id="chipStarred";
+  const recent=chipButton("Recently viewed","recentviewed",null,false); recent.classList.add("is-mode"); recent.id="chipRecent";
+  chipsEl.appendChild(starred); chipsEl.appendChild(recent);
+  updateModeChips();
   const sep0=document.createElement("span"); sep0.className="chip-sep"; sep0.setAttribute("aria-hidden","true");
   chipsEl.appendChild(sep0);
   SOCIETIES.forEach(s=>chipsEl.appendChild(chipButton(s,"soc",s,false)));
@@ -145,52 +146,59 @@ function matchesFilter(g){
   if(activeFilter.type==="all")return true;
   if(activeFilter.type==="soc")return g.societies.includes(activeFilter.value);
   if(activeFilter.type==="topic")return g.topic===activeFilter.value;
+  if(activeFilter.type==="starred")return FAVES.has(g.id);
+  if(activeFilter.type==="recentviewed")return RECENTS.has(g.id);
   return true;
 }
 function render(){
   const q=query.trim().toLowerCase();
-  const views=CollateraViews.all();
   const mode=activeFilter.type;
   let visible=GUIDELINES.filter(g=>{
     if(!matchesFilter(g))return false;
     const hay=(g.topic+" "+g.societies.join(" ")+" "+g.year).toLowerCase();
     if(q && !hay.includes(q))return false;
-    if(mode==="recent"||mode==="mostused")return !!views[g.url];
     return true;
   });
-  if(mode==="recent"){
-    visible.sort((a,b)=>(views[b.url]?.t||0)-(views[a.url]?.t||0));
-  } else if(mode==="mostused"){
-    visible.sort((a,b)=>(views[b.url]?.c||0)-(views[a.url]?.c||0));
+
+  const byYear=(a,b)=>(Number(b.year)||0)-(Number(a.year)||0)||a.topic.localeCompare(b.topic);
+  if(mode==="recentviewed"){
+    visible.sort((a,b)=>(RECENTS.get(b.id)||0)-(RECENTS.get(a.id)||0));
+  } else if(ME){
+    visible.sort((a,b)=>{
+      const ta=cfavTier(a), tb=cfavTier(b);
+      if(ta!==tb)return ta-tb;
+      if(ta===1)return (RECENTS.get(b.id)||0)-(RECENTS.get(a.id)||0);
+      return byYear(a,b);
+    });
   } else {
-    // default: viewed float up by score; otherwise newest publication year first
-    visible.sort((a,b)=>
-      CollateraViews.score(views[b.url]) - CollateraViews.score(views[a.url])
-      || (Number(b.year)||0)-(Number(a.year)||0)
-      || a.topic.localeCompare(b.topic));
+    visible.sort(byYear);
   }
 
   grid.innerHTML="";
   visible.forEach((g,i)=>{
+    const wrap=document.createElement("div");
+    wrap.className="cfav-host";
     const a=document.createElement("a");
     a.className="linkcard"; a.href=g.url; a.target="_blank"; a.rel="noopener";
-    a.onclick=()=>CollateraViews.record(g.url);
+    a.onclick=()=>recordView(g);
     a.style.setProperty("--cat",colorFor(g.societies[0]||""));
     a.style.animationDelay=(Math.min(i,18)*0.03)+"s";
     const socPills=g.societies.map(s=>`<span class="lc-soc" style="background:${colorFor(s)}">${s}</span>`).join("");
     a.innerHTML=`<div class="lc-socrow">${socPills}</div>
       <span class="lc-title">${g.topic}</span>
       <span class="lc-meta">${g.year}</span>`;
-    grid.appendChild(a);
+    wrap.appendChild(a);
+    if(ME) wrap.appendChild(makeStar(g));
+    grid.appendChild(wrap);
   });
 
   const n=visible.length;
   let label=`${n} ${n===1?"guideline":"guidelines"}`;
   if(activeFilter.type==="soc")label+=` from ${activeFilter.value}`;
   if(activeFilter.type==="topic")label+=` on ${activeFilter.value}`;
-  if(mode==="recent")label+=` · recently viewed`;
-  if(mode==="mostused")label+=` · most used`;
-  if(q)label+=` matching “${query.trim()}”`;
+  if(mode==="starred")label+=` \u00b7 starred`;
+  if(mode==="recentviewed")label+=` \u00b7 recently viewed`;
+  if(q)label+=` matching \u201c${query.trim()}\u201d`;
   countEl.textContent=label;
   emptyEl.style.display=n?"none":"block";
   grid.style.display=n?"grid":"none";
@@ -198,6 +206,127 @@ function render(){
 
 searchEl.addEventListener("input",(e)=>{query=e.target.value;render();});
 buildRepos(); buildChips(); render();
+
+const CFAV_SOURCE = "guideline";
+
+/* =================================================================
+   FAVORITES + RECENTS  (per-user, requires login)
+   Star each card; starred items lead, then anything opened in the
+   last RECENT_WINDOW_DAYS, then the rest. Chips filter explicitly.
+   Relies on window.sb / window.sbReady from site.js.
+   ================================================================= */
+const RECENT_WINDOW_DAYS = 14;
+let FAVES = new Set();
+let RECENTS = new Map();
+let ME = null;
+
+(function injectFavCss(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .cfav-host{position:relative}
+    .cfav-star{position:absolute;top:.4rem;right:.4rem;z-index:2;
+      width:1.9rem;height:1.9rem;display:flex;align-items:center;justify-content:center;
+      font-size:1.15rem;line-height:1;border-radius:50%;cursor:pointer;border:none;
+      background:rgba(0,0,0,.34);color:#fff;transition:transform .1s ease, background .15s}
+    .cfav-star:hover{transform:scale(1.12);background:rgba(0,0,0,.52)}
+    .cfav-star.is-on{color:#FFD24A}
+    .cfav-star:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:2px}
+  `;
+  document.head.appendChild(s);
+})();
+
+function setStar(s, on){
+  s.classList.toggle("is-on", on);
+  s.textContent = on ? "\u2605" : "\u2606";
+  s.setAttribute("aria-pressed", on ? "true" : "false");
+  s.setAttribute("aria-label", on ? "Remove from favorites" : "Add to favorites");
+}
+function syncStars(id){
+  document.querySelectorAll('.cfav-star[data-cfav-id="' + id + '"]')
+    .forEach(el => setStar(el, FAVES.has(id)));
+}
+function makeStar(item){
+  const s = document.createElement("span");
+  s.className = "cfav-star";
+  s.dataset.cfavId = item.id;
+  s.setAttribute("role","button");
+  s.setAttribute("tabindex","0");
+  setStar(s, FAVES.has(item.id));
+  const activate = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(item.id); };
+  s.addEventListener("click", activate);
+  s.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") activate(e); });
+  return s;
+}
+
+async function toggleFav(id){
+  if (!ME || !window.sb) return;
+  const wasOn = FAVES.has(id);
+  if (wasOn) FAVES.delete(id); else FAVES.add(id);
+  syncStars(id);
+  let error;
+  if (wasOn) {
+    ({ error } = await window.sb.from("favorites").delete()
+        .eq("item_id", id).eq("source", CFAV_SOURCE));
+  } else {
+    ({ error } = await window.sb.from("favorites")
+        .upsert({ user_id: ME, item_id: id, source: CFAV_SOURCE }, { onConflict: "user_id,item_id" }));
+  }
+  if (error) {
+    if (wasOn) FAVES.add(id); else FAVES.delete(id);
+    syncStars(id);
+    console.warn("favorite toggle failed:", error.message);
+  }
+}
+
+async function recordView(item){
+  if (!ME || !window.sb || !item) return;
+  RECENTS.set(item.id, Date.now());
+  const { error } = await window.sb.from("recent_views")
+    .upsert({ user_id: ME, item_id: item.id, source: CFAV_SOURCE, viewed_at: new Date().toISOString() },
+            { onConflict: "user_id,item_id" });
+  if (error) console.warn("recordView failed:", error.message);
+}
+
+async function loadUserData(){
+  const sb = await window.sbReady;
+  const { data: { session } } = await sb.auth.getSession();
+  ME = session?.user?.id || null;
+  FAVES = new Set(); RECENTS = new Map();
+  if (!ME) return;
+  const [f, r] = await Promise.all([
+    sb.from("favorites").select("item_id").eq("source", CFAV_SOURCE),
+    sb.from("recent_views").select("item_id, viewed_at").eq("source", CFAV_SOURCE)
+  ]);
+  if (!f.error && f.data) for (const row of f.data) FAVES.add(row.item_id);
+  if (!r.error && r.data) for (const row of r.data) RECENTS.set(row.item_id, new Date(row.viewed_at).getTime());
+}
+
+/* tier: 0 starred, 1 recent (within window), 2 everything else */
+function cfavTier(item){
+  if (!ME) return 2;
+  if (FAVES.has(item.id)) return 0;
+  const t = RECENTS.get(item.id) || 0;
+  return t >= (Date.now() - RECENT_WINDOW_DAYS * 86400000) ? 1 : 2;
+}
+
+function updateModeChips(){
+  const show = !!ME;
+  const cs = document.getElementById("chipStarred");
+  const cr = document.getElementById("chipRecent");
+  if (cs) cs.style.display = show ? "" : "none";
+  if (cr) cr.style.display = show ? "" : "none";
+}
+
+document.addEventListener("collatera:recents-cleared", () => { RECENTS = new Map(); render(); });
+
+(function initUser(){
+  if (!window.sbReady) { setTimeout(initUser, 50); return; }
+  window.sbReady.then(async (sb) => {
+    await loadUserData(); updateModeChips(); render();
+    sb.auth.onAuthStateChange(async () => { await loadUserData(); updateModeChips(); render(); });
+  });
+})();
+
 </script>
 </body>
 </html>
