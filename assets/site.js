@@ -154,7 +154,7 @@ window.CollateraViews = {
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_XmuebDlA0AtVPpFxQCfaUA_3mR-1S3n";
   const ADMIN_EMAIL   = "jdmca90@gmail.com";
   const UPLOAD_URL    = "https://collatera.org/4f5bqdxxo937e7/";
-  const POSITIONS     = ["Fellow","Resident","Medical Student","Cardiologist","Hospitalist","Other"];
+  const POSITIONS     = ["Fellow","Resident","Medical Student","Cardiologist","Hospitalist","Attending"];
   const BIO_MAX = 300, TITLE_MAX = 40;
 
   let _resolveReady;
@@ -177,41 +177,41 @@ window.CollateraViews = {
       white-space:nowrap}
 
     .cauth-panel{position:fixed;top:4rem;right:.75rem;z-index:1200;
-      width:min(94vw,320px);background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);
-      border:1px solid var(--line,#cbd3d3);border-radius:14px;padding:1rem;
+      width:min(94vw,320px);background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A);
+      border:1px solid var(--border,#D8D4CC);border-radius:14px;padding:1rem;
       box-shadow:0 16px 44px rgba(0,0,0,.30);display:none;text-align:left}
     .cauth-panel.open{display:block}
-    .cauth-email{font-size:.86em;opacity:.75;word-break:break-all;margin-bottom:.8rem}
-    .cauth-lbl{display:block;font-size:.78em;opacity:.8;margin:.6rem 0 .2rem}
+    .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
+    .cauth-lbl{display:block;font-size:.78em;color:var(--muted,#6B6860);margin:.6rem 0 .2rem}
     .cauth-panel select,.cauth-panel input,.cauth-panel textarea{width:100%;box-sizing:border-box;
-      padding:.5em .6em;border:1px solid var(--line,#cbd3d3);border-radius:8px;font:inherit;
-      background:#fff;color:#111}
+      padding:.5em .6em;border:1px solid var(--border,#D8D4CC);border-radius:8px;font:inherit;
+      background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A)}
     .cauth-panel textarea{resize:vertical;min-height:4.2em}
-    .cauth-count{font-size:.72em;opacity:.6;text-align:right;margin-top:.15rem}
+    .cauth-count{font-size:.72em;color:var(--muted,#6B6860);text-align:right;margin-top:.15rem}
     .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
-      background:var(--accent,#85CCCC);color:#0a2b2b;font:inherit;font-weight:600;cursor:pointer}
+      background:var(--accent,#85CCCC);color:var(--pill-ink,#1F1D1B);font:inherit;font-weight:600;cursor:pointer}
     .cauth-save:disabled{opacity:.6;cursor:default}
-    .cauth-rule{border:none;border-top:1px solid var(--line,#cbd3d3);margin:.9rem 0 .5rem}
+    .cauth-rule{border:none;border-top:1px solid var(--border,#D8D4CC);margin:.9rem 0 .5rem}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
-      color:inherit;padding:.45em .1em;cursor:pointer;text-decoration:none;border-radius:6px}
-    .cauth-link:hover{background:rgba(133,204,204,.18)}
+      color:var(--ink,#2E2C2A);padding:.45em .1em;cursor:pointer;text-decoration:none;border-radius:6px}
+    .cauth-link:hover{background:var(--accent-tint,#E7F4F4)}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
-    .cauth-note.ok{color:#1d7a4c} .cauth-note.err{color:#c0392b}
+    .cauth-note.ok{color:var(--accent-deep,#3F8F8F)} .cauth-note.err{color:#c0392b}
 
     .cauth-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
       align-items:center;justify-content:center;z-index:1300}
     .cauth-scrim.open{display:flex}
-    .cauth-modal{background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);border-radius:14px;
+    .cauth-modal{background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A);border-radius:14px;
       padding:1.4rem;width:min(92vw,340px);box-shadow:0 14px 46px rgba(0,0,0,.32)}
     .cauth-modal h2{margin:.1rem 0 1rem;font-size:1.15rem}
     .cauth-field{display:block;margin:.55rem 0;font-size:.9em}
     .cauth-field input{width:100%;box-sizing:border-box;margin-top:.25em;padding:.6em .7em;
-      border:1px solid var(--line,#cbd3d3);border-radius:8px;font:inherit;background:#fff;color:#111}
+      border:1px solid var(--border,#D8D4CC);border-radius:8px;font:inherit;background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A)}
     .cauth-actions{display:flex;gap:.5rem;margin-top:1rem}
     .cauth-actions button{flex:1;padding:.62em;border-radius:8px;font:inherit;cursor:pointer}
-    .cauth-primary{background:var(--accent,#85CCCC);border:none;color:#0a2b2b;font-weight:600}
+    .cauth-primary{background:var(--accent,#85CCCC);border:none;color:var(--pill-ink,#1F1D1B);font-weight:600}
     .cauth-primary:disabled{opacity:.6;cursor:default}
-    .cauth-cancel{background:transparent;border:1px solid var(--line,#cbd3d3);color:inherit}
+    .cauth-cancel{background:transparent;border:1px solid var(--border,#D8D4CC);color:inherit}
     .cauth-msg{min-height:1.2em;margin-top:.6rem;font-size:.84em;color:#c0392b}
   `;
   document.head.appendChild(style);
@@ -230,13 +230,12 @@ window.CollateraViews = {
     </div>
     <div id="cauthIn" hidden>
       <div class="cauth-email" id="cauthEmailLine"></div>
-      <label class="cauth-lbl" for="cauthPos">Position</label>
-      <select id="cauthPos">
-        <option value="">—</option>
-        ${POSITIONS.map(p => `<option value="${p}">${p}</option>`).join("")}
-      </select>
-      <label class="cauth-lbl" for="cauthTitle">Title</label>
-      <input id="cauthTitle" type="text" maxlength="${TITLE_MAX}" placeholder="e.g. Interventional Fellow">
+      <label class="cauth-lbl" for="cauthPos">Position / title</label>
+      <input id="cauthPos" list="cauthPosList" maxlength="${TITLE_MAX}" autocomplete="off"
+             placeholder="Choose or type your own">
+      <datalist id="cauthPosList">
+        ${POSITIONS.map(p => `<option value="${p}"></option>`).join("")}
+      </datalist>
       <label class="cauth-lbl" for="cauthBio">Bio</label>
       <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="3" placeholder="A short bio"></textarea>
       <div class="cauth-count" id="cauthBioCount">0 / ${BIO_MAX}</div>
@@ -319,8 +318,7 @@ window.CollateraViews = {
     $("cauthUpload").hidden = (user.email !== ADMIN_EMAIL);
     const { data } = await sb.from("profiles")
       .select("title, position, bio").eq("user_id", user.id).maybeSingle();
-    $("cauthPos").value   = data?.position || "";
-    $("cauthTitle").value = data?.title || "";
+    $("cauthPos").value = data?.position || data?.title || "";
     bioEl.value           = data?.bio || "";
     $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`;
     note("", true);
@@ -354,8 +352,8 @@ window.CollateraViews = {
       $("cauthSave").disabled = true; note("Saving\u2026", true);
       const { error } = await sb.from("profiles").upsert({
         user_id: u.id,
-        position: $("cauthPos").value || null,
-        title: $("cauthTitle").value.trim().slice(0, TITLE_MAX) || null,
+        position: $("cauthPos").value.trim().slice(0, TITLE_MAX) || null,
+        title: null,
         bio: bioEl.value.trim().slice(0, BIO_MAX) || null,
         updated_at: new Date().toISOString()
       }, { onConflict: "user_id" });
