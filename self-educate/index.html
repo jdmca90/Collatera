@@ -114,6 +114,10 @@ function chipButton(label, value) {
 
 function buildChips() {
   chipsEl.appendChild(chipButton("All", null));
+  const starred = chipButton("Starred", "__starred"); starred.id = "chipStarred";
+  const recent  = chipButton("Recently viewed", "__recent"); recent.id = "chipRecent";
+  chipsEl.appendChild(starred); chipsEl.appendChild(recent);
+  updateModeChips();
   const sep = document.createElement("span");
   sep.className = "chip-sep"; sep.setAttribute("aria-hidden", "true");
   chipsEl.appendChild(sep);
@@ -127,31 +131,51 @@ function esc(s) {
 function render() {
   const q = query.trim().toLowerCase();
 
-  const visible = RESOURCES
+  let visible = RESOURCES
     .map((r, i) => ({ r, i }))
     .filter(({ r }) => {
-      if (activeCat && r.cat !== activeCat) return false;
+      if (activeCat === "__starred") { if (!FAVES.has(r.id)) return false; }
+      else if (activeCat === "__recent") { if (!RECENTS.has(r.id)) return false; }
+      else if (activeCat && r.cat !== activeCat) return false;
       if (!q) return true;
       return (r.name + " " + r.desc + " " + r.cat).toLowerCase().includes(q);
     });
 
+  if (activeCat === "__recent") {
+    visible.sort((a, b) => (RECENTS.get(b.r.id)||0) - (RECENTS.get(a.r.id)||0));
+  } else if (ME) {
+    visible.sort((a, b) => {
+      const ta = cfavTier(a.r), tb = cfavTier(b.r);
+      if (ta !== tb) return ta - tb;
+      if (ta === 1) return (RECENTS.get(b.r.id)||0) - (RECENTS.get(a.r.id)||0);
+      return a.i - b.i;
+    });
+  }
+
   grid.innerHTML = "";
   visible.forEach(({ r, i }, n) => {
+    const wrap = document.createElement("div");
+    wrap.className = "cfav-host";
     const a = document.createElement("a");
     a.className = "se-card";
     a.href = r.url; a.target = "_blank"; a.rel = "noopener";
+    a.onclick = () => recordView(r);
     a.style.setProperty("--cat", catColors[i % catColors.length]);
     a.style.animationDelay = (Math.min(n, 18) * 0.03) + "s";
     a.innerHTML = `<span class="se-glyph">${GLYPHS[r.cat] || ""}</span>
       <span class="se-title">${esc(r.name)}</span>
       <span class="se-desc">${esc(r.desc)}</span>`;
-    grid.appendChild(a);
+    wrap.appendChild(a);
+    if (ME) wrap.appendChild(makeStar(r));
+    grid.appendChild(wrap);
   });
 
   const t = visible.length;
   let label = `${t} ${t === 1 ? "resource" : "resources"}`;
-  if (activeCat) label += ` in ${activeCat}`;
-  if (q) label += ` matching “${query.trim()}”`;
+  if (activeCat === "__starred") label += ` \u00b7 starred`;
+  else if (activeCat === "__recent") label += ` \u00b7 recently viewed`;
+  else if (activeCat) label += ` in ${activeCat}`;
+  if (q) label += ` matching \u201c${query.trim()}\u201d`;
   countEl.textContent = label;
   emptyEl.style.display = t ? "none" : "block";
   grid.style.display = t ? "grid" : "none";
@@ -159,6 +183,127 @@ function render() {
 
 searchEl.addEventListener("input", (e) => { query = e.target.value; render(); });
 buildChips(); render();
+
+const CFAV_SOURCE = "resource";
+
+/* =================================================================
+   FAVORITES + RECENTS  (per-user, requires login)
+   Star each card; starred items lead, then anything opened in the
+   last RECENT_WINDOW_DAYS, then the rest. Chips filter explicitly.
+   Relies on window.sb / window.sbReady from site.js.
+   ================================================================= */
+const RECENT_WINDOW_DAYS = 14;
+let FAVES = new Set();
+let RECENTS = new Map();
+let ME = null;
+
+(function injectFavCss(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .cfav-host{position:relative}
+    .cfav-star{position:absolute;top:.4rem;right:.4rem;z-index:2;
+      width:1.9rem;height:1.9rem;display:flex;align-items:center;justify-content:center;
+      font-size:1.15rem;line-height:1;border-radius:50%;cursor:pointer;border:none;
+      background:rgba(0,0,0,.34);color:#fff;transition:transform .1s ease, background .15s}
+    .cfav-star:hover{transform:scale(1.12);background:rgba(0,0,0,.52)}
+    .cfav-star.is-on{color:#FFD24A}
+    .cfav-star:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:2px}
+  `;
+  document.head.appendChild(s);
+})();
+
+function setStar(s, on){
+  s.classList.toggle("is-on", on);
+  s.textContent = on ? "\u2605" : "\u2606";
+  s.setAttribute("aria-pressed", on ? "true" : "false");
+  s.setAttribute("aria-label", on ? "Remove from favorites" : "Add to favorites");
+}
+function syncStars(id){
+  document.querySelectorAll('.cfav-star[data-cfav-id="' + id + '"]')
+    .forEach(el => setStar(el, FAVES.has(id)));
+}
+function makeStar(item){
+  const s = document.createElement("span");
+  s.className = "cfav-star";
+  s.dataset.cfavId = item.id;
+  s.setAttribute("role","button");
+  s.setAttribute("tabindex","0");
+  setStar(s, FAVES.has(item.id));
+  const activate = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(item.id); };
+  s.addEventListener("click", activate);
+  s.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") activate(e); });
+  return s;
+}
+
+async function toggleFav(id){
+  if (!ME || !window.sb) return;
+  const wasOn = FAVES.has(id);
+  if (wasOn) FAVES.delete(id); else FAVES.add(id);
+  syncStars(id);
+  let error;
+  if (wasOn) {
+    ({ error } = await window.sb.from("favorites").delete()
+        .eq("item_id", id).eq("source", CFAV_SOURCE));
+  } else {
+    ({ error } = await window.sb.from("favorites")
+        .upsert({ user_id: ME, item_id: id, source: CFAV_SOURCE }, { onConflict: "user_id,item_id" }));
+  }
+  if (error) {
+    if (wasOn) FAVES.add(id); else FAVES.delete(id);
+    syncStars(id);
+    console.warn("favorite toggle failed:", error.message);
+  }
+}
+
+async function recordView(item){
+  if (!ME || !window.sb || !item) return;
+  RECENTS.set(item.id, Date.now());
+  const { error } = await window.sb.from("recent_views")
+    .upsert({ user_id: ME, item_id: item.id, source: CFAV_SOURCE, viewed_at: new Date().toISOString() },
+            { onConflict: "user_id,item_id" });
+  if (error) console.warn("recordView failed:", error.message);
+}
+
+async function loadUserData(){
+  const sb = await window.sbReady;
+  const { data: { session } } = await sb.auth.getSession();
+  ME = session?.user?.id || null;
+  FAVES = new Set(); RECENTS = new Map();
+  if (!ME) return;
+  const [f, r] = await Promise.all([
+    sb.from("favorites").select("item_id").eq("source", CFAV_SOURCE),
+    sb.from("recent_views").select("item_id, viewed_at").eq("source", CFAV_SOURCE)
+  ]);
+  if (!f.error && f.data) for (const row of f.data) FAVES.add(row.item_id);
+  if (!r.error && r.data) for (const row of r.data) RECENTS.set(row.item_id, new Date(row.viewed_at).getTime());
+}
+
+/* tier: 0 starred, 1 recent (within window), 2 everything else */
+function cfavTier(item){
+  if (!ME) return 2;
+  if (FAVES.has(item.id)) return 0;
+  const t = RECENTS.get(item.id) || 0;
+  return t >= (Date.now() - RECENT_WINDOW_DAYS * 86400000) ? 1 : 2;
+}
+
+function updateModeChips(){
+  const show = !!ME;
+  const cs = document.getElementById("chipStarred");
+  const cr = document.getElementById("chipRecent");
+  if (cs) cs.style.display = show ? "" : "none";
+  if (cr) cr.style.display = show ? "" : "none";
+}
+
+document.addEventListener("collatera:recents-cleared", () => { RECENTS = new Map(); render(); });
+
+(function initUser(){
+  if (!window.sbReady) { setTimeout(initUser, 50); return; }
+  window.sbReady.then(async (sb) => {
+    await loadUserData(); updateModeChips(); render();
+    sb.auth.onAuthStateChange(async () => { await loadUserData(); updateModeChips(); render(); });
+  });
+})();
+
 </script>
 </body>
 </html>
