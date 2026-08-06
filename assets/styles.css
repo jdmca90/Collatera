@@ -30,6 +30,7 @@
   --acct-ok:    #1D7A4C;  --acct-err:   #B23B3B;
   --banner-ink:    #2F7FB5;  /* dev banner — light blue accent */
   --footer-ink:    #17557A;  /* footer — deep blue */
+  --logo-ring:     #A8455C;  /* ring around the header logo */
   --pink:          #FAD8E9;  /* logo pink — search panel tint */
   --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
 --shadow:    rgba(46,44,42,0.10);
@@ -54,6 +55,7 @@
     --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
     --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
     --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
+    --logo-ring:#FAD8E9;
     --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
   }
 }
@@ -69,6 +71,7 @@
   --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
   --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
   --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
+  --logo-ring:#FAD8E9;
   --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
 }
 
@@ -106,10 +109,10 @@ header {
 }
 .header-inner {
   max-width: 1180px; margin: 0 auto;
-  padding: 12px 20px;
+  padding: 8px 20px;
 }
 .header-top {
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 10px;
 }
 
 /* hamburger menu button (top-left) */
@@ -123,8 +126,8 @@ header {
 }
 .menu-btn:hover { border-color: var(--accent); color: var(--accent-deep); }
 /* logo sits on a dark disc so its pale ring keeps contrast on cream */
-.menu-btn.is-logo { background: #22303A; border-color: #22303A; }
-.menu-btn.is-logo:hover { border-color: var(--accent); }
+/* logo + wordmark act as the menu trigger; a coral ring gives the pale
+   logo edge definition without a heavy filled disc */
 
 .brand-group {
   display: flex; align-items: baseline; gap: 0;
