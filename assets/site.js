@@ -168,7 +168,7 @@ window.CollateraViews = {
     .menu-logo{width:2.1em;height:2.1em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
-      background:var(--accent,#2885C1);color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
+      background:var(--acct,#1B5E85);color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
       max-width:15em;box-shadow:0 2px 8px rgba(0,0,0,.22);transition:border-radius .12s, width .12s}
     .cauth-pill:hover{filter:brightness(1.08)}
     .cauth-pill:focus-visible{outline:2px solid var(--accent-deep,#1C6390);outline-offset:3px}
@@ -186,31 +186,32 @@ window.CollateraViews = {
       box-shadow:0 16px 44px rgba(0,0,0,.30);display:none;text-align:left}
     .cauth-panel.open{display:block}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
-    .cauth-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem}
-    .cauth-head-lbl{font-size:.78em;color:var(--muted,#6B6860);text-transform:uppercase;
-      letter-spacing:.06em}
-    .cauth-edit{font:inherit;font-size:.78em;background:none;border:1px solid var(--border,#D8D4CC);
-      color:var(--muted,#6B6860);border-radius:999px;padding:.15em .7em;cursor:pointer}
-    .cauth-edit:hover{color:var(--accent-deep,#1C6390);border-color:var(--accent,#2885C1)}
+    .cauth-row{display:flex;align-items:baseline;gap:.45em;margin:.35rem 0}
+    .cauth-row-bio{align-items:flex-start}
+    .cauth-inlbl{flex:none;font-size:.86em;opacity:.85}
+    .cauth-panel input,.cauth-panel textarea{flex:1;min-width:0;background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:8px;padding:.35em .5em;
+      font:inherit;font-size:.9em}
+    .cauth-panel textarea{resize:vertical;min-height:3em}
+    .cauth-panel input::placeholder,.cauth-panel textarea::placeholder{color:rgba(255,255,255,.6)}
     .cauth-panel input[readonly],.cauth-panel textarea[readonly]{background:transparent;
-      border-color:transparent;padding-left:0;color:var(--ink,#2E2C2A);cursor:default;resize:none}
-    .cauth-panel input[readonly]::placeholder,.cauth-panel textarea[readonly]::placeholder{
-      color:var(--muted,#6B6860);opacity:.6}
+      border-color:transparent;padding-left:0;cursor:default;resize:none}
+    .cauth-edit{display:none}
     .cauth-lbl{display:block;font-size:.78em;color:var(--muted,#6B6860);margin:.6rem 0 .2rem}
     .cauth-panel select,.cauth-panel input,.cauth-panel textarea{width:100%;box-sizing:border-box;
       padding:.5em .6em;border:1px solid var(--border,#D8D4CC);border-radius:8px;font:inherit;
       background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A)}
     .cauth-panel textarea{resize:vertical;min-height:4.2em}
-    .cauth-count{font-size:.72em;color:var(--muted,#6B6860);text-align:right;margin-top:.15rem}
+    .cauth-count{font-size:.72em;color:rgba(255,255,255,.7);text-align:right;margin-top:.15rem}
     .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
-      background:var(--accent,#85CCCC);color:var(--pill-ink,#1F1D1B);font:inherit;font-weight:600;cursor:pointer}
+      background:#fff;color:var(--acct,#1B5E85);font:inherit;font-weight:600;cursor:pointer}
     .cauth-save:disabled{opacity:.6;cursor:default}
-    .cauth-rule{border:none;border-top:1px solid var(--border,#D8D4CC);margin:.9rem 0 .5rem}
+    .cauth-rule{border:none;border-top:1px solid rgba(255,255,255,.28);margin:.9rem 0 .5rem}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
-      color:var(--ink,#2E2C2A);padding:.45em .1em;cursor:pointer;text-decoration:none;border-radius:6px}
-    .cauth-link:hover{background:var(--accent-tint,#E7F4F4)}
+      color:#fff;padding:.45em .5em;cursor:pointer;text-decoration:none;border-radius:6px}
+    .cauth-link:hover{background:rgba(255,255,255,.16)}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
-    .cauth-note.ok{color:var(--accent-deep,#3F8F8F)} .cauth-note.err{color:#c0392b}
+    .cauth-note.ok{color:#BFEBC8} .cauth-note.err{color:#FFC9C9}
 
     .cauth-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
       align-items:center;justify-content:center;z-index:1300}
@@ -243,22 +244,23 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthOpenLogin">Sign in</button>
     </div>
     <div id="cauthIn" hidden>
-      <div class="cauth-head">
-        <span class="cauth-head-lbl">Profile</span>
-        <button class="cauth-edit" id="cauthEditBtn" type="button">Edit</button>
+      <div class="cauth-row">
+        <label class="cauth-inlbl" for="cauthPos">Position:</label>
+        <input id="cauthPos" list="cauthPosList" maxlength="${TITLE_MAX}" autocomplete="off"
+               placeholder="&lt;none&gt;">
       </div>
-      <label class="cauth-lbl" for="cauthPos">Position / title</label>
-      <input id="cauthPos" list="cauthPosList" maxlength="${TITLE_MAX}" autocomplete="off"
-             placeholder="Choose or type your own">
       <datalist id="cauthPosList">
         ${POSITIONS.map(p => `<option value="${p}"></option>`).join("")}
       </datalist>
-      <label class="cauth-lbl" for="cauthBio">Bio</label>
-      <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="3" placeholder="A short bio"></textarea>
+      <div class="cauth-row cauth-row-bio">
+        <label class="cauth-inlbl" for="cauthBio">Bio:</label>
+        <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="2" placeholder="&lt;none&gt;"></textarea>
+      </div>
       <div class="cauth-count" id="cauthBioCount">0 / ${BIO_MAX}</div>
       <button class="cauth-save" id="cauthSave" type="button">Save</button>
       <div class="cauth-note" id="cauthNote"></div>
       <hr class="cauth-rule">
+      <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile</button>
       <a class="cauth-link" id="cauthUpload" href="${UPLOAD_URL}" hidden>Upload an image</a>
       <button class="cauth-link" id="cauthPwBtn" type="button">Change password</button>
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear recent history</button>
@@ -330,6 +332,7 @@ window.CollateraViews = {
     $("cauthSave").style.display  = on ? "" : "none";
     $("cauthBioCount").style.display = on ? "" : "none";
     $("cauthEditBtn").style.display = on ? "none" : "";
+    $("cauthEditBtn").textContent = "Edit profile";
     if (on) pos.focus();
   }
   bioEl.addEventListener("input", () => { $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`; });
