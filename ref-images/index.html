@@ -152,9 +152,27 @@ function render() {
     return true;
   });
 
-  // recently-viewed: newest first. all / starred / cat / tag keep library order.
+  // Tiered ordering for signed-in users: starred first, then recently
+  // viewed within RECENT_WINDOW_DAYS (newest first), then everything else
+  // in library order. The "Recently viewed" chip sorts purely by recency.
   if (mode === "recentviewed") {
     visible.sort((a,b) => (RECENTS.get(b.id)||0) - (RECENTS.get(a.id)||0));
+  } else if (ME) {
+    const cutoff = Date.now() - RECENT_WINDOW_DAYS * 86400000;
+    const tier = (im) => {
+      if (FAVES.has(im.id)) return 0;
+      const t = RECENTS.get(im.id) || 0;
+      return t >= cutoff ? 1 : 2;
+    };
+    visible = visible
+      .map((im, i) => ({ im, i, t: tier(im) }))
+      .sort((a,b) => {
+        if (a.t !== b.t) return a.t - b.t;
+        // within the recent tier, newest first; other tiers keep library order
+        if (a.t === 1) return (RECENTS.get(b.im.id)||0) - (RECENTS.get(a.im.id)||0);
+        return a.i - b.i;
+      })
+      .map(x => x.im);
   }
 
   grid.innerHTML = "";
@@ -283,21 +301,22 @@ function makeStar(img){
   const on = FAVES.has(img.id);
   const s = document.createElement("span");
   s.className = "cfav-star";
+  s.dataset.cfavId = img.id;
   s.setAttribute("role", "button");
   s.setAttribute("tabindex", "0");
   setStar(s, on);
-  const activate = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(img.id, s); };
+  const activate = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(img.id); };
   s.addEventListener("click", activate);
   s.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") activate(e); });
   return s;
 }
 
-async function toggleFav(id, starEl){
+async function toggleFav(id){
   if (!ME || !window.sb) return;
   const wasOn = FAVES.has(id);
-  // optimistic: flip the star now, reconcile with the server, revert on error
+  // optimistic: flip every star for this item, reconcile with the server
   if (wasOn) FAVES.delete(id); else FAVES.add(id);
-  setStar(starEl, !wasOn);
+  syncStars(id);
   let error;
   if (wasOn) {
     ({ error } = await window.sb.from("favorites").delete()
@@ -308,7 +327,7 @@ async function toggleFav(id, starEl){
   }
   if (error) {
     if (wasOn) FAVES.add(id); else FAVES.delete(id);
-    setStar(starEl, wasOn);
+    syncStars(id);
     console.warn("favorite toggle failed:", error.message);
   }
 }
@@ -378,6 +397,66 @@ function updateModeChips(){
   const _origOpen = openLightbox;
   openLightbox = function(i){ _origOpen(i); recordView(visible[i]); };
 })();
+
+
+
+/* =================================================================
+   TIERED ORDERING SUPPORT + lightbox star
+   RECENT_WINDOW_DAYS controls how long a viewed image keeps floating.
+   syncStars keeps the card star and the lightbox star in agreement.
+   ================================================================= */
+const RECENT_WINDOW_DAYS = 14;
+
+function syncStars(id){
+  document.querySelectorAll('.cfav-star[data-cfav-id="' + id + '"]')
+    .forEach(el => setStar(el, FAVES.has(id)));
+}
+
+(function lbStarStyle(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .cfav-lbstar{position:static;display:inline-flex;vertical-align:middle;
+      margin-right:.5rem;width:1.6rem;height:1.6rem;font-size:1.3rem;
+      background:transparent;color:inherit}
+    .cfav-lbstar:hover{background:var(--accent-tint,#E7F4F4);transform:scale(1.1)}
+    .cfav-lbstar.is-on{color:#E8A200}
+  `;
+  document.head.appendChild(s);
+})();
+
+(function addLightboxStar(){
+  const lbTitleEl = document.getElementById("lbTitle");
+  if (!lbTitleEl) return;
+  const st = document.createElement("span");
+  st.className = "cfav-star cfav-lbstar";
+  st.setAttribute("role", "button");
+  st.setAttribute("tabindex", "0");
+  st.hidden = true;
+  lbTitleEl.insertAdjacentElement("beforebegin", st);
+
+  const activate = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const id = st.dataset.cfavId;
+    if (id) toggleFav(id);
+  };
+  st.addEventListener("click", activate);
+  st.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") activate(e); });
+
+  const _origShowLb = showLb;
+  showLb = function(){
+    _origShowLb();
+    const img = visible[lbIndex];
+    if (ME && img) { st.hidden = false; st.dataset.cfavId = img.id; setStar(st, FAVES.has(img.id)); }
+    else { st.hidden = true; }
+  };
+})();
+
+/* profile panel cleared the history -> drop it locally and re-render */
+document.addEventListener("collatera:recents-cleared", () => {
+  RECENTS = new Map();
+  if (activeFilter.type === "recentviewed") activeFilter = { type: "all", value: null };
+  render();
+});
 
 </script>
 </body>
