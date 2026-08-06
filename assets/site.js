@@ -46,14 +46,13 @@ const header = document.createElement("header");
 header.innerHTML = `
   <div class="header-inner">
     <div class="header-top">
-      <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">&#9776;</button>
+      <button class="menu-btn is-logo" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""></button>
       <div class="brand-group">
         <a class="brand" href="/ref-images/"><span class="brand-c">C</span>ollatera</a>
         ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-      <img class="brandmark" src="/assets/collatera-logo-v2.png" alt="Collatera logo">
       <button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false">
         <span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>
         <span class="cauth-pill-email" id="cauthPillEmail" hidden></span>
@@ -165,6 +164,8 @@ window.CollateraViews = {
   /* ---- scoped styles (cauth- prefix; no global class clash) ---- */
   const style = document.createElement("style");
   style.textContent = `
+    .menu-btn.is-logo{padding:.15em;line-height:0;display:inline-flex;align-items:center;justify-content:center}
+    .menu-logo{width:2.1em;height:2.1em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
       background:#2B6E96;color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
@@ -175,7 +176,7 @@ window.CollateraViews = {
     .cauth-pill-email{font-size:.84em;max-width:14em;overflow:hidden;text-overflow:ellipsis;
       white-space:nowrap}
 
-    .cauth-panel{position:absolute;top:calc(100% + .5rem);right:.75rem;z-index:1200;
+    .cauth-panel{position:fixed;top:4rem;right:.75rem;z-index:1200;
       width:min(94vw,320px);background:var(--bg,#FAF7F0);color:var(--fg,#1a1a1a);
       border:1px solid var(--line,#cbd3d3);border-radius:14px;padding:1rem;
       box-shadow:0 16px 44px rgba(0,0,0,.30);display:none;text-align:left}
@@ -269,7 +270,15 @@ window.CollateraViews = {
     </div>`;
   document.body.appendChild(scrim);
 
-  const openPanel  = () => { panel.classList.add("open"); avatarBtn?.setAttribute("aria-expanded","true"); };
+  const openPanel  = () => {
+    if (avatarBtn) {
+      const r = avatarBtn.getBoundingClientRect();
+      panel.style.top   = (r.bottom + 8) + "px";
+      panel.style.right = Math.max(8, window.innerWidth - r.right) + "px";
+    }
+    panel.classList.add("open");
+    avatarBtn?.setAttribute("aria-expanded","true");
+  };
   const closePanel = () => { panel.classList.remove("open"); avatarBtn?.setAttribute("aria-expanded","false"); };
   const openModal  = () => { $("cauthMsg").textContent = ""; scrim.classList.add("open"); $("cauthEmail").focus(); };
   const closeModal = () => scrim.classList.remove("open");
