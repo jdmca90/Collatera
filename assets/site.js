@@ -46,9 +46,8 @@ const header = document.createElement("header");
 header.innerHTML = `
   <div class="header-inner">
     <div class="header-top">
-      <button class="menu-btn is-logo" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""></button>
+      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""><span class="brand"><span class="brand-c">C</span>ollatera</span><span class="menu-chev" aria-hidden="true">&#8964;</span></button>
       <div class="brand-group">
-        <a class="brand" href="/ref-images/"><span class="brand-c">C</span>ollatera</a>
         ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
@@ -169,8 +168,15 @@ window.CollateraViews = {
   /* ---- scoped styles (cauth- prefix; no global class clash) ---- */
   const style = document.createElement("style");
   style.textContent = `
-    .menu-btn.is-logo{padding:.15em;line-height:0;display:inline-flex;align-items:center;justify-content:center}
-    .menu-logo{width:2.5em;height:2.5em;border-radius:50%;display:block}
+    .menu-btn.is-brand{display:inline-flex;align-items:center;gap:.42em;
+      width:auto;height:auto;padding:.2em .6em .2em .2em;background:transparent;
+      border-color:transparent;border-radius:999px}
+    .menu-btn.is-brand:hover{background:var(--accent-tint);border-color:transparent}
+    .menu-btn.is-brand .brand{font-size:26px;line-height:1;color:var(--brand);
+      font-variant-caps:small-caps;letter-spacing:.005em}
+    .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
+    .menu-logo{width:2.9em;height:2.9em;border-radius:50%;display:block;flex:none;
+      border:2.5px solid var(--logo-ring,#A8455C);box-sizing:border-box}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.5em .95em;border-radius:14px;cursor:pointer;
       background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge2,#FAD8E9);font:inherit;line-height:1.2;
