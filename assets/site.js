@@ -197,7 +197,11 @@ window.CollateraViews = {
     .cauth-pill.is-open .cauth-pill-email{font-size:1.06em;font-weight:700;
       color:var(--acct-val,#8ECBF2);max-width:none}
     .cauth-pill-lead{display:none}
-    .cauth-pill.is-open .cauth-pill-lead{display:inline}
+    .cauth-pill.is-open .cauth-pill-lead,
+    .cauth-pill.is-out .cauth-pill-lead{display:inline;font-style:normal;
+      font-weight:700;font-size:.95em}
+    .cauth-pill.is-out.is-open .cauth-pill-lead{font-size:1.1em;
+      color:var(--acct-user,#F49E9E)}
     .cauth-pill-email{font-size:.9em;font-weight:700;letter-spacing:-.005em;
       font-family:"Avenir Next Condensed","Roboto Condensed","Segoe UI Semibold",
         "Hanken Grotesk",system-ui,sans-serif;
@@ -266,26 +270,18 @@ window.CollateraViews = {
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
     .cauth-note.ok{color:var(--acct-ok,#BFEBC8)} .cauth-note.err{color:var(--acct-err,#FFC9C9)}
 
-    .cauth-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
-      align-items:center;justify-content:center;z-index:1300}
-    .cauth-scrim.open{display:flex}
-    .cauth-modal{background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A);border-radius:14px;
-      padding:1.4rem;width:min(92vw,340px);box-shadow:0 14px 46px rgba(0,0,0,.32)}
-    .cauth-modal h2{margin:.1rem 0 1rem;font-size:1.15rem}
-    .cauth-field{display:block;margin:.55rem 0;font-size:.9em}
-    .cauth-field input{width:100%;box-sizing:border-box;margin-top:.25em;padding:.6em .7em;
-      border:1px solid var(--border,#D8D4CC);border-radius:8px;font:inherit;background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A)}
-    .cauth-actions{display:flex;gap:.5rem;margin-top:1rem}
-    .cauth-actions button{flex:1;padding:.62em;border-radius:8px;font:inherit;cursor:pointer}
-    .cauth-primary{background:var(--accent,#85CCCC);border:none;color:var(--pill-ink,#1F1D1B);font-weight:600}
-    .cauth-primary:disabled{opacity:.6;cursor:default}
-    .cauth-cancel{background:transparent;border:1px solid var(--border,#D8D4CC);color:inherit}
-    .cauth-msg{min-height:1.2em;margin-top:.6rem;font-size:.84em;color:#c0392b}
   `;
   document.head.appendChild(style);
 
   const $ = id => document.getElementById(id);
   const avatarBtn = $("cauthAvatarBtn");
+  /* pill wording depends on auth state and whether the panel is open */
+  function paintLead(forceOpen){
+    const lead = $("cauthPillLead"); if (!lead) return;
+    const open = forceOpen !== undefined ? forceOpen : avatarBtn?.classList.contains("is-open");
+    if (!window.collateraUser) lead.textContent = open ? "Not currently signed in" : "Sign in";
+    else lead.textContent = open ? "User:" : "";
+  }
 
   /* ---- the dropdown panel ---- */
   const panel = document.createElement("div");
@@ -293,8 +289,17 @@ window.CollateraViews = {
   panel.id = "cauthPanel";
   panel.innerHTML = `
     <div id="cauthOut">
-      <div class="cauth-email">Not signed in</div>
-      <button class="cauth-link" id="cauthOpenLogin">Sign in</button>
+      <div class="cauth-row">
+        <label class="cauth-inlbl" for="cauthEmail">Email:</label>
+        <input id="cauthEmail" type="email" autocomplete="username"
+               autocapitalize="off" spellcheck="false" placeholder="you@example.com">
+      </div>
+      <div class="cauth-row">
+        <label class="cauth-inlbl" for="cauthPass">Password:</label>
+        <input id="cauthPass" type="password" autocomplete="current-password" placeholder="">
+      </div>
+      <button class="cauth-save" id="cauthSubmit" type="button">Sign in</button>
+      <div class="cauth-note" id="cauthMsg" role="alert"></div>
     </div>
     <div id="cauthIn" hidden>
       <div class="cauth-avatarwrap">
@@ -333,25 +338,6 @@ window.CollateraViews = {
     </div>`;
   document.body.appendChild(panel);
 
-  /* ---- sign-in modal ---- */
-  const scrim = document.createElement("div");
-  scrim.className = "cauth-scrim"; scrim.id = "cauthScrim";
-  scrim.innerHTML = `
-    <div class="cauth-modal" role="dialog" aria-modal="true" aria-labelledby="cauthTitleH">
-      <h2 id="cauthTitleH">Sign in</h2>
-      <label class="cauth-field">Email
-        <input id="cauthEmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
-      </label>
-      <label class="cauth-field">Password
-        <input id="cauthPass" type="password" autocomplete="current-password">
-      </label>
-      <div class="cauth-msg" id="cauthMsg" role="alert"></div>
-      <div class="cauth-actions">
-        <button class="cauth-cancel" id="cauthCancel" type="button">Cancel</button>
-        <button class="cauth-primary" id="cauthSubmit" type="button">Sign in</button>
-      </div>
-    </div>`;
-  document.body.appendChild(scrim);
 
   /* the submit link carries a hint about where the person came from */
   function tagSubmitLink(){
@@ -366,8 +352,7 @@ window.CollateraViews = {
 
   const openPanel  = () => {
     tagSubmitLink();
-    const lead0 = $("cauthPillLead");
-    if (lead0 && window.collateraUser) lead0.textContent = "User:";
+    paintLead(true);
     panel.classList.add("open");            // measure with layout applied
     if (avatarBtn) {
       const pw = panel.getBoundingClientRect().width;
@@ -381,14 +366,11 @@ window.CollateraViews = {
   };
   const closePanel = () => {
     panel.classList.remove("open");
-    const lead1 = $("cauthPillLead");
-    if (lead1 && window.collateraUser) lead1.textContent = "Signed in as:";
+    paintLead(false);
     if (avatarBtn) { avatarBtn.classList.remove("is-open"); avatarBtn.style.width = ""; }
     setEditing(false);
     avatarBtn?.setAttribute("aria-expanded","false");
   };
-  const openModal  = () => { $("cauthMsg").textContent = ""; scrim.classList.add("open"); $("cauthEmail").focus(); };
-  const closeModal = () => scrim.classList.remove("open");
 
   if (avatarBtn) avatarBtn.onclick = (e) => {
     e.stopPropagation();
@@ -397,10 +379,7 @@ window.CollateraViews = {
   document.addEventListener("click", (e) => {
     if (panel.classList.contains("open") && !panel.contains(e.target)) closePanel();
   });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closePanel(); closeModal(); } });
-  $("cauthCancel").onclick = closeModal;
-  scrim.addEventListener("click", e => { if (e.target === scrim) closeModal(); });
-  $("cauthOpenLogin").onclick = () => { closePanel(); openModal(); };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
 
   const bioEl = $("cauthBio"), noteEl = $("cauthNote");
 
@@ -425,15 +404,11 @@ window.CollateraViews = {
   async function paint(sb, session){
     const user = session?.user || null;
     window.collateraUser = user;
-    const lead = $("cauthPillLead"), pmail = $("cauthPillEmail");
-    if (user) {
-      lead.textContent = "Signed in as:";
-      pmail.textContent = user.email || "";
-      pmail.hidden = false;
-    } else {
-      lead.textContent = "Sign in";
-      pmail.textContent = ""; pmail.hidden = true;
-    }
+    const pmail = $("cauthPillEmail");
+    avatarBtn?.classList.toggle("is-out", !user);
+    if (user) { pmail.textContent = user.email || ""; pmail.hidden = false; }
+    else      { pmail.textContent = ""; pmail.hidden = true; }
+    paintLead();
     $("cauthOut").hidden = !!user;
     $("cauthIn").hidden  = !user;
     if (!user) return;
@@ -460,12 +435,12 @@ window.CollateraViews = {
 
     async function doLogin(){
       const email = $("cauthEmail").value.trim(), pass = $("cauthPass").value, msg = $("cauthMsg");
-      if (!email || !pass) { msg.textContent = "Enter your email and password."; return; }
-      $("cauthSubmit").disabled = true; msg.textContent = "Signing in\u2026";
+      if (!email || !pass) { msg.textContent = "Enter your email and password."; msg.className = "cauth-note err"; return; }
+      $("cauthSubmit").disabled = true; msg.textContent = "Signing in\u2026"; msg.className = "cauth-note";
       const { error } = await sb.auth.signInWithPassword({ email, password: pass });
       $("cauthSubmit").disabled = false;
-      if (error) { msg.textContent = error.message || "Sign-in failed."; return; }
-      $("cauthPass").value = ""; closeModal();
+      if (error) { msg.textContent = error.message || "Sign-in failed."; msg.className = "cauth-note err"; return; }
+      $("cauthPass").value = ""; $("cauthEmail").value = ""; msg.textContent = "";
     }
     $("cauthSubmit").onclick = doLogin;
     $("cauthPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
@@ -507,6 +482,6 @@ window.CollateraViews = {
     $("cauthEditBtn").onclick = () => setEditing(true);
     $("cauthOutBtn").onclick = async () => { await sb.auth.signOut(); closePanel(); };
   };
-  libEl.onerror = () => { const b = $("cauthOpenLogin"); if (b) b.textContent = "Sign-in unavailable"; };
+  libEl.onerror = () => { const b = $("cauthSubmit"); if (b) { b.textContent = "Sign-in unavailable"; b.disabled = true; } };
   document.head.appendChild(libEl);
 })();
