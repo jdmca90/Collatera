@@ -17,9 +17,9 @@
   --accent-deep:   #A84E7C;  /* pink deep (text on tint) */
   --accent-tint:   #FBEAF3;  /* pink tint  */
   --brand:         #1C6390;  /* logo blue — wordmark & em-dash, stays blue */
-  --panel:         #17557A;  /* search panel: darker than logo blue in light mode */
-  --panel-ink:     #FFFFFF;  /* text inside the search panel */
-  --panel-line:    rgba(255,255,255,.34);
+  --panel:         #DEEDF8;  /* search panel: pale logo-blue tint */
+  --panel-ink:     #2E2C2A;  /* text inside the panel = normal ink */
+  --panel-line:    #1F6EA3;  /* edge: slightly darker than the logo blue */
   --title:         #E9A6C8;  /* page title — logo pink, darkened to read on cream */
   --pink:          #FAD8E9;  /* logo pink — search panel tint */
   --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
@@ -37,16 +37,16 @@
     --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
     --border:#3F3B33; --accent:#E9A6C8; --accent-deep:#F3C2DC;
     --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
-    --title:#FAD8E9; --brand:#7CC0EC; --panel:#8CC6E8; --panel-ink:#12242F;
-    --panel-line:rgba(0,0,0,.28); --shadow:rgba(0,0,0,0.35);
+    --title:#FAD8E9; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+    --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
   }
 }
 :root[data-theme="dark"] {
   --bg:#26241F; --surface:#302D27; --ink:#F2EFE7; --muted:#A8A399;
   --border:#3F3B33; --accent:#E9A6C8; --accent-deep:#F3C2DC;
   --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
-  --title:#FAD8E9; --brand:#7CC0EC; --panel:#8CC6E8; --panel-ink:#12242F;
-  --panel-line:rgba(0,0,0,.28); --shadow:rgba(0,0,0,0.35);
+  --title:#FAD8E9; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+  --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -222,24 +222,17 @@ header {
   border-radius: var(--radius);
 }
 
-/* contents of the blue panel sit on a dark (light-mode) or light (dark-mode)
-   surface, so their ink and hairlines follow --panel-ink, not the page ink */
+/* contents of the tinted panel keep normal ink; only hairlines follow the panel */
 .controls .search-input {
-  background: rgba(255,255,255,.12); border-color: var(--panel-line);
+  background: var(--bg); border-color: var(--panel-line);
   color: var(--panel-ink);
 }
-.controls .search-input::placeholder { color: var(--panel-ink); opacity: .65; }
-.controls .search-wrap svg { color: var(--panel-ink); opacity: .75; }
-.controls .chip {
-  color: var(--panel-ink); border-color: var(--panel-line);
-  background: rgba(255,255,255,.10);
-}
+.controls .search-input::placeholder { color: var(--muted); }
+.controls .chip { color: var(--muted); border-color: var(--border); }
 .controls .chip:hover { color: var(--panel-ink); border-color: var(--accent); }
 .controls .chip[aria-pressed="true"] {
   background: var(--accent); color: var(--pill-ink); border-color: var(--accent);
 }
-.controls .chip-sep { background: var(--panel-line); }
-.controls .count { color: var(--panel-ink); opacity: .8; }
 
 .search-wrap { position: relative; margin: 0 0 14px; }
 .search-wrap svg {
@@ -254,7 +247,7 @@ header {
 }
 .search-input::placeholder { color: var(--muted); }
 .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
-.controls .search-input:focus { box-shadow: 0 0 0 3px rgba(227,159,196,.55); }
+.controls .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
 
 .chips {
   display: flex; align-items: center; gap: 8px; overflow-x: auto;
