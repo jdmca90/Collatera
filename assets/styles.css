@@ -20,12 +20,13 @@
   --panel:         #DEEDF8;  /* search panel: pale logo-blue tint */
   --panel-ink:     #2E2C2A;  /* text inside the panel = normal ink */
   --panel-line:    #1F6EA3;  /* edge: slightly darker than the logo blue */
-  --title:         #C4566B;  /* page title — deep coral */
-  /* account pill / menu (light mode: light surface, dark ink) */
-  --acct:       #E7F1FA;  --acct-open:  #F3F8FC;  --acct-ink:   #22303A;
-  --acct-edge:  #D98BB4;  --acct-lbl:   #B04A66;  --acct-val:   #1C6390;
-  --acct-user:  #C4566B;  --acct-field: #FFFFFF;  --acct-line:  #C9D6E0;
-  --acct-mute:  #7A8A96;  --acct-hover: rgba(28,99,144,.12);
+  --title:         #A8455C;  /* page title — deep coral */
+  /* account pill / menu (light: pale pink surface, deep coral edge) */
+  --acct:       #FCEBF1;  --acct-open:  #FCEBF1;  --acct-ink:   #3A2630;
+  --acct-edge:  #A8455C;  --acct-edge2: #E9A0AC;  --acct-lbl:   #A8455C;
+  --acct-val:   #1C6390;  --acct-user:  #A8455C;  --acct-admin: #B0303A;
+  --acct-field: #FFFFFF;  --acct-line:  #E0BCC8;  --acct-mute:  #9A8792;
+  --acct-hover: rgba(168,69,92,.12);
   --acct-ok:    #1D7A4C;  --acct-err:   #B23B3B;
   --pink:          #FAD8E9;  /* logo pink — search panel tint */
   --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
@@ -45,7 +46,8 @@
     --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
     --title:#FAD8E9; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
     --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
-    --acct-edge:#FAD8E9; --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
+    --acct-edge:#FAD8E9; --acct-edge2:#FAD8E9; --acct-admin:#FF9B9B;
+    --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
     --acct-user:#F49E9E; --acct-field:rgba(255,255,255,.13);
     --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
     --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
@@ -58,7 +60,8 @@
   --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
   --title:#FAD8E9; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
   --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
-  --acct-edge:#FAD8E9; --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
+  --acct-edge:#FAD8E9; --acct-edge2:#FAD8E9; --acct-admin:#FF9B9B;
+  --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
   --acct-user:#F49E9E; --acct-field:rgba(255,255,255,.13);
   --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
   --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
