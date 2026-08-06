@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review queue — Collatera</title>
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<script>window.COLLATERA_SECTION = "Review queue";</script>
+<script src="/assets/site.js"></script>
+
+<main class="rv-main">
+  <div id="rvDenied" class="rv-card" hidden>
+    <h2 class="rv-h">Not available</h2>
+    <p class="rv-p">This page is for the site administrator. Sign in with the admin account to use it.</p>
+  </div>
+
+  <div id="rvTokenCard" class="rv-card" hidden>
+    <h2 class="rv-h">GitHub access</h2>
+    <p class="rv-p">Approving publishes to the repository, so paste a fine-grained token with
+       <strong>Contents: read &amp; write</strong>. Held for this browser session only.</p>
+    <input id="rvToken" type="password" placeholder="github_pat_…" autocomplete="off">
+    <button id="rvTokenBtn" class="rv-btn" type="button">Verify token</button>
+    <div id="rvTokenMsg" class="rv-msg"></div>
+  </div>
+
+  <div id="rvBody" hidden>
+    <div class="rv-card">
+      <div class="rv-head">
+        <h2 class="rv-h">Pending submissions</h2>
+        <button id="rvRefresh" class="rv-ghost" type="button">Refresh</button>
+      </div>
+      <div id="rvQueue" class="rv-queue">Loading…</div>
+    </div>
+
+    <div class="rv-card">
+      <div class="rv-head">
+        <h2 class="rv-h">Integrity check</h2>
+        <button id="rvCheck" class="rv-ghost" type="button">Run check</button>
+      </div>
+      <p class="rv-p">Verifies every approved submission actually landed: file present in the
+         repo and a matching entry in <code>images.json</code>. Also lists any recorded errors.</p>
+      <div id="rvHealth" class="rv-health"></div>
+    </div>
+  </div>
+</main>
+
+<style>
+.rv-main{max-width:900px;margin:22px auto 60px;padding:0 18px}
+.rv-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
+.rv-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rv-h{font-size:20px} .rv-p{color:var(--muted);font-size:.92em;margin-top:6px}
+.rv-main input,.rv-main select,.rv-main textarea{width:100%;box-sizing:border-box;
+  padding:.55em .7em;border:1px solid var(--border);border-radius:9px;
+  background:var(--bg);color:var(--ink);font:inherit;margin-top:8px}
+.rv-btn{margin-top:12px;padding:.6em 1.2em;border:none;border-radius:9px;
+  background:var(--accent);color:var(--pill-ink);font:inherit;font-weight:700;cursor:pointer}
+.rv-btn:disabled{opacity:.6;cursor:default}
+.rv-ghost{padding:.35em .9em;border:1px solid var(--border);border-radius:999px;
+  background:transparent;color:var(--ink);font:inherit;font-size:.86em;cursor:pointer}
+.rv-msg{margin-top:8px;font-size:.9em;min-height:1.1em}
+.rv-msg.ok{color:var(--accent-deep)} .rv-msg.err{color:#B23B3B}
+.rv-item{border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:14px;
+  display:grid;grid-template-columns:200px 1fr;gap:16px}
+@media(max-width:620px){.rv-item{grid-template-columns:1fr}}
+.rv-thumb img{width:100%;border-radius:9px;border:1px solid var(--border)}
+.rv-meta{font-size:.82em;color:var(--muted);margin-top:6px;word-break:break-all}
+.rv-lbl{display:block;margin:10px 0 0;font-size:.8em;color:var(--muted)}
+.rv-tagline{font-size:.82em;color:var(--muted);margin-top:4px}
+.rv-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.rv-approve{background:#1D7A4C;color:#fff;border:none;border-radius:9px;
+  padding:.55em 1.1em;font:inherit;font-weight:700;cursor:pointer}
+.rv-reject{background:transparent;color:#B23B3B;border:1px solid #B23B3B;border-radius:9px;
+  padding:.55em 1.1em;font:inherit;cursor:pointer}
+.rv-rejbox{margin-top:10px;padding:10px;border:1px dashed var(--border);border-radius:9px}
+.rv-health{margin-top:10px;font-size:.9em}
+.rv-ok{color:#1D7A4C} .rv-bad{color:#B23B3B}
+.rv-line{padding:.35em 0;border-bottom:1px solid var(--border)}
+.rv-line:last-child{border-bottom:none}
+</style>
+
+<script>
+const REPO_OWNER = "jdmca90";
+const REPO_NAME  = "Collatera";
+const BRANCH     = "main";
+const IMAGES_JSON_PATH = "data/images.json";
+const IMAGES_DIR = "images";
+const TOKEN_KEY  = "collatera_review_pat";
+const ADMIN_EMAIL = "jdmca90@gmail.com";
+const REJECT_REASONS = [
+  "Duplicate of existing image",
+  "Image quality too low",
+  "Copyright / licensing unclear",
+  "Possible identifiable patient information",
+  "Not a good fit for the library",
+  "Needs better title / category / tags",
+  "Other (see note)"
+];
+
+const $ = id => document.getElementById(id);
+let PENDING = [];
+
+/* ---------- GitHub helpers (same pattern as the uploader) ---------- */
+function ghHeaders(){
+  return { Authorization:`Bearer ${sessionStorage.getItem(TOKEN_KEY)}`,
+           Accept:"application/vnd.github+json" };
+}
+async function getFile(path){
+  const r = await fetch(
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURI(path)}?ref=${BRANCH}`,
+    { headers: ghHeaders() });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`GitHub read failed (${r.status})`);
+  return r.json();
+}
+async function putFile(path, base64Content, message, sha){
+  const body = { message, content: base64Content, branch: BRANCH };
+  if (sha) body.sha = sha;
+  const r = await fetch(
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURI(path)}`,
+    { method:"PUT", headers:{...ghHeaders(),"Content-Type":"application/json"},
+      body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(`GitHub write failed (${r.status}) — ${(await r.text()).slice(0,140)}`);
+  return r.json();
+}
+const b64 = str => btoa(unescape(encodeURIComponent(str)));
+function blobToB64(blob){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>res(fr.result.split(",")[1]);
+    fr.onerror=()=>rej(new Error("Couldn't read the file"));
+    fr.readAsDataURL(blob);
+  });
+}
+function newImgId(){
+  return "img_" + Array.from(crypto.getRandomValues(new Uint8Array(8)),
+    b => "0123456789abcdefghijklmnopqrstuvwxyz"[b % 36]).join("");
+}
+/* filename derived from the title, matching the uploader's convention */
+function safeBase(title){
+  return title.replace(/[\/\\:*?"<>|]+/g," ").replace(/\s+/g," ").trim().slice(0,80) || "untitled";
+}
+/* checks the repo itself, not just images.json — avoids the orphan-collision trap */
+async function freePath(title, ext){
+  const base = safeBase(title);
+  let candidate = `${IMAGES_DIR}/${base}.${ext}`, n = 2;
+  while (await getFile(candidate)) { candidate = `${IMAGES_DIR}/${base}-${n}.${ext}`; n++; }
+  return candidate;
+}
+
+/* ---------- token gate ---------- */
+$("rvTokenBtn").onclick = async () => {
+  const t = $("rvToken").value.trim();
+  const m = $("rvTokenMsg");
+  if(!t){ m.textContent="Paste a token."; m.className="rv-msg err"; return; }
+  m.textContent="Checking…"; m.className="rv-msg";
+  const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`,
+    { headers:{ Authorization:`Bearer ${t}`, Accept:"application/vnd.github+json" } });
+  if(!r.ok){ m.textContent=`Token rejected (${r.status}).`; m.className="rv-msg err"; return; }
+  sessionStorage.setItem(TOKEN_KEY, t);
+  $("rvTokenCard").hidden = true; $("rvBody").hidden = false;
+  loadQueue();
+};
+
+/* ---------- the queue ---------- */
+async function loadQueue(){
+  const sb = window.sb;
+  const box = $("rvQueue");
+  const { data, error } = await sb.from("submissions")
+    .select("*").eq("status","pending").order("created_at",{ascending:true});
+  if(error){ box.textContent="Couldn't load the queue — "+error.message; return; }
+  PENDING = data || [];
+  if(!PENDING.length){ box.textContent="Nothing pending."; return; }
+  box.innerHTML="";
+  for(const s of PENDING){
+    const { data:signed } = await sb.storage.from("submissions")
+      .createSignedUrl(s.storage_path, 3600);
+    const el = document.createElement("div");
+    el.className="rv-item";
+    el.innerHTML = `
+      <div class="rv-thumb">
+        ${signed?.signedUrl ? `<img src="${signed.signedUrl}" alt="">`
+                            : `<div class="rv-bad">File missing from storage</div>`}
+        <div class="rv-meta">${s.storage_path}<br>${new Date(s.created_at).toLocaleString()}</div>
+      </div>
+      <div>
+        <label class="rv-lbl">Title</label>
+        <input data-f="title" value="${(s.title||"").replace(/"/g,"&quot;")}">
+        <label class="rv-lbl">Category</label>
+        <input data-f="cat" value="${(s.cat||"").replace(/"/g,"&quot;")}">
+        <label class="rv-lbl">Tags (comma separated)</label>
+        <input data-f="tags" value="${(s.tags||[]).join(", ").replace(/"/g,"&quot;")}">
+        <label class="rv-lbl">Note (published as the caption)</label>
+        <textarea data-f="note" rows="2">${s.note||""}</textarea>
+        ${s.note ? `<div class="rv-tagline">Submitter's comment: ${s.note}</div>` : ""}
+        <div class="rv-actions">
+          <button class="rv-approve">Approve &amp; publish</button>
+          <button class="rv-reject">Reject</button>
+        </div>
+        <div class="rv-rejbox" hidden>
+          <select data-f="reason">${REJECT_REASONS.map(r=>`<option>${r}</option>`).join("")}</select>
+          <textarea data-f="rnote" rows="2" placeholder="Optional note to the submitter"></textarea>
+          <button class="rv-btn rv-confirm">Confirm rejection</button>
+        </div>
+        <div class="rv-msg" data-f="msg"></div>
+      </div>`;
+    const g = f => el.querySelector(`[data-f="${f}"]`);
+    el.querySelector(".rv-reject").onclick = () =>
+      { const b=el.querySelector(".rv-rejbox"); b.hidden = !b.hidden; };
+    el.querySelector(".rv-confirm").onclick = () => doReject(s, g);
+    el.querySelector(".rv-approve").onclick = () => doApprove(s, g, el);
+    box.appendChild(el);
+  }
+}
+
+/* ---------- approve: publish, then record ---------- */
+async function doApprove(s, g, el){
+  const sb = window.sb;
+  const setMsg=(t,ok)=>{ g("msg").textContent=t; g("msg").className="rv-msg "+(ok?"ok":"err"); };
+  const btn = el.querySelector(".rv-approve"); btn.disabled = true;
+  const title=g("title").value.trim(), cat=g("cat").value.trim();
+  const tags=g("tags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  const note=g("note").value.trim();
+  if(!title||!cat||!tags.length){ btn.disabled=false; return setMsg("Title, category and ≥1 tag required.",false); }
+
+  let stage="start", publishedPath=null;
+  try{
+    setMsg("Fetching the file…", true);
+    stage="download";
+    const dl = await sb.storage.from("submissions").download(s.storage_path);
+    if(dl.error) throw new Error("storage download: "+dl.error.message);
+    const ext = (s.storage_path.split(".").pop()||"jpg").toLowerCase();
+    const contentB64 = await blobToB64(dl.data);
+
+    stage="pick-path";
+    publishedPath = await freePath(title, ext);
+
+    stage="commit-image";
+    setMsg("Publishing the image…", true);
+    await putFile(publishedPath, contentB64, `Add image from submission: ${title}`);
+
+    stage="update-json";
+    setMsg("Updating images.json…", true);
+    const cur = await getFile(IMAGES_JSON_PATH);
+    if(!cur) throw new Error("images.json not found");
+    const json = JSON.parse(decodeURIComponent(escape(atob(cur.content.replace(/\n/g,"")))));
+    const id = newImgId();
+    json.images.push({ id, file:`/${publishedPath}`, title, cat, tags, note });
+    await putFile(IMAGES_JSON_PATH, b64(JSON.stringify(json,null,2)+"\n"),
+                  `Add to images.json: ${title}`, cur.sha);
+
+    stage="mark-approved";
+    const upd = await sb.from("submissions").update({
+      status:"approved", published_id:id, published_file:`/${publishedPath}`,
+      title, cat, tags, note: note||null, reviewed_at:new Date().toISOString(), error_log:null
+    }).eq("id", s.id);
+    if(upd.error) throw new Error("published, but couldn't mark approved: "+upd.error.message);
+
+    setMsg("Published.", true);
+    setTimeout(loadQueue, 700);
+  }catch(err){
+    const log = `[${new Date().toISOString()}] failed at ${stage}: ${err.message}`
+              + (publishedPath ? ` | file committed as /${publishedPath}` : "");
+    await sb.from("submissions").update({ error_log: log }).eq("id", s.id);
+    setMsg(log, false);
+    btn.disabled = false;
+  }
+}
+
+/* ---------- reject ---------- */
+async function doReject(s, g){
+  const sb = window.sb;
+  const { error } = await sb.from("submissions").update({
+    status:"rejected", reject_reason:g("reason").value,
+    reject_note:g("rnote").value.trim()||null, reviewed_at:new Date().toISOString()
+  }).eq("id", s.id);
+  g("msg").textContent = error ? "Couldn't reject — "+error.message : "Rejected.";
+  g("msg").className = "rv-msg "+(error?"err":"ok");
+  if(!error){ await sb.storage.from("submissions").remove([s.storage_path]); setTimeout(loadQueue,700); }
+}
+
+/* ---------- integrity check ---------- */
+$("rvCheck").onclick = async () => {
+  const sb = window.sb, box = $("rvHealth");
+  box.textContent = "Checking…";
+  try{
+    const cur = await getFile(IMAGES_JSON_PATH);
+    const json = JSON.parse(decodeURIComponent(escape(atob(cur.content.replace(/\n/g,"")))));
+    const ids = new Set(json.images.map(i=>i.id));
+    const files = new Set(json.images.map(i=>i.file));
+    const { data } = await sb.from("submissions").select("*").order("created_at",{ascending:false});
+    const lines = [];
+    for(const s of (data||[])){
+      if(s.error_log) lines.push(`<div class="rv-line rv-bad">⚠ ${s.title}: ${s.error_log}</div>`);
+      if(s.status !== "approved") continue;
+      const problems = [];
+      if(!s.published_id || !ids.has(s.published_id)) problems.push("no matching entry in images.json");
+      if(s.published_file && !files.has(s.published_file)) problems.push("published file not referenced");
+      if(s.published_file && !(await getFile(s.published_file.replace(/^\//,""))))
+        problems.push("file missing from the repo");
+      lines.push(problems.length
+        ? `<div class="rv-line rv-bad">✕ ${s.title}: ${problems.join("; ")}</div>`
+        : `<div class="rv-line rv-ok">✓ ${s.title}</div>`);
+    }
+    box.innerHTML = lines.length ? lines.join("") : "No approved submissions yet.";
+  }catch(e){ box.innerHTML = `<span class="rv-bad">Check failed — ${e.message}</span>`; }
+};
+
+$("rvRefresh").onclick = loadQueue;
+
+/* ---------- boot: admin only ---------- */
+(function init(){
+  if(!window.sbReady){ setTimeout(init,50); return; }
+  window.sbReady.then(async sb=>{
+    const paint = async () => {
+      const { data:{ session } } = await sb.auth.getSession();
+      const isAdmin = session?.user?.email === ADMIN_EMAIL;
+      $("rvDenied").hidden = isAdmin;
+      if(!isAdmin){ $("rvTokenCard").hidden=true; $("rvBody").hidden=true; return; }
+      if(sessionStorage.getItem(TOKEN_KEY)){ $("rvTokenCard").hidden=true; $("rvBody").hidden=false; loadQueue(); }
+      else { $("rvTokenCard").hidden=false; $("rvBody").hidden=true; }
+    };
+    await paint();
+    sb.auth.onAuthStateChange(paint);
+  });
+})();
+</script>
+</body>
+</html>
