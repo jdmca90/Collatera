@@ -12,93 +12,65 @@
 </head>
 <body>
 
+<img class="ab-watermark" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true">
+
 <main class="ab-main">
-
-  <header class="ab-head">
-    <img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="">
-    <div>
-      <h1 class="ab-title">About Collatera</h1>
-      <p class="ab-kicker">A clinical reference project, built alongside fellowship</p>
-    </div>
-  </header>
-
+  <img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="Collatera logo">
+  <h1 class="ab-title">About Collatera</h1>
   <div class="ab-rule"></div>
 
-  <section class="ab-prose">
-    <p>Collatera began as a personal reference library — a way to keep clinical images,
-       society guidelines, and practical notes gathered during cardiology fellowship in
-       one place I could actually find again.</p>
+  <div class="ab-prose">
+    <p class="ab-first">Collatera began as a personal reference library — a way to keep clinical
+      images, society guidelines, and practical notes gathered during cardiology fellowship in one
+      place I could actually find again. The name nods to collateral circulation: alternate pathways
+      that keep tissue perfused when the primary route is blocked, which felt like a fitting metaphor
+      for something built quietly alongside formal training.</p>
 
-    <blockquote class="ab-quote">
-      The name nods to collateral circulation: alternate pathways that keep tissue
-      perfused when the primary route is blocked.
-    </blockquote>
-
-    <p>It felt like a fitting metaphor for something built quietly alongside formal
-       training. What started as a private study tool is growing into something meant to
-       be shared — a resource hub built for peers, for fellows and colleagues who could
-       use the same kind of organized, at-a-glance reference during training and beyond.</p>
-  </section>
-
-  <div class="ab-rule ab-rule-soft"></div>
-
-  <section class="ab-what">
-    <h2 class="ab-h2">What's here</h2>
-    <ul class="ab-list">
-      <li><a href="/ref-images/"><span class="ab-item">Reference Image Library</span></a>
-          <span class="ab-desc">Algorithms, anatomy, and clinical images, searchable and tagged.</span></li>
-      <li><a href="/guidelines/"><span class="ab-item">Guideline Repository</span></a>
-          <span class="ab-desc">Direct links to society guidelines, sorted by topic, society, and year.</span></li>
-      <li><a href="/decks/"><span class="ab-item">Slide Decks</span></a>
-          <span class="ab-desc">Presentations and talks, readable in the browser.</span></li>
-      <li><a href="/how-to/"><span class="ab-item">How To Guides</span></a>
-          <span class="ab-desc">Walkthroughs for the things nobody quite teaches you.</span></li>
-      <li><a href="/self-educate/"><span class="ab-item">Self-Education Hub</span></a>
-          <span class="ab-desc">Vetted outside resources worth your time.</span></li>
-    </ul>
-  </section>
-
-  <p class="ab-for">Built for fellows, residents, and colleagues in cardiology —
-     and anyone who has ever lost a useful figure in a camera roll.</p>
-
+    <p>What started as a private study tool is growing into something meant to be shared. The aim is
+      to turn Collatera from a personal reference into a resource hub built for peers — fellows and
+      colleagues who could use the same kind of organized, at-a-glance reference during training
+      and beyond.</p>
+  </div>
 </main>
 
 <footer>collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</footer>
 
 <style>
-.ab-main{max-width:680px;margin:44px auto 20px;padding:0 22px}
-.ab-head{display:flex;align-items:center;gap:20px;margin-bottom:26px}
-.ab-logo{width:92px;height:92px;flex:none;border-radius:50%;
-  border:3px solid var(--logo-ring);box-sizing:border-box}
-.ab-title{font-size:38px;line-height:1.05;color:var(--brand);
-  font-variant-caps:small-caps;letter-spacing:.01em}
-.ab-kicker{margin-top:6px;font-size:16px;color:var(--title);font-weight:600}
-.ab-rule{height:2px;margin:0 0 30px;
-  background:linear-gradient(to right,var(--title),transparent)}
-.ab-rule-soft{margin:34px 0 26px;opacity:.5}
-.ab-prose{font-size:18.5px;line-height:1.72;color:var(--ink)}
-.ab-prose p+p{margin-top:20px}
-.ab-quote{margin:26px 0;padding:4px 0 4px 20px;
-  border-left:3px solid var(--title);
-  font-size:20px;line-height:1.55;font-style:italic;color:var(--accent-deep)}
-.ab-h2{font-size:14px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:14px}
-.ab-list{list-style:none;padding:0}
-.ab-list li{padding:11px 0;border-bottom:1px solid var(--border)}
-.ab-list li:last-child{border-bottom:none}
-.ab-list a{text-decoration:none}
-.ab-item{font-size:18px;font-weight:700;color:var(--brand)}
-.ab-list a:hover .ab-item{color:var(--title)}
-.ab-desc{display:block;margin-top:3px;font-size:15px;color:var(--muted)}
-.ab-for{margin:30px 0 46px;font-size:16px;line-height:1.6;color:var(--muted);
-  padding-left:20px;border-left:3px solid var(--border)}
-@media(max-width:560px){
-  .ab-main{margin-top:26px}
-  .ab-head{gap:14px}
-  .ab-logo{width:66px;height:66px}
-  .ab-title{font-size:29px}
-  .ab-prose{font-size:17px}
-  .ab-quote{font-size:18px}
+/* oversized logo bleeding off the right edge, barely there */
+.ab-watermark{
+  position:fixed; right:-14vw; top:50%; transform:translateY(-50%);
+  width:74vw; max-width:900px; height:auto;
+  opacity:.055; pointer-events:none; z-index:0;
+  filter:saturate(.7);
+}
+@media (prefers-reduced-motion:no-preference){ .ab-watermark{transition:opacity .4s ease} }
+
+.ab-main{position:relative; z-index:1; max-width:660px; margin:56px auto 0; padding:0 24px;
+  text-align:center}
+.ab-logo{width:150px; height:auto; display:block; margin:0 auto 22px}
+.ab-title{font-size:40px; line-height:1.05; color:var(--brand);
+  font-variant-caps:small-caps; letter-spacing:.015em}
+.ab-rule{width:96px; height:2px; margin:20px auto 30px;
+  background:linear-gradient(to right,transparent,var(--title),transparent)}
+
+.ab-prose{text-align:left; font-size:18.5px; line-height:1.78; color:var(--ink)}
+.ab-prose p + p{margin-top:22px}
+
+/* drop cap on the opening paragraph */
+.ab-first::first-letter{
+  float:left; font-size:3.35em; line-height:.82; padding:.06em .1em 0 0;
+  color:var(--title); font-weight:700;
+}
+
+footer{position:relative; z-index:1; margin-top:56px}
+
+@media (max-width:560px){
+  .ab-main{margin-top:30px}
+  .ab-logo{width:104px; margin-bottom:16px}
+  .ab-title{font-size:30px}
+  .ab-prose{font-size:17px; line-height:1.72}
+  .ab-first::first-letter{font-size:2.9em}
+  .ab-watermark{width:110vw; right:-32vw; opacity:.045}
 }
 </style>
 
