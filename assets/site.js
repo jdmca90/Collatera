@@ -167,7 +167,7 @@ window.CollateraViews = {
     .menu-btn.is-logo{padding:.15em;line-height:0;display:inline-flex;align-items:center;justify-content:center}
     .menu-logo{width:2.5em;height:2.5em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
+      gap:.05em;margin-left:.6em;padding:.5em .95em;border-radius:14px;cursor:pointer;
       background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge,#FAD8E9);font:inherit;line-height:1.2;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
       max-width:15em;transition:border-radius .12s, width .12s}
@@ -178,26 +178,29 @@ window.CollateraViews = {
       background:var(--acct-open,#0F3A54);
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54);
       display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;
-      align-items:baseline;gap:.4em;padding:.55em 1.1rem .5em;text-align:center}
+      align-items:baseline;gap:.4em;padding:1.25em 1.7rem 1.15em;text-align:center}
     .cauth-pill.is-open .cauth-pill-lead{font-style:normal;font-size:1.06em;
       font-weight:600;color:var(--acct-user,#F49E9E);opacity:1}
     .cauth-pill.is-open .cauth-pill-email{font-size:1.06em;font-weight:700;
       color:var(--acct-val,#8ECBF2);max-width:none}
-    .cauth-pill-lead{font-size:.78em;font-style:italic;opacity:.95;white-space:nowrap}
-    .cauth-pill-email{font-size:.84em;max-width:16em;overflow:hidden;text-overflow:ellipsis;
-      white-space:nowrap}
+    .cauth-pill-lead{display:none}
+    .cauth-pill.is-open .cauth-pill-lead{display:inline}
+    .cauth-pill-email{font-size:.9em;font-weight:700;letter-spacing:-.005em;
+      font-family:"Avenir Next Condensed","Roboto Condensed","Segoe UI Semibold",
+        "Hanken Grotesk",system-ui,sans-serif;
+      max-width:15em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .cauth-pill-email{font-size:.84em;max-width:14em;overflow:hidden;text-overflow:ellipsis;
       white-space:nowrap}
 
     .cauth-panel{position:fixed;z-index:1200;
       width:min(94vw,340px);background:var(--acct-open,#0F3A54);color:var(--acct-ink,#fff);
       border:7px solid var(--acct-edge,#FAD8E9);border-top:none;
-      border-radius:0 0 16px 16px;padding:.7rem 1.1rem .6rem;
+      border-radius:0 0 16px 16px;padding:1.5rem 1.7rem 1.5rem;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 16px 44px rgba(0,0,0,.34);
       display:none;text-align:left}
     .cauth-panel.open{display:block}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
-    .cauth-avatarwrap{display:flex;justify-content:center;margin:.15rem 0 .6rem}
+    .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
     .cauth-avatar{width:66px;height:66px;border-radius:50%;
       border:3px solid var(--acct-edge,#FAD8E9);background:rgba(255,255,255,.10);
       background-size:cover;background-position:center;
@@ -232,7 +235,7 @@ window.CollateraViews = {
     .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
       background:var(--acct-lbl,#F0B8D4);color:var(--acct-open,#0F3A54);font:inherit;font-weight:700;cursor:pointer}
     .cauth-save:disabled{opacity:.6;cursor:default}
-    .cauth-rule{border:none;height:1px;margin:.55rem 0 .35rem;
+    .cauth-rule{border:none;height:1px;margin:1.1rem 0 .8rem;
       background:linear-gradient(to right,transparent,var(--acct-edge,#FAD8E9),transparent);
       opacity:.75}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
