@@ -21,7 +21,7 @@ const SECTIONS = [
 ];
 
 /* Disclaimer text shown in the strip under the header */
-const DEV_BANNER_TEXT = "Personal website · in development · for internal use";
+const DEV_BANNER_TEXT = "Personal website · in development";
 
 const SECTION = (window.COLLATERA_SECTION || "").trim();
 
@@ -104,10 +104,15 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(
 
 /* ---- theme toggle (light <-> dark, remembers choice for the session) ---- */
 const root = document.documentElement;
-root.setAttribute("data-theme", "auto");
+const THEME_KEY = "collatera_theme";
+let savedTheme = null;
+try { savedTheme = localStorage.getItem(THEME_KEY); } catch {}
+root.setAttribute("data-theme", savedTheme || "auto");
 document.getElementById("themeBtn").onclick = () => {
   const cur = root.getAttribute("data-theme");
-  root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  const next = cur === "dark" ? "light" : "dark";
+  root.setAttribute("data-theme", next);
+  try { localStorage.setItem(THEME_KEY, next); } catch {}
 };
 
 /* =================================================================
@@ -170,7 +175,9 @@ window.CollateraViews = {
       gap:.05em;margin-left:.6em;padding:.5em .95em;border-radius:14px;cursor:pointer;
       background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge2,#FAD8E9);font:inherit;line-height:1.2;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
-      max-width:15em;transition:border-radius .12s, width .12s}
+      max-width:15em;overflow:hidden;
+      transition:border-radius .18s ease, width .22s cubic-bezier(.22,.61,.36,1),
+                 padding .22s ease, background .18s ease}
     .cauth-pill:hover{filter:brightness(1.08)}
     .cauth-pill:focus-visible{outline:2px solid var(--accent-deep,#1C6390);outline-offset:3px}
     .cauth-pill.is-open{border-width:7px;border-bottom-width:0;
@@ -197,8 +204,13 @@ window.CollateraViews = {
       border:7px solid var(--acct-edge,#FAD8E9);border-top:none;
       border-radius:0 0 16px 16px;padding:1.5rem 1.7rem 1.5rem;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 16px 44px rgba(0,0,0,.34);
-      display:none;text-align:left}
-    .cauth-panel.open{display:block}
+      display:block;text-align:left;
+      max-height:0;opacity:0;overflow:hidden;pointer-events:none;
+      padding-top:0;padding-bottom:0;border-bottom-width:0;
+      transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,
+                 padding .26s ease,border-width .26s ease}
+    .cauth-panel.open{max-height:80vh;opacity:1;pointer-events:auto;overflow-y:auto;
+      padding-top:1.5rem;padding-bottom:1.5rem;border-bottom-width:7px}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
     .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
     .cauth-avatar{width:66px;height:66px;border-radius:50%;
@@ -295,12 +307,12 @@ window.CollateraViews = {
         <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="2" placeholder="&lt;none&gt;"></textarea>
       </div>
       <div class="cauth-count" id="cauthBioCount">0 / ${BIO_MAX}</div>
-      <div class="cauth-row cauth-pwrow" id="cauthPwRow" hidden>
-        <label class="cauth-inlbl" for="cauthPw">Password:</label>
+      <div class="cauth-row" id="cauthPwRow" hidden>
+        <label class="cauth-inlbl" for="cauthPw">New password:</label>
         <input id="cauthPw" type="password" autocomplete="new-password"
-               placeholder="leave blank to keep">
+               placeholder="leave blank to keep current">
       </div>
-      <button class="cauth-save" id="cauthSave" type="button">Save</button>
+      <button class="cauth-save" id="cauthSave" type="button">Save changes</button>
       <div class="cauth-note" id="cauthNote"></div>
       <hr class="cauth-rule">
       <div id="cauthAdmin" hidden>
