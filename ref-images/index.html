@@ -159,7 +159,12 @@ function render() {
     // default: viewed items float up by blended score; unviewed keep original order
     visible.sort((a,b) => CollateraViews.score(views[b.file]) - CollateraViews.score(views[a.file]));
   }
-
+// signed-in: float starred items to the front (stable within each group)
+  if (ME && FAVES.size) {
+    const fav = [], rest = [];
+    for (const im of visible) (FAVES.has(im.id) ? fav : rest).push(im);
+    visible = fav.concat(rest);
+  }
   grid.innerHTML = "";
   visible.forEach((img, i) => {
     const card = document.createElement("button");
@@ -174,6 +179,7 @@ function render() {
         <span class="card-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>
         <span class="card-title">${img.title}</span>
       </div>`;
+    if (ME) card.appendChild(makeStar(img));
     grid.appendChild(card);
   });
 
@@ -249,6 +255,90 @@ fetch("/data/images.json")
     emptyEl.style.display = "block";
     emptyEl.innerHTML = `<strong>Couldn't load the image library</strong><br>Check that /data/images.json exists at the repo root and is valid JSON.<br><span style="opacity:.7">${err.message}</span>`;
   });
+  /* =================================================================
+   FAVORITES  (per-user, requires login) — 7a-ii
+   Adds a star to each card (signed-in only). Starring writes a row
+   to the RLS-protected `favorites` table; starred items float to the
+   front on the next render. Logged out, none of this appears.
+   Relies on window.sb / window.sbReady from site.js.
+   ================================================================= */
+let FAVES = new Set();   // item_ids the signed-in user has starred (source=image)
+let ME    = null;        // signed-in user's id, or null when logged out
+
+(function injectFavCss(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .card{position:relative}
+    .cfav-star{position:absolute;top:.4rem;right:.4rem;z-index:2;
+      width:1.9rem;height:1.9rem;display:flex;align-items:center;justify-content:center;
+      font-size:1.15rem;line-height:1;border-radius:50%;cursor:pointer;border:none;
+      background:rgba(0,0,0,.34);color:#fff;transition:transform .1s ease, background .15s}
+    .cfav-star:hover{transform:scale(1.12);background:rgba(0,0,0,.52)}
+    .cfav-star.is-on{color:#FFD24A}
+    .cfav-star:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:2px}
+  `;
+  document.head.appendChild(s);
+})();
+
+function setStar(s, on){
+  s.classList.toggle("is-on", on);
+  s.textContent = on ? "\u2605" : "\u2606";       // ★ / ☆
+  s.setAttribute("aria-pressed", on ? "true" : "false");
+  s.setAttribute("aria-label", on ? "Remove from favorites" : "Add to favorites");
+}
+
+function makeStar(img){
+  const on = FAVES.has(img.id);
+  const s = document.createElement("span");
+  s.className = "cfav-star";
+  s.setAttribute("role", "button");
+  s.setAttribute("tabindex", "0");
+  setStar(s, on);
+  const activate = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(img.id, s); };
+  s.addEventListener("click", activate);
+  s.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") activate(e); });
+  return s;
+}
+
+async function toggleFav(id, starEl){
+  if (!ME || !window.sb) return;
+  const wasOn = FAVES.has(id);
+  // optimistic: flip the star now, reconcile with the server, revert on error
+  if (wasOn) FAVES.delete(id); else FAVES.add(id);
+  setStar(starEl, !wasOn);
+  let error;
+  if (wasOn) {
+    ({ error } = await window.sb.from("favorites").delete()
+        .eq("item_id", id).eq("source", "image"));
+  } else {
+    ({ error } = await window.sb.from("favorites")
+        .upsert({ user_id: ME, item_id: id, source: "image" }, { onConflict: "user_id,item_id" }));
+  }
+  if (error) {
+    if (wasOn) FAVES.add(id); else FAVES.delete(id);
+    setStar(starEl, wasOn);
+    console.warn("favorite toggle failed:", error.message);
+  }
+}
+
+async function loadFaves(){
+  const sb = await window.sbReady;
+  const { data: { session } } = await sb.auth.getSession();
+  ME = session?.user?.id || null;
+  FAVES = new Set();
+  if (ME) {
+    const { data, error } = await sb.from("favorites").select("item_id").eq("source", "image");
+    if (!error && data) for (const row of data) FAVES.add(row.item_id);
+  }
+}
+
+(function initFavs(){
+  if (!window.sbReady) { setTimeout(initFavs, 50); return; }   // wait for site.js
+  window.sbReady.then(async (sb) => {
+    await loadFaves(); render();
+    sb.auth.onAuthStateChange(async () => { await loadFaves(); render(); });
+  });
+})();
 </script>
 </body>
 </html>
