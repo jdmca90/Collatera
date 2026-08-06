@@ -295,6 +295,8 @@ window.CollateraViews = {
       <div class="cauth-note" id="cauthNote"></div>
       <hr class="cauth-rule">
       <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile</button>
+      <a class="cauth-link" id="cauthSubmit2" href="/submit/">Submit to the library</a>
+      <a class="cauth-link" id="cauthReview" href="/review/" hidden>Review queue</a>
       <a class="cauth-link" id="cauthUpload" href="${UPLOAD_URL}" hidden>Upload an image</a>
       <button class="cauth-link" id="cauthPwBtn" type="button">Change password</button>
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
@@ -322,7 +324,19 @@ window.CollateraViews = {
     </div>`;
   document.body.appendChild(scrim);
 
+  /* the submit link carries a hint about where the person came from */
+  function tagSubmitLink(){
+    const a = $("cauthSubmit2"); if (!a) return;
+    const p = location.pathname;
+    const kind = p.startsWith("/decks") ? "deck"
+               : p.startsWith("/guidelines") ? "guideline"
+               : p.startsWith("/self-educate") ? "resource"
+               : "image";
+    a.href = "/submit/?kind=" + kind;
+  }
+
   const openPanel  = () => {
+    tagSubmitLink();
     const lead0 = $("cauthPillLead");
     if (lead0 && window.collateraUser) lead0.textContent = "User:";
     panel.classList.add("open");            // measure with layout applied
@@ -392,7 +406,9 @@ window.CollateraViews = {
     $("cauthOut").hidden = !!user;
     $("cauthIn").hidden  = !user;
     if (!user) return;
-    $("cauthUpload").hidden = (user.email !== ADMIN_EMAIL);
+    const isAdmin = (user.email === ADMIN_EMAIL);
+    $("cauthUpload").hidden = !isAdmin;
+    $("cauthReview").hidden = !isAdmin;
     const { data } = await sb.from("profiles")
       .select("title, position, bio").eq("user_id", user.id).maybeSingle();
     $("cauthPos").value = data?.position || data?.title || "";
