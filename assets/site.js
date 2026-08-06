@@ -168,11 +168,15 @@ window.CollateraViews = {
     .menu-logo{width:2.1em;height:2.1em;border-radius:50%;display:block}
     .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;margin-left:.6em;padding:.42em 1.05em;border-radius:14px;cursor:pointer;
-      background:#2B6E96;color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
-      max-width:15em;box-shadow:0 2px 8px rgba(0,0,0,.22)}
-    .cauth-pill:hover{background:#31789f}
-    .cauth-pill:focus-visible{outline:2px solid var(--accent,#85CCCC);outline-offset:3px}
+      background:var(--accent,#2885C1);color:#fff;border:2px solid #fff;font:inherit;line-height:1.2;
+      max-width:15em;box-shadow:0 2px 8px rgba(0,0,0,.22);transition:border-radius .12s, width .12s}
+    .cauth-pill:hover{filter:brightness(1.08)}
+    .cauth-pill:focus-visible{outline:2px solid var(--accent-deep,#1C6390);outline-offset:3px}
+    .cauth-pill.is-open{border-bottom-left-radius:0;border-bottom-right-radius:0;
+      border-bottom-color:transparent;box-shadow:none;max-width:none}
     .cauth-pill-lead{font-size:.78em;font-style:italic;opacity:.95;white-space:nowrap}
+    .cauth-pill-email{font-size:.84em;max-width:16em;overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap}
     .cauth-pill-email{font-size:.84em;max-width:14em;overflow:hidden;text-overflow:ellipsis;
       white-space:nowrap}
 
@@ -182,6 +186,16 @@ window.CollateraViews = {
       box-shadow:0 16px 44px rgba(0,0,0,.30);display:none;text-align:left}
     .cauth-panel.open{display:block}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
+    .cauth-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem}
+    .cauth-head-lbl{font-size:.78em;color:var(--muted,#6B6860);text-transform:uppercase;
+      letter-spacing:.06em}
+    .cauth-edit{font:inherit;font-size:.78em;background:none;border:1px solid var(--border,#D8D4CC);
+      color:var(--muted,#6B6860);border-radius:999px;padding:.15em .7em;cursor:pointer}
+    .cauth-edit:hover{color:var(--accent-deep,#1C6390);border-color:var(--accent,#2885C1)}
+    .cauth-panel input[readonly],.cauth-panel textarea[readonly]{background:transparent;
+      border-color:transparent;padding-left:0;color:var(--ink,#2E2C2A);cursor:default;resize:none}
+    .cauth-panel input[readonly]::placeholder,.cauth-panel textarea[readonly]::placeholder{
+      color:var(--muted,#6B6860);opacity:.6}
     .cauth-lbl{display:block;font-size:.78em;color:var(--muted,#6B6860);margin:.6rem 0 .2rem}
     .cauth-panel select,.cauth-panel input,.cauth-panel textarea{width:100%;box-sizing:border-box;
       padding:.5em .6em;border:1px solid var(--border,#D8D4CC);border-radius:8px;font:inherit;
@@ -229,7 +243,10 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthOpenLogin">Sign in</button>
     </div>
     <div id="cauthIn" hidden>
-      <div class="cauth-email" id="cauthEmailLine"></div>
+      <div class="cauth-head">
+        <span class="cauth-head-lbl">Profile</span>
+        <button class="cauth-edit" id="cauthEditBtn" type="button">Edit</button>
+      </div>
       <label class="cauth-lbl" for="cauthPos">Position / title</label>
       <input id="cauthPos" list="cauthPosList" maxlength="${TITLE_MAX}" autocomplete="off"
              placeholder="Choose or type your own">
@@ -270,15 +287,23 @@ window.CollateraViews = {
   document.body.appendChild(scrim);
 
   const openPanel  = () => {
+    panel.classList.add("open");            // measure with layout applied
     if (avatarBtn) {
+      const pw = panel.getBoundingClientRect().width;
+      avatarBtn.classList.add("is-open");
+      avatarBtn.style.width = pw + "px";     // pill grows to the panel's width
       const r = avatarBtn.getBoundingClientRect();
-      panel.style.top   = (r.bottom + 8) + "px";
+      panel.style.top   = r.bottom + "px";   // flush: one continuous shape
       panel.style.right = Math.max(8, window.innerWidth - r.right) + "px";
     }
-    panel.classList.add("open");
     avatarBtn?.setAttribute("aria-expanded","true");
   };
-  const closePanel = () => { panel.classList.remove("open"); avatarBtn?.setAttribute("aria-expanded","false"); };
+  const closePanel = () => {
+    panel.classList.remove("open");
+    if (avatarBtn) { avatarBtn.classList.remove("is-open"); avatarBtn.style.width = ""; }
+    setEditing(false);
+    avatarBtn?.setAttribute("aria-expanded","false");
+  };
   const openModal  = () => { $("cauthMsg").textContent = ""; scrim.classList.add("open"); $("cauthEmail").focus(); };
   const closeModal = () => scrim.classList.remove("open");
 
@@ -295,6 +320,18 @@ window.CollateraViews = {
   $("cauthOpenLogin").onclick = () => { closePanel(); openModal(); };
 
   const bioEl = $("cauthBio"), noteEl = $("cauthNote");
+
+  /* fields are read-only until Edit is pressed; Save returns them to locked */
+  function setEditing(on){
+    const pos = $("cauthPos");
+    if (!pos) return;
+    [pos, bioEl].forEach(el => { el.readOnly = !on; });
+    pos.setAttribute("list", on ? "cauthPosList" : "");
+    $("cauthSave").style.display  = on ? "" : "none";
+    $("cauthBioCount").style.display = on ? "" : "none";
+    $("cauthEditBtn").style.display = on ? "none" : "";
+    if (on) pos.focus();
+  }
   bioEl.addEventListener("input", () => { $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`; });
   function note(msg, ok){ noteEl.textContent = msg; noteEl.className = "cauth-note " + (ok ? "ok" : "err"); }
 
@@ -314,7 +351,6 @@ window.CollateraViews = {
     $("cauthOut").hidden = !!user;
     $("cauthIn").hidden  = !user;
     if (!user) return;
-    $("cauthEmailLine").textContent = user.email || "signed in";
     $("cauthUpload").hidden = (user.email !== ADMIN_EMAIL);
     const { data } = await sb.from("profiles")
       .select("title, position, bio").eq("user_id", user.id).maybeSingle();
@@ -322,6 +358,7 @@ window.CollateraViews = {
     bioEl.value           = data?.bio || "";
     $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`;
     note("", true);
+    setEditing(false);
   }
 
   /* ---- load supabase-js, then wire everything ---- */
@@ -359,6 +396,7 @@ window.CollateraViews = {
       }, { onConflict: "user_id" });
       $("cauthSave").disabled = false;
       note(error ? (error.message || "Couldn't save.") : "Saved.", !error);
+      if (!error) setEditing(false);
     };
 
     $("cauthPwBtn").onclick = async () => {
@@ -378,6 +416,7 @@ window.CollateraViews = {
       document.dispatchEvent(new CustomEvent("collatera:recents-cleared"));
     };
 
+    $("cauthEditBtn").onclick = () => setEditing(true);
     $("cauthOutBtn").onclick = async () => { await sb.auth.signOut(); closePanel(); };
   };
   libEl.onerror = () => { const b = $("cauthOpenLogin"); if (b) b.textContent = "Sign-in unavailable"; };
