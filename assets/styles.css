@@ -671,3 +671,36 @@ footer a { color: var(--accent-deep); }
   font-family: "Gill Sans MT", "Hanken Grotesk", sans-serif;
 }
 .se-desc { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+
+
+/* =================================================================
+   MOBILE HEADER
+   The page title wraps and fights the account button on narrow
+   screens, so it is dropped below the brand and the header keeps to
+   a single compact row. Desktop layout is unchanged.
+   ================================================================= */
+@media (max-width: 720px) {
+  .header-inner { padding: 6px 12px; }
+  .header-top { gap: 6px; }
+
+  /* page title drops to its own line instead of wrapping beside the brand */
+  .header-top { flex-wrap: wrap; }
+  .brand-group { order: 3; flex-basis: 100%; margin-top: 1px; }
+  .section-title { font-size: 15px; letter-spacing: .06em; opacity: .95; }
+  .section-title::before { content: none; }
+
+  .menu-btn { width: 42px; height: 42px; border-radius: 11px; }
+  .menu-btn.is-brand { padding: .15em .45em .15em .15em; gap: .3em; }
+  .menu-btn.is-brand .brand { font-size: 20px; }
+  .menu-chev { font-size: .62em; }
+
+  .theme-btn { width: 34px; height: 34px; font-size: 15px; border-width: 2px; }
+
+  /* the account box is fixed-position; keep it small and clear of the brand */
+  .cauth-slot { display: none; }
+  .cauth-box { top: .42rem; right: .55rem; font-size: 13px; }
+  .cauth-box .cauth-pill { padding: .42em .7em; }
+  .cauth-box .cauth-pill-email { max-width: 8.5em; }
+  .cauth-box.open { width: min(94vw, 340px); font-size: 15px; }
+  .cauth-box.open .cauth-pill-email { max-width: none; }
+}
