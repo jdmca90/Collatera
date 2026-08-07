@@ -52,10 +52,7 @@ header.innerHTML = `
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-      <button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false">
-        <span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>
-        <span class="cauth-pill-email" id="cauthPillEmail" hidden></span>
-      </button>
+      <span class="cauth-slot" id="cauthSlot"><span class="cauth-box" id="cauthBox"><button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false"><span class="cauth-pill-lead" id="cauthPillLead">Sign in</span><span class="cauth-pill-email" id="cauthPillEmail" hidden></span></button></span></span>
     </div>
   </div>`;
 
@@ -177,50 +174,39 @@ window.CollateraViews = {
     .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
     .menu-logo{width:2.9em;height:2.9em;border-radius:50%;display:block;flex:none;
       border:2.5px solid var(--logo-ring,#A8455C);box-sizing:border-box}
-    .cauth-pill{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:.05em;margin-left:.6em;padding:.5em .95em;border-radius:14px;cursor:pointer;
-      background:var(--acct,#1B5E85);color:var(--acct-ink,#fff);border:2px solid var(--acct-edge2,#FAD8E9);font:inherit;line-height:1.2;
+    .cauth-slot{position:relative;display:inline-block;width:11.5em;height:2.6em;
+      margin-left:.6em;vertical-align:middle}
+    .cauth-box{position:absolute;top:50%;right:0;transform:translateY(-50%);
+      z-index:1200;min-width:100%;background:var(--acct,#1B5E85);
+      border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
-      max-width:15em;overflow:hidden;
-      transition:border-radius .18s ease, width .22s cubic-bezier(.22,.61,.36,1),
-                 padding .22s ease, background .18s ease}
-    .cauth-pill:hover{filter:brightness(1.08)}
-    .cauth-pill:focus-visible{outline:2px solid var(--accent-deep,#1C6390);outline-offset:3px}
-    .cauth-pill.is-open{border-width:7px;border-bottom-width:0;
-      border-bottom-left-radius:0;border-bottom-right-radius:0;max-width:none;
-      background:var(--acct-open,#0F3A54);
-      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54);
-      display:flex;flex-direction:column;justify-content:center;
-      align-items:center;gap:.15em;padding:1.9em 1.7rem 1.75em;text-align:center}
-    .cauth-pill.is-open .cauth-pill-lead{font-style:normal;font-size:1.06em;
-      font-weight:600;color:var(--acct-user,#F49E9E);opacity:1}
-    .cauth-pill.is-open .cauth-pill-email{font-size:1.06em;font-weight:700;
-      color:var(--acct-val,#8ECBF2);max-width:none}
+      overflow:hidden;text-align:left;
+      transition:border-radius .18s ease,border-width .2s ease,background .18s ease,
+                 width .22s cubic-bezier(.22,.61,.36,1)}
+    .cauth-box.open{background:var(--acct-open,#0F3A54);
+      border-width:7px;border-color:var(--acct-edge,#FAD8E9);border-radius:18px;
+      width:min(86vw,340px);
+      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 16px 44px rgba(0,0,0,.34)}
+    .cauth-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:.05em;width:100%;box-sizing:border-box;padding:.5em .95em;cursor:pointer;
+      background:none;border:none;color:var(--acct-ink,#fff);font:inherit;line-height:1.2}
+    .cauth-box.open .cauth-pill{padding:1.15em .95em .55em}
+    .cauth-pill:focus-visible{outline:2px solid var(--acct-edge,#FAD8E9);outline-offset:-4px}
     .cauth-pill-lead{display:none}
-    .cauth-pill.is-open .cauth-pill-lead,
-    .cauth-pill.is-out .cauth-pill-lead{display:inline;font-style:normal;
+    .cauth-box.open .cauth-pill-lead,
+    .cauth-box.is-out .cauth-pill-lead{display:inline;font-style:normal;
       font-weight:700;font-size:.95em}
-    .cauth-pill.is-out.is-open .cauth-pill-lead{font-size:1.1em;
-      color:var(--acct-user,#F49E9E)}
+    .cauth-box.is-out.open .cauth-pill-lead{font-size:1.1em;color:var(--acct-user,#F49E9E)}
     .cauth-pill-email{font-size:.9em;font-weight:700;letter-spacing:-.005em;
-      font-family:"Avenir Next Condensed","Roboto Condensed","Segoe UI Semibold",
-        "Hanken Grotesk",system-ui,sans-serif;
-      max-width:15em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .cauth-pill-email{font-size:.84em;max-width:14em;overflow:hidden;text-overflow:ellipsis;
-      white-space:nowrap}
+      font-family:"Avenir Next Condensed","Roboto Condensed","Hanken Grotesk",system-ui,sans-serif;
+      max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cauth-box.open .cauth-pill-email{max-width:none;font-size:1.06em}
 
-    .cauth-panel{position:fixed;z-index:1200;
-      width:min(94vw,340px);background:var(--acct-open,#0F3A54);color:var(--acct-ink,#fff);
-      border:7px solid var(--acct-edge,#FAD8E9);border-top:none;
-      border-radius:0 0 16px 16px;padding:1.5rem 1.7rem 1.5rem;
-      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 16px 44px rgba(0,0,0,.34);
-      display:block;text-align:left;
-      max-height:0;opacity:0;overflow:hidden;pointer-events:none;
-      padding-top:0;padding-bottom:0;border-bottom-width:0;
-      transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,
-                 padding .26s ease,border-width .26s ease}
-    .cauth-panel.open{max-height:80vh;opacity:1;pointer-events:auto;overflow-y:auto;
-      padding-top:1.5rem;padding-bottom:1.5rem;border-bottom-width:7px}
+    .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
+      padding:0 1.1rem;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
+      transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,padding .26s ease}
+    .cauth-panel.open{max-height:70vh;opacity:1;pointer-events:auto;overflow-y:auto;
+      padding:.2rem 1.1rem 1.2rem}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
     .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
     .cauth-avatar{width:66px;height:66px;border-radius:50%;
@@ -230,6 +216,7 @@ window.CollateraViews = {
       font-size:3.1rem;line-height:1;color:var(--acct-edge,#FAD8E9);overflow:hidden}
     .cauth-avatar::after{content:"\\1F464";opacity:.5;transform:translateY(.08em) scale(1.15)}
     .cauth-avatar.has-img::after{content:""}
+    .cauth-row[hidden]{display:none}
     .cauth-row{display:grid;grid-template-columns:4.4em 1fr;align-items:baseline;
       column-gap:.5em;margin:.45rem 0}
     .cauth-row-bio{align-items:start}
@@ -278,7 +265,8 @@ window.CollateraViews = {
   /* pill wording depends on auth state and whether the panel is open */
   function paintLead(forceOpen){
     const lead = $("cauthPillLead"); if (!lead) return;
-    const open = forceOpen !== undefined ? forceOpen : avatarBtn?.classList.contains("is-open");
+    const bx = document.getElementById("cauthBox");
+    const open = forceOpen !== undefined ? forceOpen : bx?.classList.contains("open");
     if (!window.collateraUser) lead.textContent = open ? "Not currently signed in" : "Sign in";
     else lead.textContent = open ? "User:" : "";
   }
@@ -336,7 +324,7 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
       <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
     </div>`;
-  document.body.appendChild(panel);
+  document.getElementById("cauthBox").appendChild(panel);
 
 
   /* the submit link carries a hint about where the person came from */
@@ -350,34 +338,29 @@ window.CollateraViews = {
     a.href = "/submit/?kind=" + kind;
   }
 
+  const box = () => document.getElementById("cauthBox");
   const openPanel  = () => {
     tagSubmitLink();
     paintLead(true);
-    panel.classList.add("open");            // measure with layout applied
-    if (avatarBtn) {
-      const pw = panel.getBoundingClientRect().width;
-      avatarBtn.classList.add("is-open");
-      avatarBtn.style.width = pw + "px";     // pill grows to the panel's width
-      const r = avatarBtn.getBoundingClientRect();
-      panel.style.top   = r.bottom + "px";   // flush: one continuous shape
-      panel.style.right = Math.max(8, window.innerWidth - r.right) + "px";
-    }
+    box().classList.add("open");
+    panel.classList.add("open");
     avatarBtn?.setAttribute("aria-expanded","true");
   };
   const closePanel = () => {
-    panel.classList.remove("open");
     paintLead(false);
-    if (avatarBtn) { avatarBtn.classList.remove("is-open"); avatarBtn.style.width = ""; }
+    box().classList.remove("open");
+    panel.classList.remove("open");
     setEditing(false);
     avatarBtn?.setAttribute("aria-expanded","false");
   };
 
   if (avatarBtn) avatarBtn.onclick = (e) => {
     e.stopPropagation();
-    panel.classList.contains("open") ? closePanel() : openPanel();
+    box().classList.contains("open") ? closePanel() : openPanel();
   };
   document.addEventListener("click", (e) => {
-    if (panel.classList.contains("open") && !panel.contains(e.target)) closePanel();
+    const b = box();
+    if (b && b.classList.contains("open") && !b.contains(e.target)) closePanel();
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
 
@@ -405,7 +388,7 @@ window.CollateraViews = {
     const user = session?.user || null;
     window.collateraUser = user;
     const pmail = $("cauthPillEmail");
-    avatarBtn?.classList.toggle("is-out", !user);
+    box()?.classList.toggle("is-out", !user);
     if (user) { pmail.textContent = user.email || ""; pmail.hidden = false; }
     else      { pmail.textContent = ""; pmail.hidden = true; }
     paintLead();
