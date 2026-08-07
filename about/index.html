@@ -17,7 +17,8 @@
 
 <main class="ab-main">
   <div class="ab-col">
-    <img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="Collatera logo">
+    <span class="ab-logowrap"><img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="Collatera logo"></span>
+    <div class="ab-textveil">
     <h1 class="ab-title">About Collatera</h1>
 
     <svg class="ab-orn" width="260" height="22" viewBox="0 0 260 22" aria-hidden="true">
@@ -60,6 +61,7 @@
         <path d="M74 6 V16" opacity=".5"/><path d="M186 6 V16" opacity=".5"/>
       </g>
     </svg>
+    </div>
 
   </div>
 </main>
@@ -85,16 +87,23 @@
 
 /* ---------- layout ---------- */
 .ab-main{position:relative; z-index:1; max-width:760px; margin:46px auto 0; padding:0 22px 40px}
-.ab-col{
-  max-width:620px; margin:0 auto; padding:20px 26px 26px; text-align:center;
-  border-radius:34px;
-  /* clearing: 97% opaque so ~3% of the map reads through, with a quick
-     taper — solid to about 0.5in out, gone by roughly 1in */
+.ab-col{ max-width:620px; margin:0 auto; padding:0 26px 26px; text-align:center; }
+
+/* Each block carries its own clearing so the shape follows the content:
+   a circle around the logo, a rounded panel behind the text. The veil
+   peaks at 90% opacity (≈10% of the map shows through) about 1in from
+   the edge and tapers away by roughly 2in. */
+.ab-logowrap{
+  display:inline-block; border-radius:50%; line-height:0;
   background:var(--ab-veil);
-  box-shadow:0 0 96px 44px var(--ab-veil);
+  box-shadow:0 0 var(--ab-blur) var(--ab-spread) var(--ab-veil);
 }
-.ab-logo{width:400px; max-width:82vw; height:auto; display:block; margin:0 auto 6px;
-  filter:drop-shadow(0 0 30px var(--ab-veil)) drop-shadow(0 0 60px var(--ab-veil));}
+.ab-textveil{
+  border-radius:28px; padding:14px 22px 18px;
+  background:var(--ab-veil);
+  box-shadow:0 0 var(--ab-blur) var(--ab-spread) var(--ab-veil);
+}
+.ab-logo{width:400px; max-width:82vw; height:auto; display:block}
 .ab-title{font-size:38px; line-height:1.05; color:var(--ab-key);
   font-variant-caps:small-caps; letter-spacing:.015em}
 .ab-orn{display:block; margin:40px auto 44px; color:var(--ab-orn); max-width:88vw}
@@ -115,18 +124,19 @@ body{display:flex; flex-direction:column; min-height:100vh}
 
 /* page-local tokens: light = coral key, blue ornament; dark inverts */
 :root{ --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
-        --ab-veil:rgba(244,240,238,.97); }
+        --ab-veil:rgba(244,240,238,.90); --ab-blur:190px; --ab-spread:96px; }
 :root[data-theme="dark"]{ --ab-key:#5AA9DC; --ab-orn:#FAD8E9; --ab-ink:#DCD6C8;
-        --ab-veil:rgba(18,27,33,.97); }
+        --ab-veil:rgba(18,27,33,.90); --ab-blur:190px; --ab-spread:96px; }
 @media (prefers-color-scheme: dark){
   :root[data-theme="auto"]{ --ab-key:#5AA9DC; --ab-orn:#FAD8E9; --ab-ink:#DCD6C8;
-          --ab-veil:rgba(18,27,33,.97); }
+          --ab-veil:rgba(18,27,33,.90); --ab-blur:190px; --ab-spread:96px; }
 }
 
 
 @media (max-width:560px){
   .ab-main{margin-top:24px}
-  .ab-col{padding:14px 14px 20px; box-shadow:0 0 60px 26px var(--ab-veil)}
+  .ab-col{padding:0 12px 20px}
+  :root{ --ab-blur:120px; --ab-spread:56px; }
   .ab-logo{width:230px; margin-bottom:4px}
   .ab-orn{margin:26px auto 28px}
   .ab-orn-b{margin:34px auto 26px}
