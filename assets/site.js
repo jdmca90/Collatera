@@ -48,7 +48,7 @@ header.innerHTML = `
     <div class="header-top">
       <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""><span class="brand"><span class="brand-c">C</span>ollatera</span><span class="menu-chev" aria-hidden="true">&#8964;</span></button>
       <div class="brand-group">
-        ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
+        ${SECTION ? `<svg class="hdr-motif" width="34" height="14" viewBox="0 0 34 14" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M0 7 H7"/><path d="M27 7 H34"/><path d="M17 1.6 L21.4 7 L17 12.4 L12.6 7 Z"/><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"/><path d="M9.4 4.4 L9.4 9.6"/><path d="M24.6 4.4 L24.6 9.6"/></g></svg><span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
@@ -190,12 +190,15 @@ window.CollateraViews = {
       border-width:7px;border-color:var(--acct-edge,#FAD8E9);border-radius:18px;
       width:min(88vw,340px);
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 18px 50px rgba(0,0,0,.42)}
-    .cauth-x{display:none;position:absolute;top:.35rem;right:.5rem;z-index:2;
-      background:none;border:none;color:var(--acct-lbl,#F0B8D4);
-      font:inherit;font-size:1.3rem;line-height:1;cursor:pointer;padding:.1em .25em;
-      border-radius:8px}
+    .cauth-x{display:none;position:absolute;top:.15rem;right:.35rem;z-index:2;
+      background:none;border:none;color:#fff;font:inherit;font-weight:700;
+      font-size:2.4rem;line-height:.8;cursor:pointer;padding:.05em .2em;
+      border-radius:10px}
     .cauth-x:hover{background:var(--acct-hover,rgba(255,255,255,.14))}
     .cauth-box.open .cauth-x{display:block}
+    .cauth-box{border-radius:16px}
+    .cauth-box.open .cauth-pill{border-radius:11px 11px 0 0}
+    .cauth-box.open .cauth-panel{border-radius:0 0 11px 11px}
     .cauth-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;width:100%;box-sizing:border-box;padding:.5em .95em;cursor:pointer;
       background:none;border:none;color:var(--acct-ink,#fff);font:inherit;line-height:1.2}
@@ -209,7 +212,7 @@ window.CollateraViews = {
     .cauth-pill-email{font-size:.9em;font-weight:700;letter-spacing:-.005em;
       font-family:"Avenir Next Condensed","Roboto Condensed","Hanken Grotesk",system-ui,sans-serif;
       max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .cauth-box.open .cauth-pill-email{max-width:none;font-size:1.06em}
+    .cauth-box.open .cauth-pill-email{max-width:none;font-size:1.18em}
 
     .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
       padding:0 1.1rem;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
@@ -289,8 +292,9 @@ window.CollateraViews = {
     const lead = $("cauthPillLead"); if (!lead) return;
     const bx = document.getElementById("cauthBox");
     const open = forceOpen !== undefined ? forceOpen : bx?.classList.contains("open");
+    const narrow = window.matchMedia("(max-width: 720px)").matches;
     if (!window.collateraUser) lead.textContent = open ? "Not currently signed in" : "Sign in";
-    else lead.textContent = open ? "User:" : "";
+    else lead.textContent = open ? "User:" : (narrow ? "User" : "");
   }
 
   /* ---- the dropdown panel ---- */
