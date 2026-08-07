@@ -20,11 +20,17 @@
     <img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="Collatera logo">
     <h1 class="ab-title">About Collatera</h1>
 
-    <svg class="ab-orn" width="140" height="14" viewBox="0 0 140 14" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-width="1.6">
-        <path d="M4 7 H56"/><path d="M84 7 H136"/>
-        <path d="M70 1 L76.5 7 L70 13 L63.5 7 Z"/>
-        <circle cx="70" cy="7" r="2" fill="currentColor"/>
+    <svg class="ab-orn" width="260" height="22" viewBox="0 0 260 22" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <path d="M2 11 H74" opacity=".45"/>
+        <path d="M186 11 H258" opacity=".45"/>
+        <path d="M80 11 H104"/><path d="M156 11 H180"/>
+        <path d="M104 4 L112 11 L104 18"/><path d="M156 4 L148 11 L156 18"/>
+        <path d="M130 2.5 L138.5 11 L130 19.5 L121.5 11 Z"/>
+        <path d="M130 6.5 L134.5 11 L130 15.5 L125.5 11 Z" opacity=".7"/>
+        <circle cx="130" cy="11" r="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="92" cy="11" r="1.6"/><circle cx="168" cy="11" r="1.6"/>
+        <path d="M74 6 V16" opacity=".5"/><path d="M186 6 V16" opacity=".5"/>
       </g>
     </svg>
 
@@ -41,17 +47,24 @@
         training and beyond.</p>
     </div>
 
-    <svg class="ab-orn ab-orn-b" width="140" height="14" viewBox="0 0 140 14" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-width="1.6">
-        <path d="M4 7 H56"/><path d="M84 7 H136"/>
-        <path d="M70 1 L76.5 7 L70 13 L63.5 7 Z"/>
-        <circle cx="70" cy="7" r="2" fill="currentColor"/>
+    <svg class="ab-orn ab-orn-b" width="260" height="22" viewBox="0 0 260 22" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <path d="M2 11 H74" opacity=".45"/>
+        <path d="M186 11 H258" opacity=".45"/>
+        <path d="M80 11 H104"/><path d="M156 11 H180"/>
+        <path d="M104 4 L112 11 L104 18"/><path d="M156 4 L148 11 L156 18"/>
+        <path d="M130 2.5 L138.5 11 L130 19.5 L121.5 11 Z"/>
+        <path d="M130 6.5 L134.5 11 L130 15.5 L125.5 11 Z" opacity=".7"/>
+        <circle cx="130" cy="11" r="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="92" cy="11" r="1.6"/><circle cx="168" cy="11" r="1.6"/>
+        <path d="M74 6 V16" opacity=".5"/><path d="M186 6 V16" opacity=".5"/>
       </g>
     </svg>
 
-    <div class="ab-foot">collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</div>
   </div>
 </main>
+
+<footer class="ab-foot">collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</footer>
 
 <style>
 /* ---------- backdrop ---------- */
@@ -73,17 +86,19 @@
 /* ---------- layout ---------- */
 .ab-main{position:relative; z-index:1; max-width:760px; margin:46px auto 0; padding:0 22px 40px}
 .ab-col{
-  max-width:620px; margin:0 auto; padding:26px 30px 30px; text-align:center;
-  border-radius:30px;
-  /* the clearing: page colour behind the text, feathered outward */
+  max-width:620px; margin:0 auto; padding:20px 26px 26px; text-align:center;
+  border-radius:34px;
+  /* clearing: 97% opaque so ~3% of the map reads through, with a quick
+     taper — solid to about 0.5in out, gone by roughly 1in */
   background:var(--ab-veil);
-  box-shadow:0 0 var(--ab-feather) var(--ab-feather) var(--ab-veil);
+  box-shadow:0 0 96px 44px var(--ab-veil);
 }
-.ab-logo{width:142px; height:auto; display:block; margin:0 auto 18px}
+.ab-logo{width:400px; max-width:82vw; height:auto; display:block; margin:0 auto 6px;
+  filter:drop-shadow(0 0 30px var(--ab-veil)) drop-shadow(0 0 60px var(--ab-veil));}
 .ab-title{font-size:38px; line-height:1.05; color:var(--ab-key);
   font-variant-caps:small-caps; letter-spacing:.015em}
-.ab-orn{display:block; margin:16px auto 22px; color:var(--ab-orn)}
-.ab-orn-b{margin:24px auto 16px}
+.ab-orn{display:block; margin:40px auto 44px; color:var(--ab-orn); max-width:88vw}
+.ab-orn-b{margin:52px auto 40px}
 
 .ab-prose{text-align:left; font-size:18px; line-height:1.78; color:var(--ab-ink)}
 .ab-prose p + p{margin-top:20px}
@@ -92,24 +107,29 @@
   font-size:3.5em; line-height:.78; padding:.02em .12em 0 0;
   color:var(--ab-key); font-weight:400;
 }
-.ab-foot{font-size:13px; font-weight:700; color:var(--ab-key)}
+.ab-foot{position:relative; z-index:1; text-align:center; font-size:13px; font-weight:700;
+  color:var(--ab-key); padding:26px 20px 34px; margin-top:auto}
+html,body{min-height:100%}
+body{display:flex; flex-direction:column; min-height:100vh}
+.ab-main{flex:1 0 auto}
 
 /* page-local tokens: light = coral key, blue ornament; dark inverts */
 :root{ --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
-        --ab-veil:#F4F0EE; --ab-feather:190px; }
+        --ab-veil:rgba(244,240,238,.97); }
 :root[data-theme="dark"]{ --ab-key:#5AA9DC; --ab-orn:#FAD8E9; --ab-ink:#DCD6C8;
-        --ab-veil:#121B21; --ab-feather:190px; }
+        --ab-veil:rgba(18,27,33,.97); }
 @media (prefers-color-scheme: dark){
   :root[data-theme="auto"]{ --ab-key:#5AA9DC; --ab-orn:#FAD8E9; --ab-ink:#DCD6C8;
-          --ab-veil:#121B21; }
+          --ab-veil:rgba(18,27,33,.97); }
 }
 
-footer{display:none}
 
 @media (max-width:560px){
   .ab-main{margin-top:24px}
-  .ab-col{padding:18px 16px 22px; --ab-feather:120px}
-  .ab-logo{width:104px; margin-bottom:14px}
+  .ab-col{padding:14px 14px 20px; box-shadow:0 0 60px 26px var(--ab-veil)}
+  .ab-logo{width:230px; margin-bottom:4px}
+  .ab-orn{margin:26px auto 28px}
+  .ab-orn-b{margin:34px auto 26px}
   .ab-title{font-size:29px}
   .ab-prose{font-size:16.5px; line-height:1.72}
   .ab-first::first-letter{font-size:3.1em}
