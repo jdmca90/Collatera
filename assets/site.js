@@ -21,7 +21,7 @@ const SECTIONS = [
 ];
 
 /* Disclaimer text shown in the strip under the header */
-const DEV_BANNER_TEXT = "Personal website · in development";
+const DEV_BANNER_TEXT = "";
 
 const SECTION = (window.COLLATERA_SECTION || "").trim();
 
@@ -52,7 +52,7 @@ header.innerHTML = `
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-      <span class="cauth-slot" id="cauthSlot"><span class="cauth-box" id="cauthBox"><button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false"><span class="cauth-pill-lead" id="cauthPillLead">Sign in</span><span class="cauth-pill-email" id="cauthPillEmail" hidden></span></button></span></span>
+      <span class="cauth-slot" id="cauthSlot" aria-hidden="true"></span>
     </div>
   </div>`;
 
@@ -84,8 +84,12 @@ nav.innerHTML = `
 `;
 
 /* ---- insert everything at the very top of the page, in order ---- */
-document.body.insertBefore(banner, document.body.firstChild);
-document.body.insertBefore(header, banner);
+if (DEV_BANNER_TEXT) {
+  document.body.insertBefore(banner, document.body.firstChild);
+  document.body.insertBefore(header, banner);
+} else {
+  document.body.insertBefore(header, document.body.firstChild);
+}
 document.body.appendChild(scrim);
 document.body.appendChild(nav);
 
@@ -174,10 +178,9 @@ window.CollateraViews = {
     .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
     .menu-logo{width:2.9em;height:2.9em;border-radius:50%;display:block;flex:none;
       border:2.5px solid var(--logo-ring,#A8455C);box-sizing:border-box}
-    .cauth-slot{position:relative;display:inline-block;width:11.5em;height:2.6em;
-      margin-left:.6em;vertical-align:middle}
-    .cauth-box{position:absolute;top:50%;right:0;transform:translateY(-50%);
-      z-index:1200;min-width:100%;background:var(--acct,#1B5E85);
+    .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
+    .cauth-box{position:fixed;top:.55rem;right:.9rem;z-index:4000;
+      background:var(--acct,#1B5E85);
       border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
       overflow:hidden;text-align:left;
@@ -185,12 +188,18 @@ window.CollateraViews = {
                  width .22s cubic-bezier(.22,.61,.36,1)}
     .cauth-box.open{background:var(--acct-open,#0F3A54);
       border-width:7px;border-color:var(--acct-edge,#FAD8E9);border-radius:18px;
-      width:min(86vw,340px);
-      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 16px 44px rgba(0,0,0,.34)}
+      width:min(88vw,340px);
+      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 18px 50px rgba(0,0,0,.42)}
+    .cauth-x{display:none;position:absolute;top:.35rem;right:.5rem;z-index:2;
+      background:none;border:none;color:var(--acct-lbl,#F0B8D4);
+      font:inherit;font-size:1.3rem;line-height:1;cursor:pointer;padding:.1em .25em;
+      border-radius:8px}
+    .cauth-x:hover{background:var(--acct-hover,rgba(255,255,255,.14))}
+    .cauth-box.open .cauth-x{display:block}
     .cauth-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;
       gap:.05em;width:100%;box-sizing:border-box;padding:.5em .95em;cursor:pointer;
       background:none;border:none;color:var(--acct-ink,#fff);font:inherit;line-height:1.2}
-    .cauth-box.open .cauth-pill{padding:1.15em .95em .55em}
+    .cauth-box.open .cauth-pill{padding:1.25em 1.9em .55em;cursor:default;pointer-events:none}
     .cauth-pill:focus-visible{outline:2px solid var(--acct-edge,#FAD8E9);outline-offset:-4px}
     .cauth-pill-lead{display:none}
     .cauth-box.open .cauth-pill-lead,
@@ -260,6 +269,19 @@ window.CollateraViews = {
   `;
   document.head.appendChild(style);
 
+  /* the account box is appended to <body> so no ancestor stacking context
+     (the header uses z-index + backdrop-filter) can paint over or clip it */
+  const boxEl = document.createElement("span");
+  boxEl.className = "cauth-box";
+  boxEl.id = "cauthBox";
+  boxEl.innerHTML =
+    '<button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false">' +
+      '<span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>' +
+      '<span class="cauth-pill-email" id="cauthPillEmail" hidden></span>' +
+    '</button>' +
+    '<button class="cauth-x" id="cauthClose" type="button" aria-label="Close">&times;</button>';
+  document.body.appendChild(boxEl);
+
   const $ = id => document.getElementById(id);
   const avatarBtn = $("cauthAvatarBtn");
   /* pill wording depends on auth state and whether the panel is open */
@@ -324,7 +346,7 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
       <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
     </div>`;
-  document.getElementById("cauthBox").appendChild(panel);
+  boxEl.appendChild(panel);
 
 
   /* the submit link carries a hint about where the person came from */
@@ -363,6 +385,7 @@ window.CollateraViews = {
     if (b && b.classList.contains("open") && !b.contains(e.target)) closePanel();
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
+  $("cauthClose").onclick = (e) => { e.stopPropagation(); closePanel(); };
 
   const bioEl = $("cauthBio"), noteEl = $("cauthNote");
 
