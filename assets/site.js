@@ -173,10 +173,10 @@ window.CollateraViews = {
       width:auto;height:auto;padding:.2em .6em .2em .2em;background:transparent;
       border-color:transparent;border-radius:999px}
     .menu-btn.is-brand:hover{background:var(--accent-tint);border-color:transparent}
-    .menu-btn.is-brand .brand{font-size:3.2em;line-height:1;color:var(--brand);
+    .menu-btn.is-brand .brand{font-size:1.95em;line-height:1;color:var(--brand);
       font-variant-caps:small-caps;letter-spacing:.005em;font-weight:600}
     .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
-    .menu-logo{width:2.2em;height:2.2em;border-radius:50%;display:block;flex:none;
+    .menu-logo{width:2.6em;height:2.6em;border-radius:50%;display:block;flex:none;
       border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
     .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
     .cauth-cluster{position:fixed;top:.55rem;z-index:4000;
@@ -220,10 +220,10 @@ window.CollateraViews = {
       white-space:normal;overflow-wrap:anywhere}
 
     .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
-      padding:0 1.1rem;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
+      width:0;padding:0;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
       transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,padding .26s ease}
-    .cauth-panel.open{max-height:70vh;opacity:1;pointer-events:auto;overflow-y:auto;
-      padding:.2rem 1.1rem 1.2rem}
+    .cauth-panel.open{width:auto;max-height:70vh;opacity:1;pointer-events:auto;
+      overflow-y:auto;padding:.2rem 1.1rem 1.2rem}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
     .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
     .cauth-avatar{width:66px;height:66px;border-radius:50%;
