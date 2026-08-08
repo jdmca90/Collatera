@@ -86,26 +86,25 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .ab-left{flex:none}
 .ab-right{flex:1 1 auto; min-width:0; max-width:527px; padding-top:96px}
 
-/* ---------- layer 2: a barely-there wash behind each element ----------
-   A single soft radial gradient per element, sitting at z-index:-1. No hard
-   plate and no separate glow — the map just quietly loses contrast where
-   content sits over it. */
-.ab-halo{position:relative}
-.ab-halo::before{
-  content:""; position:absolute; inset:-150px; z-index:-1; pointer-events:none;
+/* ---------- layer 2: the wash ----------
+   Painted as the element's own background (not a pseudo-element), so it is
+   always drawn behind that element's text and can never be composited out
+   of order. Padding + matching negative margin keeps layout unchanged. */
+.ab-halo{
+  padding:74px; margin:-74px;
   background:radial-gradient(ellipse closest-side,
-    var(--ab-wash-in)  0%,
-    var(--ab-wash-mid) 46%,
-    var(--ab-wash-out) 72%,
-    transparent        100%);
-}
-.ab-logowrap{display:inline-block; line-height:0}
-.ab-logowrap::before{
-  inset:-170px;
-  background:radial-gradient(circle closest-side,
     var(--ab-wash-in)  0%,
     var(--ab-wash-mid) 44%,
     var(--ab-wash-out) 70%,
+    transparent        100%);
+}
+.ab-logowrap{
+  display:inline-block; line-height:0;
+  padding:90px; margin:-90px; border-radius:50%;
+  background:radial-gradient(circle closest-side,
+    var(--ab-wash-in)  0%,
+    var(--ab-wash-mid) 42%,
+    var(--ab-wash-out) 68%,
     transparent        100%);
 }
 .ab-logo{width:430px; max-width:44vw; height:auto; display:block}
