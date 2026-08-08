@@ -48,7 +48,7 @@ header.innerHTML = `
     <div class="header-top">
       <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""><span class="brand"><span class="brand-c">C</span>ollatera</span><span class="menu-chev" aria-hidden="true">&#8964;</span></button>
       <div class="brand-group">
-        ${SECTION ? `<svg class="hdr-motif" width="34" height="14" viewBox="0 0 34 14" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M0 7 H7"/><path d="M27 7 H34"/><path d="M17 1.6 L21.4 7 L17 12.4 L12.6 7 Z"/><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"/><path d="M9.4 4.4 L9.4 9.6"/><path d="M24.6 4.4 L24.6 9.6"/></g></svg><span class="section-title">${SECTION}</span>` : ""}
+        ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
@@ -173,14 +173,17 @@ window.CollateraViews = {
       width:auto;height:auto;padding:.2em .6em .2em .2em;background:transparent;
       border-color:transparent;border-radius:999px}
     .menu-btn.is-brand:hover{background:var(--accent-tint);border-color:transparent}
-    .menu-btn.is-brand .brand{font-size:26px;line-height:1;color:var(--brand);
-      font-variant-caps:small-caps;letter-spacing:.005em}
+    .menu-btn.is-brand .brand{font-size:3.2em;line-height:1;color:var(--brand);
+      font-variant-caps:small-caps;letter-spacing:.005em;font-weight:600}
     .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
-    .menu-logo{width:2.9em;height:2.9em;border-radius:50%;display:block;flex:none;
-      border:2.5px solid var(--logo-ring,#A8455C);box-sizing:border-box}
+    .menu-logo{width:2.2em;height:2.2em;border-radius:50%;display:block;flex:none;
+      border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
     .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
-    .cauth-box{position:fixed;top:.55rem;z-index:4000;
+    .cauth-cluster{position:fixed;top:.55rem;z-index:4000;
       right:max(.9rem,calc((100vw - 1180px) / 2 + 20px));
+      display:flex;align-items:flex-start;gap:.55rem}
+    .cauth-cluster .theme-btn{flex:none;margin-top:.15rem}
+    .cauth-box{position:relative;width:max-content;max-width:min(88vw,340px);
       background:var(--acct,#1B5E85);
       border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
@@ -276,6 +279,11 @@ window.CollateraViews = {
 
   /* the account box is appended to <body> so no ancestor stacking context
      (the header uses z-index + backdrop-filter) can paint over or clip it */
+  const clusterEl = document.createElement("div");
+  clusterEl.className = "cauth-cluster";
+  clusterEl.id = "cauthCluster";
+  document.body.appendChild(clusterEl);
+
   const boxEl = document.createElement("span");
   boxEl.className = "cauth-box";
   boxEl.id = "cauthBox";
@@ -285,7 +293,10 @@ window.CollateraViews = {
       '<span class="cauth-pill-email" id="cauthPillEmail" hidden></span>' +
     '</button>' +
     '<button class="cauth-x" id="cauthClose" type="button" aria-label="Close">&times;</button>';
-  document.body.appendChild(boxEl);
+  clusterEl.appendChild(boxEl);
+
+  const _tb = document.getElementById("themeBtn");
+  if (_tb) clusterEl.insertBefore(_tb, boxEl);
 
   const $ = id => document.getElementById(id);
   const avatarBtn = $("cauthAvatarBtn");
