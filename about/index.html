@@ -33,16 +33,17 @@
       </svg>
 
       <div class="ab-prose ab-halo">
-        <p class="ab-first">Collatera began as a personal reference library — a way to keep clinical
-          images, society guidelines, and practical notes gathered during cardiology fellowship in one
-          place I could actually find again. The name nods to collateral circulation: alternate pathways
-          that keep tissue perfused when the primary route is blocked, which felt like a fitting
-          metaphor for something built quietly alongside formal training.</p>
+        <p class="ab-first">Collatera began as a personal reference library, a way to keep
+          clinical images, society guidelines, and practical notes gathered during cardiology
+          fellowship in one place I could actually find again. The name nods to collateral
+          circulation: alternate pathways that keep tissue perfused when the primary route is
+          blocked. That felt like a fitting metaphor for something built quietly alongside
+          formal training.</p>
 
-        <p>What started as a private study tool is growing into something meant to be shared. The aim
-          is to turn Collatera from a personal reference into a resource hub built for peers — fellows
-          and colleagues who could use the same kind of organized, at-a-glance reference during
-          training and beyond.</p>
+        <p>What started as a private study tool is growing into something meant to be
+          shared. The aim is to turn Collatera from a personal reference into a resource hub built
+          for peers: fellows and colleagues who could use the same kind of organized, at-a-glance
+          reference during training and beyond.</p>
       </div>
 
       <svg class="ab-orn ab-orn-b" width="300" height="26" viewBox="0 0 300 26" aria-hidden="true">
@@ -83,30 +84,34 @@ body{display:flex; flex-direction:column; min-height:100vh}
   max-width:1120px; margin:44px auto 0; padding:0 22px 30px}
 .ab-col{display:flex; align-items:center; justify-content:center; gap:54px}
 .ab-left{flex:none}
-.ab-right{flex:1 1 auto; min-width:0; max-width:620px; padding-top:96px}
+.ab-right{flex:1 1 auto; min-width:0; max-width:527px; padding-top:96px}
 
-/* ---------- layer 2: a soft plate behind each element ----------
-   Modelled on the PowerPoint: a translucent plate (50% in dark mode) with
-   a feathered edge and a wide outer glow, sitting at z-index:-1 so it can
-   never wash over the content it sits behind. */
+/* ---------- layer 2: a barely-there wash behind each element ----------
+   A single soft radial gradient per element, sitting at z-index:-1. No hard
+   plate and no separate glow — the map just quietly loses contrast where
+   content sits over it. */
 .ab-halo{position:relative}
 .ab-halo::before{
-  content:""; position:absolute; inset:-26px; z-index:-1; pointer-events:none;
-  border-radius:26px;
-  background:var(--ab-shade);
-  box-shadow:0 0 130px 62px var(--ab-glow);
-  filter:blur(20px);
+  content:""; position:absolute; inset:-150px; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse closest-side,
+    var(--ab-wash-in)  0%,
+    var(--ab-wash-mid) 46%,
+    var(--ab-wash-out) 72%,
+    transparent        100%);
 }
 .ab-logowrap{display:inline-block; line-height:0}
 .ab-logowrap::before{
-  inset:-16px; border-radius:50%;
-  box-shadow:0 0 136px 66px var(--ab-glow);
-  filter:blur(22px);
+  inset:-170px;
+  background:radial-gradient(circle closest-side,
+    var(--ab-wash-in)  0%,
+    var(--ab-wash-mid) 44%,
+    var(--ab-wash-out) 70%,
+    transparent        100%);
 }
 .ab-logo{width:430px; max-width:44vw; height:auto; display:block}
 
 .ab-title{font-family:"Alegreya Sans SC","Hanken Grotesk",system-ui,sans-serif;
-  font-size:50px; font-weight:800; line-height:1.25; color:var(--ab-key);
+  font-size:45px; font-weight:800; line-height:1.25; color:var(--ab-key);
   letter-spacing:.045em; font-variant-caps:normal; text-align:center}
 .ab-orn{display:block; margin:44px auto 46px; color:var(--ab-orn); max-width:100%}
 .ab-orn-b{margin:52px auto 40px}
@@ -123,12 +128,12 @@ body{display:flex; flex-direction:column; min-height:100vh}
 
 /* page-local tokens; veil peaks at 90% and is gone by about an inch */
 :root{ --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
-       --ab-shade:rgba(255,255,255,.62); --ab-glow:rgba(255,255,255,.50); }
+       --ab-wash-in:rgba(250,247,240,.72); --ab-wash-mid:rgba(250,247,240,.46); --ab-wash-out:rgba(250,247,240,.18); }
 :root[data-theme="dark"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-shade:rgba(0,0,0,.50); --ab-glow:rgba(0,0,0,.42); }
+       --ab-wash-in:rgba(10,15,19,.62); --ab-wash-mid:rgba(10,15,19,.40); --ab-wash-out:rgba(10,15,19,.16); }
 @media (prefers-color-scheme: dark){
   :root[data-theme="auto"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-shade:rgba(0,0,0,.50); --ab-glow:rgba(0,0,0,.42); }
+       --ab-wash-in:rgba(10,15,19,.62); --ab-wash-mid:rgba(10,15,19,.40); --ab-wash-out:rgba(10,15,19,.16); }
 }
 
 @media (max-width:860px){
