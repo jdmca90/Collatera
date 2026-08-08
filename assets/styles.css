@@ -149,7 +149,7 @@ header::after {
 }
 .brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
 .section-title {
-  font-size: 2.56em; font-weight: 400; letter-spacing: .01em;
+  font-size: 1.56em; font-weight: 400; letter-spacing: .02em;
   color: var(--title); line-height: 1;
   font-variant-caps: small-caps; text-transform: none;
 }
