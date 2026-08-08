@@ -149,11 +149,11 @@ header::after {
 }
 .brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
 .section-title {
-  font-size: 1.56em; font-weight: 400; letter-spacing: .02em;
+  font-size: 1.66em; font-weight: 400; font-style: italic; letter-spacing: .02em;
   color: var(--title); line-height: 1;
   font-variant-caps: small-caps; text-transform: none;
 }
-.brand-group { margin-left: 38px; display: flex; align-items: center; }
+.brand-group { margin-left: 19px; display: flex; align-items: center; }
 .header-top { align-items: center; }
 .spacer { flex: 1 1 auto; }
 
