@@ -31,6 +31,7 @@
   --banner-ink:    #2F7FB5;  /* dev banner — light blue accent */
   --footer-ink:    #17557A;  /* footer — deep blue */
   --logo-ring:     #A8455C;  /* ring around the header logo */
+  --hdr-h:         40px;     /* shared height of every header control */
   --header-bg:     #F0EDE6;  /* header bar */
   --pink:          #FAD8E9;  /* logo pink — search panel tint */
   --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
@@ -126,8 +127,8 @@ header::after {
 /* hamburger menu button (top-left) */
 .menu-btn {
   flex: 0 0 auto;
-  width: 51px; height: 51px;
-  border: 1px solid var(--border); border-radius: 13px;
+  width: var(--hdr-h, 40px); height: var(--hdr-h, 40px);
+  border: 1px solid var(--border); border-radius: 12px;
   background: var(--bg); color: var(--ink);
   cursor: pointer; font-size: 20px; line-height: 1;
   display: grid; place-items: center; transition: .18s;
@@ -149,7 +150,7 @@ header::after {
 }
 .brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
 .section-title {
-  font-size: 1.66em; font-weight: 400; font-style: italic; letter-spacing: .02em;
+  font-size: 24px; font-weight: 400; font-style: italic; letter-spacing: .02em;
   color: var(--title); line-height: 1;
   font-variant-caps: small-caps; text-transform: none;
 }
@@ -161,7 +162,7 @@ header::after {
   flex: 0 0 auto;
   border: 1px solid var(--border); background: var(--bg);
   color: var(--muted); border-radius: 999px;
-  width: 32px; height: 32px; cursor: pointer; font-size: 14px;
+  width: var(--hdr-h, 40px); height: var(--hdr-h, 40px); cursor: pointer; font-size: 15px;
   display: grid; place-items: center; transition: .2s;
 }
 .theme-btn { border-width: 2px; border-color: var(--brand); }
@@ -722,3 +723,9 @@ footer a { color: var(--accent-deep); }
 
 /* the theme button now lives in the fixed account cluster */
 .cauth-cluster .theme-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+
+/* every header element resolves to the same height */
+.menu-btn.is-brand { height: auto; }
+.menu-btn.is-brand .brand,
+.section-title { display: inline-flex; align-items: center; height: var(--hdr-h, 40px); }
