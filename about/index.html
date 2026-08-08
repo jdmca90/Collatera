@@ -22,7 +22,7 @@
     </div>
 
     <div class="ab-right">
-      <h1 class="ab-title"><span class="ab-veiled">About Collatera</span></h1>
+      <h1 class="ab-title ab-halo">About Collatera</h1>
 
       <svg class="ab-orn" width="300" height="26" viewBox="0 0 300 26" aria-hidden="true">
         <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
@@ -32,17 +32,17 @@
         </g>
       </svg>
 
-      <div class="ab-prose">
-        <p class="ab-first"><span class="ab-veiled">Collatera began as a personal reference library — a way to keep clinical
+      <div class="ab-prose ab-halo">
+        <p class="ab-first">Collatera began as a personal reference library — a way to keep clinical
           images, society guidelines, and practical notes gathered during cardiology fellowship in one
           place I could actually find again. The name nods to collateral circulation: alternate pathways
           that keep tissue perfused when the primary route is blocked, which felt like a fitting
-          metaphor for something built quietly alongside formal training.</span></p>
+          metaphor for something built quietly alongside formal training.</p>
 
-        <p><span class="ab-veiled">What started as a private study tool is growing into something meant to be shared. The aim
+        <p>What started as a private study tool is growing into something meant to be shared. The aim
           is to turn Collatera from a personal reference into a resource hub built for peers — fellows
           and colleagues who could use the same kind of organized, at-a-glance reference during
-          training and beyond.</span></p>
+          training and beyond.</p>
       </div>
 
       <svg class="ab-orn ab-orn-b" width="300" height="26" viewBox="0 0 300 26" aria-hidden="true">
@@ -57,7 +57,7 @@
   </div>
 </main>
 
-<footer class="ab-foot"><span class="ab-veiled">collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</span></footer>
+<footer class="ab-foot ab-halo">collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</footer>
 
 <style>
 /* ---------- backdrop ---------- */
@@ -85,45 +85,39 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .ab-left{flex:none}
 .ab-right{flex:1 1 auto; min-width:0; max-width:620px; padding-top:96px}
 
-/* circular clearing that follows the logo */
-.ab-logowrap{
-  display:inline-block; border-radius:50%; line-height:0;
-  background:var(--ab-veil);
-  box-shadow:
-    0 0 70px   10px rgba(var(--ab-rgb), .82),
-    0 0 170px  26px rgba(var(--ab-rgb), .66),
-    0 0 300px  44px rgba(var(--ab-rgb), .50),
-    0 0 470px  62px rgba(var(--ab-rgb), .35),
-    0 0 670px  84px rgba(var(--ab-rgb), .21),
-    0 0 900px 104px rgba(var(--ab-rgb), .10),
-    0 0 1140px 124px rgba(var(--ab-rgb), .04);
+/* ---------- layer 2: a soft plate behind each element ----------
+   Each element gets its own halo drawn on a pseudo-element at z-index:-1,
+   so it sits above the map but always behind the content it protects.
+   The plate is the header shade, holding 90% opacity under the element
+   and fading to fully transparent about an inch beyond it. */
+.ab-halo{position:relative}
+.ab-halo::before{
+  content:""; position:absolute; inset:-96px; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse closest-side,
+    rgba(var(--ab-rgb), .90) 0%,
+    rgba(var(--ab-rgb), .90) 46%,
+    rgba(var(--ab-rgb), .58) 68%,
+    rgba(var(--ab-rgb), .26) 84%,
+    rgba(var(--ab-rgb), 0)   100%);
+}
+.ab-logowrap{display:inline-block; line-height:0}
+.ab-logowrap::before{inset:-110px; border-radius:50%;
+  background:radial-gradient(circle closest-side,
+    rgba(var(--ab-rgb), .90) 0%,
+    rgba(var(--ab-rgb), .90) 42%,
+    rgba(var(--ab-rgb), .58) 64%,
+    rgba(var(--ab-rgb), .26) 82%,
+    rgba(var(--ab-rgb), 0)   100%);
 }
 .ab-logo{width:430px; max-width:44vw; height:auto; display:block}
-
-/* Each run of text carries its own clearing, cloned per line, so the veil
-   hugs the actual text rather than boxing the whole column. */
-.ab-veiled{
-  background:var(--ab-veil);
-  box-shadow:
-    0 0 60px   6px rgba(var(--ab-rgb), .80),
-    0 0 140px 12px rgba(var(--ab-rgb), .64),
-    0 0 250px 20px rgba(var(--ab-rgb), .48),
-    0 0 390px 28px rgba(var(--ab-rgb), .33),
-    0 0 560px 38px rgba(var(--ab-rgb), .20),
-    0 0 760px 48px rgba(var(--ab-rgb), .10),
-    0 0 980px 58px rgba(var(--ab-rgb), .04);
-  -webkit-box-decoration-break:clone; box-decoration-break:clone;
-  padding:.1em .38em; border-radius:8px;
-}
 
 .ab-title{font-family:"Alegreya Sans SC","Hanken Grotesk",system-ui,sans-serif;
   font-size:50px; font-weight:800; line-height:1.25; color:var(--ab-key);
   letter-spacing:.045em; font-variant-caps:normal; text-align:center}
-.ab-title .ab-veiled{padding:.02em .34em}
 .ab-orn{display:block; margin:44px auto 46px; color:var(--ab-orn); max-width:100%}
-.ab-orn-b{margin:52px 0 40px}
+.ab-orn-b{margin:52px auto 40px}
 
-.ab-prose{font-size:18px; line-height:2.0; color:var(--ab-ink)}
+.ab-prose{font-size:18px; line-height:1.95; color:var(--ab-ink)}
 .ab-prose p + p{margin-top:26px}
 .ab-first::first-letter{
   float:left; font-family:Georgia,"Iowan Old Style","Times New Roman",serif;
@@ -135,12 +129,12 @@ body{display:flex; flex-direction:column; min-height:100vh}
 
 /* page-local tokens; veil peaks at 90% and is gone by about an inch */
 :root{ --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
-       --ab-veil:rgba(244,240,238,.94); --ab-rgb:244,240,238; }
+       --ab-rgb:240,237,230; }
 :root[data-theme="dark"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-veil:rgba(18,27,33,.94); --ab-rgb:18,27,33; }
+       --ab-rgb:20,28,34; }
 @media (prefers-color-scheme: dark){
   :root[data-theme="auto"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-veil:rgba(18,27,33,.94); --ab-rgb:18,27,33; }
+       --ab-rgb:20,28,34; }
 }
 
 @media (max-width:860px){
