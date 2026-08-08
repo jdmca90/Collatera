@@ -48,7 +48,7 @@
     --bg:#141C22; --surface:#1B242B; --ink:#EAF0F3; --muted:#93A2AC;
     --border:#2B3841; --accent:#E9A6C8; --accent-deep:#F3C2DC;
     --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
-    --title:#8ECBF2; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+    --title:#E8909E; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
     --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
     --acct-edge:#7CC0EC; --acct-edge2:#7CC0EC; --acct-admin:#FF9B9B;
     --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
@@ -56,7 +56,7 @@
     --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
     --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
     --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
-    --logo-ring:#FAD8E9; --header-bg:#141C22;
+    --logo-ring:transparent; --logo-ring-w:0px; --header-bg:#141C22;
     --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
   }
 }
@@ -64,7 +64,7 @@
   --bg:#141C22; --surface:#1B242B; --ink:#EAF0F3; --muted:#93A2AC;
   --border:#2B3841; --accent:#E9A6C8; --accent-deep:#F3C2DC;
   --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
-  --title:#8ECBF2; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+  --title:#E8909E; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
   --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
   --acct-edge:#7CC0EC; --acct-edge2:#7CC0EC; --acct-admin:#FF9B9B;
   --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
@@ -72,7 +72,7 @@
   --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
   --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
   --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
-  --logo-ring:#FAD8E9; --header-bg:#141C22;
+  --logo-ring:transparent; --logo-ring-w:0px; --header-bg:#141C22;
   --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
 }
 
@@ -149,10 +149,12 @@ header::after {
 }
 .brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
 .section-title {
-  font-size: 15px; font-weight: 700; letter-spacing: .15em;
+  font-size: 2.56em; font-weight: 400; letter-spacing: .01em;
   color: var(--title); line-height: 1;
-  text-transform: uppercase;
+  font-variant-caps: small-caps; text-transform: none;
 }
+.brand-group { margin-left: 38px; display: flex; align-items: center; }
+.header-top { align-items: center; }
 .spacer { flex: 1 1 auto; }
 
 .theme-btn {
@@ -162,7 +164,8 @@ header::after {
   width: 32px; height: 32px; cursor: pointer; font-size: 14px;
   display: grid; place-items: center; transition: .2s;
 }
-.theme-btn { border-width: 1.5px; border-color: var(--border); }
+.theme-btn { border-width: 2px; border-color: var(--brand); }
+.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 .theme-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
 
 /* upload button (top-right, next to theme toggle) — same size as theme-btn */
@@ -679,7 +682,8 @@ footer a { color: var(--accent-deep); }
   /* page title drops to its own line instead of wrapping beside the brand */
   .header-top { flex-wrap: wrap; }
   .brand-group { order: 3; flex-basis: 100%; margin-top: 1px; }
-  .section-title { font-size: 11.5px; letter-spacing: .13em; }
+  .section-title { font-size: 1.35em; letter-spacing: .01em; }
+  .brand-group { margin-left: 0; }
   .section-title::before { content: none; }
 
   .menu-btn { width: 42px; height: 42px; border-radius: 11px; }
@@ -714,3 +718,7 @@ footer a { color: var(--accent-deep); }
   .cauth-box .cauth-pill-lead { display: inline !important; }
   .cauth-box.open .cauth-pill-email { display: inline; }
 }
+
+
+/* the theme button now lives in the fixed account cluster */
+.cauth-cluster .theme-btn { display: inline-flex; align-items: center; justify-content: center; }
