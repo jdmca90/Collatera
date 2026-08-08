@@ -86,28 +86,22 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .ab-right{flex:1 1 auto; min-width:0; max-width:620px; padding-top:96px}
 
 /* ---------- layer 2: a soft plate behind each element ----------
-   Each element gets its own halo drawn on a pseudo-element at z-index:-1,
-   so it sits above the map but always behind the content it protects.
-   The plate is the header shade, holding 90% opacity under the element
-   and fading to fully transparent about an inch beyond it. */
+   Modelled on the PowerPoint: a translucent plate (50% in dark mode) with
+   a feathered edge and a wide outer glow, sitting at z-index:-1 so it can
+   never wash over the content it sits behind. */
 .ab-halo{position:relative}
 .ab-halo::before{
-  content:""; position:absolute; inset:-96px; z-index:-1; pointer-events:none;
-  background:radial-gradient(ellipse closest-side,
-    rgba(var(--ab-rgb), .90) 0%,
-    rgba(var(--ab-rgb), .90) 46%,
-    rgba(var(--ab-rgb), .58) 68%,
-    rgba(var(--ab-rgb), .26) 84%,
-    rgba(var(--ab-rgb), 0)   100%);
+  content:""; position:absolute; inset:-26px; z-index:-1; pointer-events:none;
+  border-radius:26px;
+  background:var(--ab-shade);
+  box-shadow:0 0 130px 62px var(--ab-glow);
+  filter:blur(20px);
 }
 .ab-logowrap{display:inline-block; line-height:0}
-.ab-logowrap::before{inset:-110px; border-radius:50%;
-  background:radial-gradient(circle closest-side,
-    rgba(var(--ab-rgb), .90) 0%,
-    rgba(var(--ab-rgb), .90) 42%,
-    rgba(var(--ab-rgb), .58) 64%,
-    rgba(var(--ab-rgb), .26) 82%,
-    rgba(var(--ab-rgb), 0)   100%);
+.ab-logowrap::before{
+  inset:-16px; border-radius:50%;
+  box-shadow:0 0 136px 66px var(--ab-glow);
+  filter:blur(22px);
 }
 .ab-logo{width:430px; max-width:44vw; height:auto; display:block}
 
@@ -129,12 +123,12 @@ body{display:flex; flex-direction:column; min-height:100vh}
 
 /* page-local tokens; veil peaks at 90% and is gone by about an inch */
 :root{ --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
-       --ab-rgb:240,237,230; }
+       --ab-shade:rgba(255,255,255,.62); --ab-glow:rgba(255,255,255,.50); }
 :root[data-theme="dark"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-rgb:20,28,34; }
+       --ab-shade:rgba(0,0,0,.50); --ab-glow:rgba(0,0,0,.42); }
 @media (prefers-color-scheme: dark){
   :root[data-theme="auto"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-rgb:20,28,34; }
+       --ab-shade:rgba(0,0,0,.50); --ab-glow:rgba(0,0,0,.42); }
 }
 
 @media (max-width:860px){
