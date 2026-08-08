@@ -179,8 +179,7 @@ window.CollateraViews = {
     .menu-logo{width:2.6em;height:2.6em;border-radius:50%;display:block;flex:none;
       border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
     .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
-    .cauth-cluster{position:fixed;top:.55rem;z-index:4000;
-      right:max(.9rem,calc((100vw - 1180px) / 2 + 20px));
+    .cauth-cluster{position:fixed;top:.55rem;z-index:4000;right:.9rem;
       display:flex;align-items:flex-start;gap:.55rem}
     .cauth-cluster .theme-btn{flex:none;margin-top:.15rem}
     .cauth-box{position:relative;width:max-content;max-width:min(88vw,340px);
@@ -297,6 +296,17 @@ window.CollateraViews = {
 
   const _tb = document.getElementById("themeBtn");
   if (_tb) clusterEl.insertBefore(_tb, boxEl);
+
+  /* keep the cluster's right edge flush with the header's content column */
+  function alignCluster(){
+    const inner = document.querySelector(".header-inner");
+    if (!inner) return;
+    const r = inner.getBoundingClientRect();
+    clusterEl.style.right = Math.max(8, window.innerWidth - r.right) + "px";
+  }
+  alignCluster();
+  window.addEventListener("resize", alignCluster);
+  window.addEventListener("load", alignCluster);
 
   const $ = id => document.getElementById(id);
   const avatarBtn = $("cauthAvatarBtn");
