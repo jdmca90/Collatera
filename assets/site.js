@@ -173,15 +173,15 @@ window.CollateraViews = {
       width:auto;height:auto;padding:.2em .6em .2em .2em;background:transparent;
       border-color:transparent;border-radius:999px}
     .menu-btn.is-brand:hover{background:var(--accent-tint);border-color:transparent}
-    .menu-btn.is-brand .brand{font-size:1.95em;line-height:1;color:var(--brand);
+    .menu-btn.is-brand .brand{font-size:28px;line-height:1;color:var(--brand);
       font-variant-caps:small-caps;letter-spacing:.005em;font-weight:600}
     .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
-    .menu-logo{width:2.6em;height:2.6em;border-radius:50%;display:block;flex:none;
+    .menu-logo{width:var(--hdr-h,40px);height:var(--hdr-h,40px);border-radius:50%;display:block;flex:none;
       border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
     .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
     .cauth-cluster{position:fixed;top:.55rem;z-index:4000;right:.9rem;
       display:flex;align-items:flex-start;gap:.55rem}
-    .cauth-cluster .theme-btn{flex:none;margin-top:.15rem}
+    .cauth-cluster .theme-btn{flex:none;width:var(--hdr-h,40px);height:var(--hdr-h,40px)}
     .cauth-box{position:relative;width:max-content;max-width:min(88vw,340px);
       background:var(--acct,#1B5E85);
       border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
@@ -203,7 +203,8 @@ window.CollateraViews = {
     .cauth-box.open .cauth-pill{border-radius:11px 11px 0 0}
     .cauth-box.open .cauth-panel{border-radius:0 0 11px 11px}
     .cauth-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:.05em;width:auto;box-sizing:border-box;padding:.42em .85em;cursor:pointer;
+      gap:.05em;width:auto;box-sizing:border-box;padding:0 .9em;cursor:pointer;
+      min-height:calc(var(--hdr-h,40px) - 4px);
       background:none;border:none;color:var(--acct-ink,#fff);font:inherit;line-height:1.2}
     .cauth-box.open .cauth-pill{width:100%;padding:1.25em 1.9em .55em;cursor:default;pointer-events:none}
     .cauth-pill:focus-visible{outline:2px solid var(--acct-edge,#FAD8E9);outline-offset:-4px}
