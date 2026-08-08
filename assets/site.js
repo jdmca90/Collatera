@@ -180,7 +180,7 @@ window.CollateraViews = {
       border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
     .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
     .cauth-cluster{position:fixed;top:.55rem;z-index:4000;right:.9rem;
-      display:flex;align-items:flex-start;gap:.55rem}
+      display:flex;align-items:flex-start;gap:.5rem}
     .cauth-cluster .theme-btn{flex:none;width:var(--hdr-h,40px);height:var(--hdr-h,40px)}
     .cauth-box{position:relative;width:max-content;max-width:min(88vw,340px);
       background:var(--acct,#1B5E85);
@@ -301,9 +301,16 @@ window.CollateraViews = {
   /* keep the cluster's right edge flush with the header's content column */
   function alignCluster(){
     const inner = document.querySelector(".header-inner");
+    const mb = document.getElementById("menuBtn");
     if (!inner) return;
     const r = inner.getBoundingClientRect();
     clusterEl.style.right = Math.max(8, window.innerWidth - r.right) + "px";
+    /* line the cluster's midline up with the menu button's */
+    if (mb && !clusterEl.querySelector(".cauth-box.open")) {
+      const m = mb.getBoundingClientRect();
+      const h = clusterEl.offsetHeight || 40;
+      clusterEl.style.top = Math.max(2, m.top + m.height / 2 - h / 2) + "px";
+    }
   }
   alignCluster();
   window.addEventListener("resize", alignCluster);
