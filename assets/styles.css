@@ -110,10 +110,14 @@ header {
 }
 /* translucent bar whose lower edge dissolves into the page */
 header::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  content: ""; position: absolute; left: 0; right: 0; top: 0;
+  bottom: calc(-1 * var(--hdr-fade, 60px));
+  z-index: -1; pointer-events: none;
   background: color-mix(in srgb, var(--header-bg) 80%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent 100%);
-          mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent 100%);
+  /* solid for the full bar (so the title never sits in the gradient),
+     then dissolves across --hdr-fade below it */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--hdr-fade, 60px)), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - var(--hdr-fade, 60px)), transparent 100%);
 }
 /* soft fade at the header's lower edge rather than a hard rule */
 
@@ -154,12 +158,12 @@ header::before {
   font-family: "Marcellus", Georgia, serif;
   font-size: 34px; font-weight: 400; letter-spacing: .02em;
   color: var(--title); line-height: 1;
-  text-transform: none; position: relative; top: 2px;
+  text-transform: none;
 }
 .brand-group { margin-left: 16px; display: flex; align-items: center; }
 .header-top { align-items: center; }
 .spacer { flex: 1 1 auto; }
-.hdr-seplogo { flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; display: block; margin: 0 18px 0 0; align-self: center; }
+.hdr-seplogo { flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; display: block; margin: 0 18px 0 -5px; align-self: center; }
 
 .theme-btn {
   flex: 0 0 auto;
@@ -758,4 +762,27 @@ footer a { color: var(--accent-deep); }
 @media (max-width: 720px){
   .hdr-seplogo{ width:34px; height:34px; margin-right:10px; }
   .section-title{ font-size:22px; }
+}
+
+
+/* ── Option A: pin the account + mode switch to the header's right edge ──
+   Taking them out of the flex flow means the button's width (which changes
+   with the signed-in address) can no longer push anything out of alignment. */
+.header-inner{ position: relative; padding-right: 20px; }
+.hdr-right{
+  position: absolute; top: 50%; right: 20px; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 10px; z-index: 60;
+}
+.hdr-right .theme-btn{ margin: 0; }
+.header-inner > .spacer{ flex: 1 1 auto; }
+
+/* menu button: bigger glyph, more air before the wordmark, squarer corners */
+.menu-btn.is-brand{ gap: 19px; border-radius: 14px; }
+.menu-glyph{ width: 31px; height: 31px; }
+.menu-btn.is-brand .brand{ text-align: center; }
+
+@media (max-width: 720px){
+  .hdr-right{ right: 12px; gap: 7px; }
+  .menu-glyph{ width: 26px; height: 26px; }
+  .menu-btn.is-brand{ gap: 12px; }
 }
