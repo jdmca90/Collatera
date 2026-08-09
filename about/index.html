@@ -92,10 +92,18 @@ body{display:flex; flex-direction:column; min-height:100vh; background:var(--bg)
   content:""; position:absolute; z-index:-1;
   inset:calc(-1 * var(--ab-y)) calc(-1 * var(--ab-x));
   border-radius:var(--ab-round);
-  background:var(--bg);
+  background:var(--ab-pad);
   opacity:var(--ab-op);
   filter:blur(var(--ab-blur));
+  /* feather the pad so its edges dissolve instead of ending on a straight
+     line — without this the blurred rectangle is visible as a banded box */
+  -webkit-mask-image:radial-gradient(ellipse closest-side, #000 42%, rgba(0,0,0,.55) 68%, transparent 100%);
+          mask-image:radial-gradient(ellipse closest-side, #000 42%, rgba(0,0,0,.55) 68%, transparent 100%);
 }
+/* one frame without the filter during a theme swap: discards the cached blur
+   layer so the pad repaints in the new palette instead of the previous one */
+:root.theme-swap .ab-halo::before{ filter:none; opacity:0; }
+
 .ab-logowrap{display:inline-block; line-height:0; --ab-round:50%}
 .ab-logowrap.ab-halo::before{ inset:calc(-1 * var(--ab-y) - 8px) calc(-1 * var(--ab-x) - 8px) }
 .ab-foot.ab-halo::before{ inset:calc(-1 * var(--ab-y) * .33) calc(-1 * var(--ab-x) * .33) }
@@ -122,12 +130,14 @@ body{display:flex; flex-direction:column; min-height:100vh; background:var(--bg)
   --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
   --ab-tile:url("/assets/collatera-tile-coral.png");
   --ab-coral:saturate(1.52) brightness(0.85) contrast(1.09);
+  --ab-pad:#FFFDF8;
   --ab-x:180px; --ab-y:180px; --ab-op:.80; --ab-blur:50px; --ab-round:25px;
   --ab-texop:.63; --ab-texsize:740px;
 }
 :root[data-theme="dark"]{
   --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
   --ab-tile:url("/assets/collatera-tile-blue.png"); --ab-coral:none;
+  --ab-pad:#141C22;
   --ab-x:180px; --ab-y:180px; --ab-op:.80; --ab-blur:50px; --ab-round:24px;
   --ab-texop:.22; --ab-texsize:740px;
 }
@@ -135,7 +145,8 @@ body{display:flex; flex-direction:column; min-height:100vh; background:var(--bg)
   :root[data-theme="auto"]{
     --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
     --ab-tile:url("/assets/collatera-tile-blue.png"); --ab-coral:none;
-    --ab-x:180px; --ab-y:180px; --ab-op:.80; --ab-blur:50px; --ab-round:24px;
+    --ab-pad:#141C22;
+  --ab-x:180px; --ab-y:180px; --ab-op:.80; --ab-blur:50px; --ab-round:24px;
     --ab-texop:.22; --ab-texsize:740px;
   }
 }
