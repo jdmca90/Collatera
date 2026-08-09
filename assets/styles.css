@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Marcellus&display=swap");
 /* =================================================================
    COLLATERA — shared stylesheet
    One file, loaded by every page. Edit visual styling here once and
@@ -105,15 +105,18 @@ h1, h2, h3, .brand, .chip, .count, .section-title, .brandmark, .cs-title {
    ================================================================= */
 header {
   position: sticky; top: 0; z-index: 50;
-  background: var(--header-bg);
+  background: transparent;
   border-bottom: none;
 }
-/* soft fade at the header's lower edge rather than a hard rule */
-header::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: -57px; height: 57px;
-  pointer-events: none; opacity: .65;
-  background: linear-gradient(to bottom, var(--header-bg) 0%, transparent 56%);
+/* translucent bar whose lower edge dissolves into the page */
+header::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: color-mix(in srgb, var(--header-bg) 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent 100%);
 }
+/* soft fade at the header's lower edge rather than a hard rule */
+
 .header-inner {
   max-width: 1180px; margin: 0 auto;
   padding: 8px 20px;
@@ -148,15 +151,15 @@ header::after {
 }
 .brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
 .section-title {
-  font-family: "Sora", system-ui, sans-serif;
-  font-size: 16px; font-weight: 600; letter-spacing: .17em;
+  font-family: "Marcellus", Georgia, serif;
+  font-size: 34px; font-weight: 400; letter-spacing: .02em;
   color: var(--title); line-height: 1;
-  text-transform: uppercase;
+  text-transform: none; position: relative; top: 2px;
 }
 .brand-group { margin-left: 16px; display: flex; align-items: center; }
 .header-top { align-items: center; }
 .spacer { flex: 1 1 auto; }
-.hdr-divider { flex: 0 0 auto; width: 1px; height: 24px; background: var(--border); margin: 0 4px; align-self: center; }
+.hdr-seplogo { flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; display: block; margin: 0 18px 0 0; align-self: center; }
 
 .theme-btn {
   flex: 0 0 auto;
@@ -165,9 +168,8 @@ header::after {
   width: var(--hdr-h, 40px); height: var(--hdr-h, 40px); cursor: pointer; font-size: 15px;
   display: grid; place-items: center; transition: .2s;
 }
-.theme-btn { border-width: 2px; border-color: var(--brand); }
-.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
-.theme-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
+.theme-btn { border-width: 2px; border-color: var(--ring, var(--brand)); color: var(--ring, var(--brand)); }
+
 
 /* upload button (top-right, next to theme toggle) — same size as theme-btn */
 .upload-btn {
@@ -729,3 +731,31 @@ footer a { color: var(--accent-deep); }
 .menu-btn.is-brand { height: auto; }
 .menu-btn.is-brand .brand,
 .section-title { display: inline-flex; align-items: center; height: var(--hdr-h, 40px); }
+
+
+/* ── header additions (menu glyph, ring inversion) ───────────────── */
+:root{ --ring:#A8455C; --menu-ico:#8E3A4E; }
+:root[data-theme="dark"]{ --ring:#7CC0EC; --menu-ico:#FFFFFF; }
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{ --ring:#7CC0EC; --menu-ico:#FFFFFF; }
+}
+.menu-glyph{ flex:none; width:24px; height:24px; color:var(--menu-ico); display:block; }
+.menu-btn.is-brand{ gap:15px; }
+
+/* light rests coral-on-cream, hovers to the dark-mode resting look */
+:root:not([data-theme="dark"]) .theme-btn:hover{
+  background:#141C22; border-color:#7CC0EC; color:#7CC0EC;
+}
+/* dark rests blue-on-dark, hovers to the light-mode resting look */
+:root[data-theme="dark"] .theme-btn:hover{
+  background:#FAF7F0; border-color:#A8455C; color:#A8455C;
+}
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"] .theme-btn:hover{
+    background:#FAF7F0; border-color:#A8455C; color:#A8455C;
+  }
+}
+@media (max-width: 720px){
+  .hdr-seplogo{ width:34px; height:34px; margin-right:10px; }
+  .section-title{ font-size:22px; }
+}
