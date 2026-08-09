@@ -46,9 +46,9 @@ const header = document.createElement("header");
 header.innerHTML = `
   <div class="header-inner">
     <div class="header-top">
-      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""><span class="brand"><span class="brand-c">C</span>ollatera</span></button>
+      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><svg class="menu-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 2.9 20.4 7 12 11.1 3.6 7 12 2.9z" fill="currentColor" fill-opacity=".22"/><path d="M3.6 11.6 12 15.7l8.4-4.1"/><path d="M3.6 16.2 12 20.3l8.4-4.1" opacity=".55"/></svg><span class="brand"><span class="brand-c">C</span>ollatera</span></button>
       <div class="brand-group">
-        ${SECTION ? `<span class="hdr-divider" aria-hidden="true"></span><span class="section-title">${SECTION}</span>` : ""}
+        ${SECTION ? `<img class="hdr-seplogo" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"><span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
       <span class="cauth-slot" id="cauthSlot"></span>
@@ -217,10 +217,25 @@ window.CollateraViews = {
       white-space:normal;overflow-wrap:anywhere}
 
     .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
+      position:absolute;top:calc(100% + 10px);right:0;transform-origin:top right;
       width:0;padding:0;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
       transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,padding .26s ease}
-    .cauth-panel.open{width:auto;max-height:70vh;opacity:1;pointer-events:auto;
-      overflow-y:auto;padding:.2rem 1.1rem 1.2rem}
+    .cauth-panel.open{width:min(88vw,320px);max-height:70vh;opacity:1;pointer-events:auto;
+      overflow-y:auto;padding:1.05rem 1.15rem 1.2rem;z-index:130;
+      background:var(--acct-open,#0F3A54);border:6px solid var(--acct-edge,#FAD8E9);
+      border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+    /* the button itself never expands any more */
+    .cauth-box.open{position:relative;top:auto;right:auto;width:max-content;
+      border-width:2px;border-radius:16px;box-shadow:0 1px 5px rgba(0,0,0,.14)}
+    .cauth-box.open .cauth-pill{width:auto;padding:0 .95em;cursor:pointer;pointer-events:auto}
+    .cauth-box.open .cauth-x{display:none}
+    .cauth-panel .cauth-x{display:block;position:absolute;top:.4rem;right:.55rem;z-index:2;
+      background:none;border:none;color:var(--acct-ink,#fff);font-size:1.6rem;line-height:.7;
+      cursor:pointer;opacity:.85}
+    .cauth-userline{text-align:center;font-size:1.02rem;line-height:1.4;margin:.1rem 0 .9rem}
+    .cauth-userline .ul{font-weight:400;color:var(--acct-lbl,#F0B8D4)}
+    .cauth-userline .ue{display:block;font-weight:700;word-break:break-all}
+    .cauth-pill-email{max-width:180px}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
     .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
     .cauth-avatar{width:66px;height:66px;border-radius:50%;
@@ -287,7 +302,7 @@ window.CollateraViews = {
       '<span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>' +
       '<span class="cauth-pill-email" id="cauthPillEmail" hidden></span>' +
     '</button>' +
-    '<button class="cauth-x" id="cauthClose" type="button" aria-label="Close">&times;</button>';
+    '';
   const slotEl = document.getElementById("cauthSlot");
   (slotEl || document.body).appendChild(boxEl);
 
@@ -295,6 +310,8 @@ window.CollateraViews = {
      shifts when the box becomes absolute on open. Only measured while collapsed. */
   function reserveSlot(){
     if (!slotEl || boxEl.classList.contains("open")) return;
+    slotEl.style.width = "";          /* release, so the box can size to content */
+    void slotEl.offsetWidth;          /* force reflow before re-measuring */
     slotEl.style.width = boxEl.offsetWidth + "px";
   }
   reserveSlot();
@@ -327,7 +344,16 @@ window.CollateraViews = {
     const open = forceOpen !== undefined ? forceOpen : bx?.classList.contains("open");
     const narrow = window.matchMedia("(max-width: 720px)").matches;
     if (!window.collateraUser) lead.textContent = open ? "Not currently signed in" : "Sign in";
-    else lead.textContent = open ? "User:" : (narrow ? "User" : "");
+    else lead.textContent = open ? "Profile" : "";
+    /* the address lives in the popup while it is open */
+    const line = $("cauthUserLine"), ue = $("cauthUserEmail");
+    if (line && ue){
+      if (window.collateraUser){ line.hidden = false; ue.textContent = window.collateraUser.email || ""; }
+      else line.hidden = true;
+    }
+    const pe = $("cauthPillEmail");
+    if (pe) pe.hidden = !window.collateraUser || !!open;
+    if (window.cauthReserveSlot) window.cauthReserveSlot();
   }
 
   /* ---- the dropdown panel ---- */
@@ -335,6 +361,8 @@ window.CollateraViews = {
   panel.className = "cauth-panel";
   panel.id = "cauthPanel";
   panel.innerHTML = `
+    <button class="cauth-x" id="cauthClose" type="button" aria-label="Close">&times;</button>
+    <div class="cauth-userline" id="cauthUserLine" hidden><span class="ul">User:</span><span class="ue" id="cauthUserEmail"></span></div>
     <div id="cauthOut">
       <div class="cauth-row">
         <label class="cauth-inlbl" for="cauthEmail">Email:</label>
@@ -383,7 +411,7 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
       <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
     </div>`;
-  boxEl.appendChild(panel);
+  (slotEl || boxEl).appendChild(panel);
 
 
   /* the submit link carries a hint about where the person came from */
