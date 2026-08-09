@@ -51,8 +51,10 @@ header.innerHTML = `
         ${SECTION ? `<img class="hdr-seplogo" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"><span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
-      <span class="cauth-slot" id="cauthSlot"></span>
-      <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
+      <span class="hdr-right">
+        <span class="cauth-slot" id="cauthSlot"></span>
+        <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
+      </span>
     </div>
   </div>`;
 
@@ -113,6 +115,15 @@ document.getElementById("themeBtn").onclick = () => {
   const next = cur === "dark" ? "light" : "dark";
   root.setAttribute("data-theme", next);
   try { localStorage.setItem(THEME_KEY, next); } catch {}
+  /* Blurred pads live in their own composited layer; swapping the palette via
+     a CSS variable does not always force that layer to re-rasterise, so the
+     old theme's colour can linger until a reload. Dropping the filter for one
+     frame discards the stale layer and forces a clean repaint. */
+  root.classList.add("theme-swap");
+  void root.offsetWidth;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    root.classList.remove("theme-swap");
+  }));
 };
 
 /* =================================================================
