@@ -24,6 +24,16 @@ const SECTIONS = [
 const DEV_BANNER_TEXT = "";
 
 const SECTION = (window.COLLATERA_SECTION || "").trim();
+/* compact titles for narrow screens; desktop keeps the full wording */
+const SECTION_SHORT_MAP = {
+  "Reference Image Library": "Reference",
+  "Guideline Repository":    "Guidelines",
+  "How To Guides":           "How To",
+  "Self-Education Hub":      "Self-Education",
+  "Slide Decks":             "Decks",
+};
+const SECTION_SHORT = window.COLLATERA_SECTION_SHORT
+  || SECTION_SHORT_MAP[SECTION] || SECTION;
 
 /* favicon (the logo) for the browser tab */
 (() => {
@@ -46,9 +56,9 @@ const header = document.createElement("header");
 header.innerHTML = `
   <div class="header-inner">
     <div class="header-top">
-      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><svg class="menu-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 2.9 20.4 7 12 11.1 3.6 7 12 2.9z" fill="currentColor" fill-opacity=".22"/><path d="M3.6 11.6 12 15.7l8.4-4.1"/><path d="M3.6 16.2 12 20.3l8.4-4.1" opacity=".55"/></svg><span class="brand"><span class="brand-c">C</span>ollatera</span></button>
+      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><svg class="menu-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 2.9 20.4 7 12 11.1 3.6 7 12 2.9z" fill="currentColor" fill-opacity=".22"/><path d="M3.6 11.6 12 15.7l8.4-4.1"/><path d="M3.6 16.2 12 20.3l8.4-4.1" opacity=".55"/></svg><span class="brand"><span class="brand-c">C</span>ollatera</span><img class="menu-logo-m" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"></button>
       <div class="brand-group">
-        ${SECTION ? `<img class="hdr-seplogo" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"><span class="section-title">${SECTION}</span>` : ""}
+        ${SECTION ? `<img class="hdr-seplogo" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"><span class="section-title"><span class="st-full">${SECTION}</span><span class="st-short">${SECTION_SHORT}</span></span>` : ""}
       </div>
       <span class="spacer"></span>
       <span class="hdr-right">
@@ -188,18 +198,29 @@ window.CollateraViews = {
       font-family:"Sora",system-ui,sans-serif;letter-spacing:.005em;font-weight:700}
     .menu-logo{width:var(--hdr-h,40px);height:var(--hdr-h,40px);border-radius:50%;display:block;flex:none;
       border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
-    .cauth-slot{position:relative;display:inline-flex;align-items:center;height:var(--hdr-h,40px)}
-    .cauth-box{position:relative;width:max-content;max-width:min(88vw,340px);
+    .cauth-slot{position:relative;display:inline-flex;align-items:center;flex:0 0 auto;width:auto}
+    /* fixed width: the label swaps between the address and "Profile", and a
+       right-anchored cluster would shift every time the width changed */
+    .cauth-box{width:var(--cauth-w,210px);max-width:var(--cauth-w,210px)}
+    .cauth-pill{justify-content:center;text-align:center}
+    .cauth-pill-email,.cauth-pill-lead{display:block;max-width:100%;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cauth-pill-short{display:none;max-width:100%;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap}
+    /* lock the button's box in both states: the cluster is right-anchored and
+       vertically centred, so any width/height change would shift it */
+    .cauth-box,.cauth-box.open{box-sizing:border-box;
+      width:var(--cauth-w,210px);max-width:var(--cauth-w,210px);
+      height:var(--cauth-h,40px);min-height:var(--cauth-h,40px)}
+    .cauth-pill{height:100%;min-height:0;box-sizing:border-box}
+    .cauth-box{position:relative;width:var(--cauth-w,210px);max-width:var(--cauth-w,210px);
       background:var(--acct,#1B5E85);
       border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
       overflow:hidden;text-align:left;
       transition:border-radius .18s ease,border-width .2s ease,background .18s ease,
                  width .22s cubic-bezier(.22,.61,.36,1)}
-    .cauth-box.open{position:absolute;top:0;right:0;z-index:120;
-      background:var(--acct-open,#0F3A54);
-      border-width:7px;border-color:var(--acct-edge,#FAD8E9);border-radius:18px;
-      width:min(88vw,340px);
+    .cauth-box.open{background:var(--acct,#1B5E85);
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 18px 50px rgba(0,0,0,.42)}
     .cauth-x{display:none;position:absolute;top:.15rem;right:.35rem;z-index:2;
       background:none;border:none;color:#fff;font:inherit;font-weight:700;
@@ -241,7 +262,10 @@ window.CollateraViews = {
       transform:translateX(100%);transition:transform .24s ease}
     .cauth-panel.open{transform:none;pointer-events:auto}
     /* the button itself never expands any more */
-    .cauth-box.open{position:relative;top:auto;right:auto;width:max-content;
+    /* open state must not change the button's box at all: the cluster is
+       right-anchored, so any width change would shift it sideways */
+    .cauth-box.open{position:relative;top:auto;right:auto;
+      width:var(--cauth-w,210px);max-width:var(--cauth-w,210px);
       border-width:2px;border-radius:16px;box-shadow:0 1px 5px rgba(0,0,0,.14)}
     .cauth-box.open .cauth-pill{width:auto;padding:0 .95em;cursor:pointer;pointer-events:auto}
     .cauth-box.open .cauth-x{display:none}
@@ -318,26 +342,17 @@ window.CollateraViews = {
     '<button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false">' +
       '<span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>' +
       '<span class="cauth-pill-email" id="cauthPillEmail" hidden></span>' +
+      '<span class="cauth-pill-short" id="cauthPillShort"></span>' +
     '</button>' +
     '';
   const slotEl = document.getElementById("cauthSlot");
   (slotEl || document.body).appendChild(boxEl);
 
-  /* Reserve the collapsed pill's width on the slot so the mode switch never
-     shifts when the box becomes absolute on open. Only measured while collapsed. */
-  function reserveSlot(){
-    if (!slotEl || boxEl.classList.contains("open")) return;
-    slotEl.style.width = "";          /* release, so the box can size to content */
-    void slotEl.offsetWidth;          /* force reflow before re-measuring */
-    slotEl.style.width = boxEl.offsetWidth + "px";
-  }
+  /* No width reservation any more. The panel is a fixed drawer, so the button
+     never expands in place; letting the slot size to its content keeps the
+     button in normal flow and stops it jumping when opened. */
+  function reserveSlot(){ if (slotEl) slotEl.style.width = ""; }
   reserveSlot();
-  requestAnimationFrame(reserveSlot);
-  setTimeout(reserveSlot, 120);
-  setTimeout(reserveSlot, 600);
-  window.addEventListener("resize", reserveSlot);
-  window.addEventListener("load", reserveSlot);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reserveSlot);
   window.cauthReserveSlot = reserveSlot;
 
   const $ = id => document.getElementById(id);
@@ -370,6 +385,8 @@ window.CollateraViews = {
     }
     const pe = $("cauthPillEmail");
     if (pe) pe.hidden = !window.collateraUser || !!open;
+    const ps = $("cauthPillShort");
+    if (ps) ps.textContent = window.collateraUser ? "Profile" : "Sign in";
     if (window.cauthReserveSlot) window.cauthReserveSlot();
   }
 
