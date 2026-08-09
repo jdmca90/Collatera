@@ -46,13 +46,13 @@ const header = document.createElement("header");
 header.innerHTML = `
   <div class="header-inner">
     <div class="header-top">
-      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""><span class="brand"><span class="brand-c">C</span>ollatera</span><span class="menu-chev" aria-hidden="true">&#8964;</span></button>
+      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><img class="menu-logo" src="/assets/collatera-logo-v2.png" alt=""><span class="brand"><span class="brand-c">C</span>ollatera</span></button>
       <div class="brand-group">
-        ${SECTION ? `<span class="section-title">${SECTION}</span>` : ""}
+        ${SECTION ? `<span class="hdr-divider" aria-hidden="true"></span><span class="section-title">${SECTION}</span>` : ""}
       </div>
       <span class="spacer"></span>
+      <span class="cauth-slot" id="cauthSlot"></span>
       <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-      <span class="cauth-slot" id="cauthSlot" aria-hidden="true"></span>
     </div>
   </div>`;
 
@@ -174,15 +174,10 @@ window.CollateraViews = {
       border-color:transparent;border-radius:999px}
     .menu-btn.is-brand:hover{background:var(--accent-tint);border-color:transparent}
     .menu-btn.is-brand .brand{font-size:28px;line-height:1;color:var(--brand);
-      font-variant-caps:small-caps;letter-spacing:.005em;font-weight:600}
-    .menu-chev{font-size:.72em;opacity:.55;margin-left:-.1em}
+      font-family:"Sora",system-ui,sans-serif;letter-spacing:.005em;font-weight:700}
     .menu-logo{width:var(--hdr-h,40px);height:var(--hdr-h,40px);border-radius:50%;display:block;flex:none;
       border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
-    .cauth-slot{display:inline-block;width:11.5em;height:2.4em;vertical-align:middle}
-    .cauth-cluster{position:fixed;top:.55rem;z-index:4000;
-      right:max(20px,calc((100vw - 1180px) / 2 + 20px));
-      display:flex;align-items:flex-start;gap:.5rem}
-    .cauth-cluster .theme-btn{flex:none;width:var(--hdr-h,40px);height:var(--hdr-h,40px)}
+    .cauth-slot{position:relative;display:inline-flex;align-items:center;height:var(--hdr-h,40px)}
     .cauth-box{position:relative;width:max-content;max-width:min(88vw,340px);
       background:var(--acct,#1B5E85);
       border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
@@ -190,7 +185,8 @@ window.CollateraViews = {
       overflow:hidden;text-align:left;
       transition:border-radius .18s ease,border-width .2s ease,background .18s ease,
                  width .22s cubic-bezier(.22,.61,.36,1)}
-    .cauth-box.open{background:var(--acct-open,#0F3A54);
+    .cauth-box.open{position:absolute;top:0;right:0;z-index:120;
+      background:var(--acct-open,#0F3A54);
       border-width:7px;border-color:var(--acct-edge,#FAD8E9);border-radius:18px;
       width:min(88vw,340px);
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 18px 50px rgba(0,0,0,.42)}
@@ -278,13 +274,11 @@ window.CollateraViews = {
   `;
   document.head.appendChild(style);
 
-  /* the account box is appended to <body> so no ancestor stacking context
-     (the header uses z-index + backdrop-filter) can paint over or clip it */
-  const clusterEl = document.createElement("div");
-  clusterEl.className = "cauth-cluster";
-  clusterEl.id = "cauthCluster";
-  document.body.appendChild(clusterEl);
-
+  /* The account box now lives inline in the header, in the account slot to the
+     left of the mode switch. It stays in normal flow while collapsed (so the
+     header never reflows), and becomes a right-anchored absolute overlay when
+     open, dropping its panel below the bar. The solid (no backdrop-filter)
+     header means no stacking-context trap, so nothing clips the open panel. */
   const boxEl = document.createElement("span");
   boxEl.className = "cauth-box";
   boxEl.id = "cauthBox";
@@ -294,36 +288,23 @@ window.CollateraViews = {
       '<span class="cauth-pill-email" id="cauthPillEmail" hidden></span>' +
     '</button>' +
     '<button class="cauth-x" id="cauthClose" type="button" aria-label="Close">&times;</button>';
-  clusterEl.appendChild(boxEl);
+  const slotEl = document.getElementById("cauthSlot");
+  (slotEl || document.body).appendChild(boxEl);
 
-  function adoptTheme(){
-    const tb = document.getElementById("themeBtn");
-    if (tb && tb.parentElement !== clusterEl) clusterEl.insertBefore(tb, boxEl);
+  /* Reserve the collapsed pill's width on the slot so the mode switch never
+     shifts when the box becomes absolute on open. Only measured while collapsed. */
+  function reserveSlot(){
+    if (!slotEl || boxEl.classList.contains("open")) return;
+    slotEl.style.width = boxEl.offsetWidth + "px";
   }
-  adoptTheme();
-
-  /* keep the cluster's right edge flush with the header's content column */
-  function alignCluster(){
-    const inner = document.querySelector(".header-inner");
-    const mb = document.getElementById("menuBtn");
-    if (!inner) return;
-    const r = inner.getBoundingClientRect();
-    clusterEl.style.right = Math.max(8, window.innerWidth - r.right) + "px";
-    /* line the cluster's midline up with the menu button's */
-    if (mb && !clusterEl.querySelector(".cauth-box.open")) {
-      const m = mb.getBoundingClientRect();
-      const h = clusterEl.offsetHeight || 40;
-      clusterEl.style.top = Math.max(2, m.top + m.height / 2 - h / 2) + "px";
-    }
-  }
-  function settle(){ adoptTheme(); alignCluster(); }
-  settle();
-  requestAnimationFrame(settle);
-  setTimeout(settle, 120);
-  setTimeout(settle, 600);
-  window.addEventListener("resize", settle);
-  window.addEventListener("load", settle);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(settle);
+  reserveSlot();
+  requestAnimationFrame(reserveSlot);
+  setTimeout(reserveSlot, 120);
+  setTimeout(reserveSlot, 600);
+  window.addEventListener("resize", reserveSlot);
+  window.addEventListener("load", reserveSlot);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reserveSlot);
+  window.cauthReserveSlot = reserveSlot;
 
   const $ = id => document.getElementById(id);
   const avatarBtn = $("cauthAvatarBtn");
@@ -336,6 +317,7 @@ window.CollateraViews = {
     const open = document.getElementById("cauthBox")?.classList.contains("open");
     el.textContent = (!open && em.length > 25) ? em.slice(0, 20) + "\u2026" : em;
     el.title = em;
+    if (window.cauthReserveSlot) window.cauthReserveSlot();
   }
 
   /* pill wording depends on auth state and whether the panel is open */
@@ -431,6 +413,7 @@ window.CollateraViews = {
     panel.classList.remove("open");
     setEditing(false);
     avatarBtn?.setAttribute("aria-expanded","false");
+    if (window.cauthReserveSlot) window.cauthReserveSlot();
   };
 
   if (avatarBtn) avatarBtn.onclick = (e) => {
