@@ -18,7 +18,7 @@
   <div class="ab-col">
 
     <div class="ab-left">
-      <span class="ab-logowrap"><img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="Collatera logo"></span>
+      <span class="ab-logowrap ab-halo"><img class="ab-logo" src="/assets/collatera-logo-v2.png" alt="Collatera logo"></span>
     </div>
 
     <div class="ab-right">
@@ -61,60 +61,52 @@
 <footer class="ab-foot ab-halo">collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</footer>
 
 <style>
-/* ---------- backdrop ---------- */
+/* ============================================================
+   About page — page-local styles (ab- prefix; no global clash)
+   Background: flat theme colour + a tiled, transparent topo tile.
+   Halo:       one uniform, blurred pad behind each element, all on a
+               single layer *behind* every element's content.
+   ============================================================ */
+
+html,body{min-height:100%}
+body{display:flex; flex-direction:column; min-height:100vh; background:var(--bg)}
+
+/* ---- tiled topographic background ---- */
 .ab-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background-image:url("/assets/collatera-light-background.jpg");
-  background-size:cover; background-position:center; background-repeat:no-repeat;
-  opacity:.30;
-}
-:root[data-theme="dark"] .ab-bg{
-  background-image:url("/assets/collatera-dark-background.jpg"); opacity:.42;
-}
-@media (prefers-color-scheme: dark){
-  :root[data-theme="auto"] .ab-bg{
-    background-image:url("/assets/collatera-dark-background.jpg"); opacity:.42;
-  }
+  background-image:var(--ab-tile);
+  background-repeat:repeat; background-size:var(--ab-texsize) auto; background-position:center;
+  opacity:var(--ab-texop); filter:var(--ab-coral, none);
 }
 
-/* ---------- layout: logo left, text right ---------- */
-html,body{min-height:100%}
-body{display:flex; flex-direction:column; min-height:100vh}
+/* ---- layout: logo left, text right ---- */
 .ab-main{position:relative; z-index:1; flex:1 0 auto;
   max-width:1120px; margin:44px auto 0; padding:0 22px 30px}
 .ab-col{display:flex; align-items:center; justify-content:center; gap:54px}
 .ab-left{flex:none}
 .ab-right{flex:1 1 auto; min-width:0; max-width:527px; padding-top:96px}
 
-/* ---------- layer 2: the wash ----------
-   Painted as the element's own background (not a pseudo-element), so it is
-   always drawn behind that element's text and can never be composited out
-   of order. Padding + matching negative margin keeps layout unchanged. */
-.ab-halo{
-  padding:74px; margin:-74px;
-  background:radial-gradient(ellipse closest-side,
-    var(--ab-wash-in)  0%,
-    var(--ab-wash-mid) 44%,
-    var(--ab-wash-out) 70%,
-    transparent        100%);
+/* ---- halo: uniform blurred pad, shared layer behind all content ---- */
+.ab-halo{position:relative}
+.ab-halo::before{
+  content:""; position:absolute; z-index:-1;
+  inset:calc(-1 * var(--ab-y)) calc(-1 * var(--ab-x));
+  border-radius:var(--ab-round);
+  background:var(--bg);
+  opacity:var(--ab-op);
+  filter:blur(var(--ab-blur));
 }
-.ab-logowrap{
-  display:inline-block; line-height:0;
-  padding:90px; margin:-90px; border-radius:50%;
-  background:radial-gradient(circle closest-side,
-    var(--ab-wash-in)  0%,
-    var(--ab-wash-mid) 42%,
-    var(--ab-wash-out) 68%,
-    transparent        100%);
-}
+.ab-logowrap{display:inline-block; line-height:0; --ab-round:50%}
+.ab-logowrap.ab-halo::before{ inset:calc(-1 * var(--ab-y) - 8px) calc(-1 * var(--ab-x) - 8px) }
+.ab-foot.ab-halo::before{ inset:calc(-1 * var(--ab-y) * .33) calc(-1 * var(--ab-x) * .33) }
 .ab-logo{width:430px; max-width:44vw; height:auto; display:block}
 
+/* ---- type ---- */
 .ab-title{font-family:"Alegreya Sans SC","Hanken Grotesk",system-ui,sans-serif;
   font-size:45px; font-weight:800; line-height:1.25; color:var(--ab-key);
-  letter-spacing:.045em; font-variant-caps:normal; text-align:center}
+  letter-spacing:.045em; text-align:center}
 .ab-orn{display:block; margin:44px auto 46px; color:var(--ab-orn); max-width:100%}
 .ab-orn-b{margin:52px auto 40px}
-
 .ab-prose{font-size:18px; line-height:1.95; color:var(--ab-ink)}
 .ab-prose p + p{margin-top:26px}
 .ab-first::first-letter{
@@ -125,27 +117,45 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .ab-foot{position:relative; z-index:1; text-align:center; font-size:13px; font-weight:700;
   color:var(--ab-key); padding:26px 20px 34px}
 
-/* page-local tokens; veil peaks at 90% and is gone by about an inch */
-:root{ --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
-       --ab-wash-in:rgba(255,255,255,.82); --ab-wash-mid:rgba(255,255,255,.56); --ab-wash-out:rgba(255,255,255,.24); }
-:root[data-theme="dark"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-wash-in:rgba(0,0,0,.78); --ab-wash-mid:rgba(0,0,0,.52); --ab-wash-out:rgba(0,0,0,.22); }
+/* ---- page-local tokens (mirrors the site's light / dark / auto pattern) ---- */
+:root{
+  --ab-key:#A8455C; --ab-orn:#1C6390; --ab-ink:#3B3934;
+  --ab-tile:url("/assets/collatera-tile-coral.png");
+  --ab-coral:saturate(1.52) brightness(0.85) contrast(1.09);
+  --ab-x:107px; --ab-y:108px; --ab-op:.59; --ab-blur:19px; --ab-round:25px;
+  --ab-texop:.63; --ab-texsize:740px;
+}
+:root[data-theme="dark"]{
+  --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
+  --ab-tile:url("/assets/collatera-tile-blue.png"); --ab-coral:none;
+  --ab-x:77px; --ab-y:77px; --ab-op:.71; --ab-blur:19px; --ab-round:24px;
+  --ab-texop:.22; --ab-texsize:740px;
+}
 @media (prefers-color-scheme: dark){
-  :root[data-theme="auto"]{ --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
-       --ab-wash-in:rgba(0,0,0,.78); --ab-wash-mid:rgba(0,0,0,.52); --ab-wash-out:rgba(0,0,0,.22); }
+  :root[data-theme="auto"]{
+    --ab-key:#F09FA8; --ab-orn:#8ECBF2; --ab-ink:#F1EEE6;
+    --ab-tile:url("/assets/collatera-tile-blue.png"); --ab-coral:none;
+    --ab-x:77px; --ab-y:77px; --ab-op:.71; --ab-blur:19px; --ab-round:24px;
+    --ab-texop:.22; --ab-texsize:740px;
+  }
 }
 
+/* ---- mobile: rein in the halo bleed so pads don't overrun the viewport ---- */
 @media (max-width:860px){
   .ab-col{flex-direction:column; align-items:center; gap:26px}
-  .ab-right{max-width:100%; text-align:left}
+  .ab-right{max-width:100%; text-align:left; padding-top:0}
   .ab-logo{width:230px; max-width:62vw}
   .ab-orn{margin:30px auto 32px}
   .ab-orn-b{margin:36px auto 28px}
   .ab-main{margin-top:26px}
   .ab-title{font-size:36px}
-  .ab-right{padding-top:0}
   .ab-prose{font-size:16.5px; line-height:1.9}
   .ab-first::first-letter{font-size:3.1em}
+  :root{ --ab-x:46px; --ab-y:52px }
+  :root[data-theme="dark"]{ --ab-x:46px; --ab-y:52px }
+}
+@media (max-width:860px) and (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{ --ab-x:46px; --ab-y:52px }
 }
 </style>
 
