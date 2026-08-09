@@ -52,8 +52,8 @@ header.innerHTML = `
       </div>
       <span class="spacer"></span>
       <span class="hdr-right">
-        <span class="cauth-slot" id="cauthSlot"></span>
         <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
+        <span class="cauth-slot" id="cauthSlot"></span>
       </span>
     </div>
   </div>`;
@@ -228,21 +228,27 @@ window.CollateraViews = {
       white-space:normal;overflow-wrap:anywhere}
 
     .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
-      position:absolute;top:calc(100% + 10px);right:0;transform-origin:top right;
+      position:fixed;top:0;right:0;height:100%;z-index:70;
       width:0;padding:0;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
       transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,padding .26s ease}
-    .cauth-panel.open{width:min(88vw,320px);max-height:70vh;opacity:1;pointer-events:auto;
-      overflow-y:auto;padding:1.05rem 1.15rem 1.2rem;z-index:130;
-      background:var(--acct-open,#0F3A54);border:6px solid var(--acct-edge,#FAD8E9);
-      border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+    /* closed: parked off-screen to the right, so it slides rather than fades */
+    .cauth-panel{width:min(88vw,368px);max-height:none;height:100%;overflow-y:auto;
+      padding:1.15rem 1.2rem 1.4rem;opacity:1;pointer-events:none;
+      background:var(--acct-open,#0F3A54);
+      border-left:12px solid var(--acct-edge,#FAD8E9);border-top:none;
+      border-right:none;border-bottom:none;border-radius:0;
+      box-shadow:-6px 0 30px var(--shadow);
+      transform:translateX(100%);transition:transform .24s ease}
+    .cauth-panel.open{transform:none;pointer-events:auto}
     /* the button itself never expands any more */
     .cauth-box.open{position:relative;top:auto;right:auto;width:max-content;
       border-width:2px;border-radius:16px;box-shadow:0 1px 5px rgba(0,0,0,.14)}
     .cauth-box.open .cauth-pill{width:auto;padding:0 .95em;cursor:pointer;pointer-events:auto}
     .cauth-box.open .cauth-x{display:none}
-    .cauth-panel .cauth-x{display:block;position:absolute;top:.4rem;right:.55rem;z-index:2;
-      background:none;border:none;color:var(--acct-ink,#fff);font-size:1.6rem;line-height:.7;
+    .cauth-panel .cauth-x{display:block;position:absolute;top:.5rem;right:.8rem;z-index:2;
+      background:none;border:none;color:var(--acct-ink,#fff);font-size:3.2rem;line-height:.7;
       cursor:pointer;opacity:.85}
+    .cauth-panel .cauth-x:hover{opacity:1}
     .cauth-userline{text-align:center;font-size:1.02rem;line-height:1.4;margin:.1rem 0 .9rem}
     .cauth-userline .ul{font-weight:400;color:var(--acct-lbl,#F0B8D4)}
     .cauth-userline .ue{display:block;font-weight:700;word-break:break-all}
@@ -422,7 +428,13 @@ window.CollateraViews = {
       <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
       <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
     </div>`;
-  (slotEl || boxEl).appendChild(panel);
+  document.body.appendChild(panel);
+
+  /* dimming scrim behind the drawer, same as the navigation menu uses */
+  const cScrim = document.createElement("div");
+  cScrim.className = "cauth-scrim";
+  cScrim.id = "cauthScrim";
+  document.body.appendChild(cScrim);
 
 
   /* the submit link carries a hint about where the person came from */
@@ -443,6 +455,7 @@ window.CollateraViews = {
     paintLead(true);
     paintEmail();
     panel.classList.add("open");
+    document.getElementById("cauthScrim")?.classList.add("open");
     avatarBtn?.setAttribute("aria-expanded","true");
   };
   const closePanel = () => {
@@ -450,6 +463,7 @@ window.CollateraViews = {
     paintLead(false);
     paintEmail();
     panel.classList.remove("open");
+    document.getElementById("cauthScrim")?.classList.remove("open");
     setEditing(false);
     avatarBtn?.setAttribute("aria-expanded","false");
     if (window.cauthReserveSlot) window.cauthReserveSlot();
@@ -459,10 +473,7 @@ window.CollateraViews = {
     e.stopPropagation();
     box().classList.contains("open") ? closePanel() : openPanel();
   };
-  document.addEventListener("click", (e) => {
-    const b = box();
-    if (b && b.classList.contains("open") && !b.contains(e.target)) closePanel();
-  });
+  document.getElementById("cauthScrim").onclick = closePanel;
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
   $("cauthClose").onclick = (e) => { e.stopPropagation(); closePanel(); };
 
