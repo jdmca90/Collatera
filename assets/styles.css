@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Marcellus&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Marcellus&family=Archivo+Narrow:wght@500;600&display=swap");
 /* =================================================================
    COLLATERA — shared stylesheet
    One file, loaded by every page. Edit visual styling here once and
@@ -700,19 +700,15 @@ footer a { color: var(--accent-deep); }
 
   .theme-btn { width: 34px; height: 34px; font-size: 15px; border-width: 2px; }
 
-  /* the account box is fixed-position; keep it small and clear of the brand */
-  .cauth-slot { display: none; }
-  .cauth-box { top: .42rem; right: .55rem; font-size: 13px; }
-  .cauth-box .cauth-pill { padding: .42em .7em; }
-  .cauth-box .cauth-pill-email { max-width: 8.5em; }
-  .cauth-box.open { width: min(94vw, 340px); font-size: 15px; }
-  .cauth-box.open .cauth-pill-email { max-width: none; }
+  /* mobile account button sizing (it now lives in the header flow) */
+  .cauth-box { font-size: 13px; }
+  .cauth-box .cauth-pill { padding: .42em .5em; }
 }
 
 
-/* account box tracks the inner edge of the 1180px content column */
-.cauth-box { right: max(.9rem, calc((100vw - 1180px) / 2 + 20px)); }
-@media (max-width: 720px) { .cauth-box { right: .5rem; } }
+/* (removed) the account box used to be fixed-position and tracked the content
+   column's inner edge; it now sits in the header's right-hand cluster, so any
+   right/left offset here would displace it from its slot. */
 
 
 /* header motif sits between the brand button and the page title */
@@ -720,10 +716,7 @@ footer a { color: var(--accent-deep); }
 .brand-group { display: flex; align-items: center; gap: 8px; }
 @media (max-width: 720px) {
   .hdr-motif { display: none; }
-  /* mobile: keep the account button minimal */
-  .cauth-box .cauth-pill-email { display: none; }
-  .cauth-box .cauth-pill-lead { display: inline !important; }
-  .cauth-box.open .cauth-pill-email { display: inline; }
+  /* mobile: the short label is handled by .cauth-pill-short */
 }
 
 
@@ -795,3 +788,40 @@ footer a { color: var(--accent-deep); }
   opacity: 0; pointer-events: none; transition: opacity .2s;
 }
 .cauth-scrim.open{ opacity: 1; pointer-events: auto; }
+
+
+/* ── page title: full on desktop, compact on mobile ───────────── */
+.st-short{ display: none; }
+.menu-logo-m{ display: none; }
+.cauth-pill-short{ display: none; }
+
+@media (max-width: 720px){
+  /* the logo becomes the menu button; the wordmark and the separator go */
+  .menu-btn.is-brand .brand,
+  .menu-btn.is-brand .menu-glyph{ display: none; }
+  .menu-logo-m{
+    display: block; width: 40px; height: 40px; border-radius: 50%;
+  }
+  .menu-btn.is-brand{ gap: 0; padding: 2px 6px; border-radius: 999px; }
+  .hdr-seplogo{ display: none; }
+
+  /* compact title */
+  .st-full{ display: none; }
+  .st-short{ display: inline; }
+  .section-title{
+    font-family: "Archivo Narrow", "Sora", system-ui, sans-serif;
+    font-size: 25px; font-weight: 600; letter-spacing: .04em;
+  }
+
+  /* the account button shows a short label, never the address */
+  .cauth-pill-email{ display: none !important; }
+  .cauth-pill-lead{ display: none !important; }
+  .cauth-pill-short{ display: block !important; }
+  .cauth-pill{ font-size: 14px; }
+
+  .header-inner{ gap: 8px; padding-left: 12px; }
+}
+
+@media (max-width: 720px){
+  :root{ --cauth-w: 104px; }
+}
