@@ -830,39 +830,3 @@ footer a { color: var(--accent-deep); }
 /* account button: fixed size, static label */
 :root{ --cauth-w: 122px; }
 @media (max-width: 720px){ :root{ --cauth-w: 104px; } }
-
-
-/* ── profile drawer: glass, with a plain top dissolving into the tiled
-      texture toward the bottom (matches the navigation drawer's material) ── */
-.cauth-panel{
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-          backdrop-filter: blur(16px) saturate(140%);
-  color: var(--ink);
-  border: none; border-left: 1px solid var(--border);
-  box-shadow: -8px 0 44px rgba(0,0,0,.42);
-  background:
-    linear-gradient(to bottom,
-      var(--surface) 0%,
-      var(--surface) 42%,
-      color-mix(in srgb, var(--surface) 62%, transparent) 62%,
-      color-mix(in srgb, var(--surface) 40%, transparent) 100%),
-    var(--pf-tile, none);
-  background-size: auto, 420px auto;
-  background-repeat: no-repeat, repeat;
-}
-.cauth-panel .cauth-x{ color: var(--ink); }
-.cauth-userline .ul{ color: var(--muted); font-weight: 400; }
-.cauth-userline .ue{ color: var(--ink); }
-.cauth-panel .cauth-lbl{ color: var(--muted); }
-.cauth-panel input, .cauth-panel textarea{
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  color: var(--ink); border: 1px solid var(--border);
-}
-.cauth-link{ color: var(--brand); }
-.cauth-admin{ color: var(--accent-deep); }
-.cauth-avatar{ border-color: var(--brand); }
-:root{ --pf-tile: url("/assets/collatera-tile-coral.png"); }
-:root[data-theme="dark"]{ --pf-tile: url("/assets/collatera-tile-blue.png"); }
-@media (prefers-color-scheme: dark){
-  :root[data-theme="auto"]{ --pf-tile: url("/assets/collatera-tile-blue.png"); }
-}
