@@ -419,6 +419,297 @@ body{ position:relative; background:var(--bg); }
 @media (max-width:760px){
   :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
 }
+/* ============================================================
+   Sticky search bar (sb- prefix, page-local)
+   One control row: All / Favorites / Recents / Categories / Tags / Echo.
+   Sits above the header in stacking order so the header's soft lower edge
+   never dims it, and tucks away when scrolling down.
+   ============================================================ */
+.controls{
+  position:sticky; top:var(--sb-top); z-index:60;
+  max-width:var(--sb-w); margin:14px auto 6px;
+  border-radius:var(--sb-round); padding:var(--sb-pad) 14px;
+  border:var(--sb-bw) solid var(--sb-border);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+          backdrop-filter:blur(16px) saturate(140%);
+  /* diagonal fade: solid at the top-left, pattern gathering bottom-right */
+  background:
+    linear-gradient(135deg,
+      var(--sb-bg) 0%,
+      var(--sb-bg) var(--tile-start),
+      color-mix(in srgb, var(--sb-bg) calc(var(--tile-mid) * 100%), transparent) var(--tile-end),
+      color-mix(in srgb, var(--sb-bg) calc(var(--tile-low) * 100%), transparent) 100%),
+    var(--rf-tile, none);
+  background-size:auto, 410px auto;
+  background-repeat:no-repeat, repeat;
+  background-position:0 0, bottom right;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);
+  transition:transform .28s cubic-bezier(.22,.61,.36,1), opacity .2s;
+}
+.controls.is-tucked{
+  transform:translateY(calc(-100% - var(--sb-top) - 18px));
+  opacity:0; pointer-events:none;
+}
+:root{
+  --sb-top:90px; --sb-w:890px; --sb-round:13px; --sb-pad:9px; --sb-bw:2px;
+  --sb-bg:var(--bg); --sb-border:var(--border);
+  --sb-fs:12px; --sb-py:5px; --sb-px:10px; --sb-gap:6px;
+  --sb-search-h:34px; --sb-stack:9px; --sb-rowgap:4px;
+  --pop-w:320px; --pop-wide:490px; --pop-cols:5; --pop-cols-cat:3;
+  --tile-start:0%; --tile-end:40%; --tile-mid:.70; --tile-low:0; --sb-glow:3px;
+}
+:root[data-theme="dark"]{
+  --tile-start:44%; --tile-end:84%; --tile-mid:.39; --tile-low:.80; --sb-glow:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{
+    --tile-start:44%; --tile-end:84%; --tile-mid:.39; --tile-low:.80; --sb-glow:6px;
+  }
+}
+:root.theme-swap .controls{ opacity:0; }
+
+.search-wrap{ margin:0 0 var(--sb-stack) 0 !important; }
+.search-input{ height:var(--sb-search-h) !important; font-size:13.5px !important;
+  padding-top:0 !important; padding-bottom:0 !important; }
+
+/* ---- the control row ---- */
+#chips{ display:none; }
+.sb-bar{ display:flex; flex-wrap:wrap; align-items:center;
+  gap:var(--sb-rowgap) var(--sb-gap); }
+.sb-btn{
+  display:inline-flex; align-items:center; gap:6px; position:relative;
+  font:inherit; font-size:var(--sb-fs); font-weight:600;
+  padding:var(--sb-py) var(--sb-px); border-radius:999px; cursor:pointer;
+  border:1px solid color-mix(in srgb, var(--brand) 42%, transparent);
+  background:transparent; color:var(--brand); white-space:nowrap;
+  transition:background .16s, color .16s, border-color .16s, box-shadow .16s;
+}
+/* hover previews the selected state */
+.sb-btn:hover{
+  background:color-mix(in srgb, var(--brand) 16%, transparent);
+  border-color:var(--brand); color:var(--brand);
+  box-shadow:inset 0 0 12px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+.sb-btn[aria-pressed="true"], .sb-btn.has-picks{
+  background:color-mix(in srgb, var(--brand) 14%, transparent);
+  border-color:var(--brand); color:var(--brand);
+  box-shadow:inset 0 0 var(--sb-glow) color-mix(in srgb, var(--brand) 34%, transparent);
+}
+.sb-btn.is-soon{ opacity:.5; cursor:not-allowed; border-style:dashed; }
+.sb-btn.is-soon:hover{ background:transparent; box-shadow:none;
+  border-color:color-mix(in srgb, var(--brand) 42%, transparent); }
+.sb-btn .caret{ width:0; height:0; border-left:4px solid transparent;
+  border-right:4px solid transparent; border-top:5px solid currentColor; opacity:.75; }
+.sb-btn .n{ background:var(--accent-deep); color:#fff; border-radius:999px;
+  font-size:10px; padding:0 5px; line-height:15px; }
+.sb-sep{ width:1px; align-self:stretch; margin:2px 4px;
+  background:color-mix(in srgb, var(--brand) 30%, transparent); }
+
+/* ---- checklist popouts ---- */
+.pop-wrap{ position:relative; }
+.pop{
+  position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  z-index:90; width:var(--pop-w); max-width:calc(var(--sb-w) - 24px);
+  border-radius:14px; overflow:hidden; display:none;
+  background:var(--surface);
+  border:1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  box-shadow:0 20px 50px rgba(0,0,0,.42);
+}
+.pop.open{ display:block; animation:sbPop .14s ease-out; }
+@keyframes sbPop{ from{ opacity:0; transform:translateX(-50%) translateY(-6px) scale(.985); }
+                  to{ opacity:1; transform:translateX(-50%); } }
+.pop.wide{ width:var(--pop-wide); }
+.pop-list{ padding:9px 9px 5px; display:grid; gap:1px 6px;
+  grid-template-columns:repeat(var(--pop-cols-cat), minmax(0,1fr)); }
+.pop.wide .pop-list{ grid-template-columns:repeat(var(--pop-cols), minmax(0,1fr)); }
+.pop-item{ display:flex; align-items:center; gap:8px; padding:5px 7px; border-radius:8px;
+  font-size:12.5px; color:var(--ink); cursor:pointer; user-select:none; }
+.pop-item:hover{ background:color-mix(in srgb, var(--brand) 10%, transparent); }
+.pop-item input{ position:absolute; opacity:0; pointer-events:none; }
+.pop-box{ width:15px; height:15px; flex:none; border-radius:5px;
+  border:1.5px solid color-mix(in srgb, var(--brand) 50%, transparent);
+  display:grid; place-items:center; transition:.13s; }
+.pop-item input:checked + .pop-box{ background:var(--brand); border-color:var(--brand); }
+.pop-box svg{ width:10px; height:10px; opacity:0; transform:scale(.6); transition:.13s; }
+.pop-item input:checked + .pop-box svg{ opacity:1; transform:none; }
+/* find field sits at the foot, directly above Apply */
+.pop-find{ display:block; box-sizing:border-box; width:calc(100% - 18px); margin:4px 9px 0;
+  padding:6px 9px; font:inherit; font-size:12.5px; border-radius:8px;
+  border:1px solid color-mix(in srgb, var(--brand) 26%, transparent);
+  background:color-mix(in srgb, var(--bg) 60%, transparent); color:var(--ink); }
+.pop-foot{ display:flex; gap:8px; padding:8px 9px 10px; }
+.pop-foot button{ flex:1; padding:7px; border-radius:9px; cursor:pointer; font:inherit;
+  font-size:12px; font-weight:600;
+  border:1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  background:transparent; color:var(--ink); }
+.pop-foot .primary{ background:var(--brand); color:#fff; border-color:var(--brand); }
+.pop-foot button:hover{ filter:brightness(1.06); }
+
+@media (max-width:760px){
+  :root{ --sb-w:calc(100vw - 20px); --pop-wide:calc(100vw - 40px); --pop-cols:3; --pop-cols-cat:2; }
+}
+
+
 </style>
+<script>
+
+(function sbBuild(){
+  var chips = document.getElementById("chips");
+  if (!chips) return;
+  var all = [].slice.call(chips.querySelectorAll(".chip"));
+  if (!all.length) return setTimeout(sbBuild, 120);
+  if (document.querySelector(".sb-bar")) return;
+
+  var CFG = { g1:"Societies", g2:"Topics", cols1:4, cols2:5, data:"GUIDELINES", dataFn:function(){ return (typeof GUIDELINES!=="undefined")?GUIDELINES:[]; }, titleClass:"lc-title", title:function(r){return r.topic;}, f1:function(r){return r.societies||[];}, f2:function(r){return (r.tags||r.topics||[]).concat([r.topic]);} };
+  var srcAll=null, srcFav=null, srcRec=null, G1=[], G2=[];
+  all.forEach(function(c){
+    var t = c.textContent.trim();
+    if (t === "All") srcAll = c;
+    else if (c.id === "chipStarred") srcFav = c;
+    else if (c.id === "chipRecent")  srcRec = c;
+    else if (c.classList.contains("is-tag")) G2.push(t);
+    else G1.push(t);
+  });
+
+  var bar = document.createElement("div"); bar.className = "sb-bar";
+  function mk(label, cls){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "sb-btn" + (cls ? " " + cls : "");
+    b.textContent = label; return b;
+  }
+  var bAll = mk("All"); bAll.setAttribute("aria-pressed","true");
+  var bFav = srcFav ? mk("\u2605 Favorites") : null;
+  var bRec = srcRec ? mk("\u2605 Recents")   : null;
+
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" '
+            + 'stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.2 5.2L20 7"/></svg>';
+
+  function makePop(label, items, cols){
+    var wrap = document.createElement("div"); wrap.className = "pop-wrap";
+    var btn  = mk(label);
+    btn.innerHTML = label + ' <span class="n" hidden>0</span><span class="caret"></span>';
+    var pop = document.createElement("div"); pop.className = "pop wide";
+    pop.style.setProperty("--pop-cols", cols);
+    pop.innerHTML =
+      '<div class="pop-list"></div>' +
+      '<input class="pop-find" type="search" placeholder="Find ' + label.toLowerCase() + '\u2026" autocomplete="off">' +
+      '<div class="pop-foot"><button type="button" class="clr">Clear</button>' +
+      '<button type="button" class="primary app">Apply</button></div>';
+    var list = pop.querySelector(".pop-list");
+    if (!items.length){
+      var e = document.createElement("div");
+      e.style.cssText = "padding:14px 10px;font-size:12.5px;opacity:.6;grid-column:1/-1;text-align:center";
+      e.textContent = "Nothing here yet";
+      list.appendChild(e);
+    }
+    items.forEach(function(t){
+      var l = document.createElement("label"); l.className = "pop-item";
+      l.innerHTML = '<input type="checkbox" value="' + String(t).replace(/"/g,"&quot;") + '">'
+                  + '<span class="pop-box">' + CHECK + '</span><span class="lbl">' + t + '</span>';
+      list.appendChild(l);
+    });
+    pop.querySelector(".pop-find").addEventListener("input", function(e){
+      var q = e.target.value.toLowerCase();
+      list.querySelectorAll(".pop-item").forEach(function(it){
+        it.style.display = it.querySelector(".lbl").textContent.toLowerCase().indexOf(q) >= 0 ? "" : "none";
+      });
+    });
+    btn.onclick = function(e){
+      e.stopPropagation();
+      document.querySelectorAll(".pop.open").forEach(function(o){ if (o !== pop) o.classList.remove("open"); });
+      pop.classList.toggle("open");
+    };
+    document.addEventListener("click", function(e){ if (!wrap.contains(e.target)) pop.classList.remove("open"); });
+    pop.querySelector(".app").onclick = function(){ pop.classList.remove("open"); applyPicks(); };
+    pop.querySelector(".clr").onclick = function(){
+      pop.querySelectorAll("input:checked").forEach(function(i){ i.checked = false; }); applyPicks();
+    };
+    wrap.appendChild(btn); wrap.appendChild(pop);
+    wrap._picked = function(){
+      return [].slice.call(pop.querySelectorAll("input:checked")).map(function(i){ return i.value; });
+    };
+    wrap._badge = btn.querySelector(".n"); wrap._btn = btn; wrap._pop = pop;
+    return wrap;
+  }
+
+  var pop1 = makePop(CFG.g1, G1, CFG.cols1);
+  var pop2 = makePop(CFG.g2, G2, CFG.cols2);
+
+  function clearPicks(){
+    [pop1, pop2].forEach(function(w){
+      w._pop.querySelectorAll("input:checked").forEach(function(i){ i.checked = false; });
+    });
+  }
+  /* within a group: OR.  across the two groups: AND. */
+  function applyPicks(){
+    var a = pop1._picked(), b = pop2._picked();
+    [[pop1,a],[pop2,b]].forEach(function(p){
+      p[0]._badge.hidden = p[1].length === 0;
+      p[0]._badge.textContent = p[1].length;
+      p[0]._btn.classList.toggle("has-picks", p[1].length > 0);
+    });
+    if (a.length || b.length){
+      [bAll,bFav,bRec].forEach(function(x){ if (x) x.setAttribute("aria-pressed","false"); });
+    }
+    var rows = (typeof window[CFG.data] !== "undefined") ? window[CFG.data]
+             : (CFG.dataFn ? CFG.dataFn() : []);
+    var meta = {};
+    (rows || []).forEach(function(r){
+      meta[String(CFG.title(r)).trim()] = { g1: CFG.f1(r), g2: CFG.f2(r) };
+    });
+    document.querySelectorAll("#grid .sb-item, #grid > *").forEach(function(wrapEl){
+      var t = wrapEl.querySelector("." + CFG.titleClass);
+      if (!t) return;
+      var m = meta[t.textContent.trim()];
+      var okA = !a.length || (m && m.g1.some(function(x){ return a.indexOf(x) >= 0; }));
+      var okB = !b.length || (m && m.g2.some(function(x){ return b.indexOf(x) >= 0; }));
+      wrapEl.style.display = (okA && okB) ? "" : "none";
+    });
+  }
+
+  function proxy(btn, src){
+    if (!btn) return;
+    btn.onclick = function(){
+      [bAll,bFav,bRec].forEach(function(x){ if (x) x.setAttribute("aria-pressed","false"); });
+      btn.setAttribute("aria-pressed","true");
+      clearPicks();
+      if (src) src.click();
+      applyPicks();
+    };
+  }
+  proxy(bAll, srcAll); proxy(bFav, srcFav); proxy(bRec, srcRec);
+
+  var parts = [bAll];
+  if (bFav) parts.push(bFav);
+  if (bRec) parts.push(bRec);
+  var s1 = document.createElement("span"); s1.className = "sb-sep";
+  parts.push(s1, pop1, pop2);
+  parts.forEach(function(el){ bar.appendChild(el); });
+  chips.parentNode.insertBefore(bar, chips.nextSibling);
+
+  var grid = document.getElementById("grid");
+  if (grid) new MutationObserver(function(){ applyPicks(); }).observe(grid, { childList:true });
+
+  function syncModes(){
+    if (bFav) bFav.style.display = (srcFav && srcFav.hidden) ? "none" : "";
+    if (bRec) bRec.style.display = (srcRec && srcRec.hidden) ? "none" : "";
+  }
+  syncModes();
+  new MutationObserver(syncModes).observe(chips, { attributes:true, subtree:true, attributeFilter:["hidden"] });
+})();
+
+/* tuck the bar on the way down, bring it back on the way up */
+(function sbTuck(){
+  var last = window.scrollY, bar = null, threshold = 90;
+  window.addEventListener("scroll", function(){
+    bar = bar || document.querySelector(".controls");
+    if (!bar) return;
+    var y = window.scrollY, down = y > last;
+    if (y > threshold && down) bar.classList.add("is-tucked");
+    else if (!down) bar.classList.remove("is-tucked");
+    last = y;
+  }, { passive:true });
+})();
+</script>
 </body>
 </html>
