@@ -201,19 +201,30 @@ window.CollateraViews = {
     .cauth-slot{position:relative;display:inline-flex;align-items:center;flex:0 0 auto;width:auto}
     /* fixed width: the label swaps between the address and "Profile", and a
        right-anchored cluster would shift every time the width changed */
-    .cauth-box{width:var(--cauth-w,210px);max-width:var(--cauth-w,210px)}
+    .cauth-box{width:max-content;max-width:min(46vw,320px)}
     .cauth-pill{justify-content:center;text-align:center}
+    
+    /* The button sizes to the address via max-content and the text never
+       changes, so the right-anchored cluster cannot shift. Long addresses are
+       ellipsised by max-width, which is a purely visual clamp. */
+    .cauth-pill-short{display:none;white-space:nowrap}
+    /* one label node only, capped in ch (not %) so it cannot resolve
+       differently against the box's max-content width when the drawer opens */
+    .cauth-pill-email{display:block;max-width:26ch;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap}
+    .cauth-pill-lead{display:none}
     .cauth-pill-email,.cauth-pill-lead{display:block;max-width:100%;
       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .cauth-pill-short{display:none;max-width:100%;overflow:hidden;
-      text-overflow:ellipsis;white-space:nowrap}
+    /* the pill fills its box so the whole control is clickable, not just the text */
+    .cauth-pill{width:100%;box-sizing:border-box}
     /* lock the button's box in both states: the cluster is right-anchored and
        vertically centred, so any width/height change would shift it */
-    .cauth-box,.cauth-box.open{box-sizing:border-box;
-      width:var(--cauth-w,210px);max-width:var(--cauth-w,210px);
-      height:var(--cauth-h,40px);min-height:var(--cauth-h,40px)}
+    /* The button sizes to its own label and the label never changes, so the
+       right-anchored cluster has nothing to shift against. */
+    .cauth-box,.cauth-box.open{box-sizing:border-box;width:max-content;
+      max-width:min(46vw,320px);height:var(--cauth-h,40px);min-height:var(--cauth-h,40px)}
     .cauth-pill{height:100%;min-height:0;box-sizing:border-box}
-    .cauth-box{position:relative;width:var(--cauth-w,210px);max-width:var(--cauth-w,210px);
+    .cauth-box{position:relative;width:max-content;max-width:min(46vw,320px);
       background:var(--acct,#1B5E85);
       border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
       box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
@@ -245,8 +256,9 @@ window.CollateraViews = {
     .cauth-pill-email{font-size:.9em;font-weight:700;letter-spacing:-.005em;
       font-family:"Avenir Next Condensed","Roboto Condensed","Hanken Grotesk",system-ui,sans-serif;
       max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .cauth-box.open .cauth-pill-email{max-width:none;font-size:1.18em;
-      white-space:normal;overflow-wrap:anywhere}
+    /* (removed) the address used to enlarge and wrap when the button expanded
+       into the panel; with a separate drawer that only changed the button's
+       width on open and shifted the right-anchored cluster. */
 
     .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
       position:fixed;top:0;right:0;height:100%;z-index:70;
@@ -265,9 +277,8 @@ window.CollateraViews = {
     /* open state must not change the button's box at all: the cluster is
        right-anchored, so any width change would shift it sideways */
     .cauth-box.open{position:relative;top:auto;right:auto;
-      width:var(--cauth-w,210px);max-width:var(--cauth-w,210px);
       border-width:2px;border-radius:16px;box-shadow:0 1px 5px rgba(0,0,0,.14)}
-    .cauth-box.open .cauth-pill{width:auto;padding:0 .95em;cursor:pointer;pointer-events:auto}
+    .cauth-box.open .cauth-pill{width:auto;padding:0 .9em;cursor:pointer;pointer-events:auto}
     .cauth-box.open .cauth-x{display:none}
     .cauth-panel .cauth-x{display:block;position:absolute;top:.5rem;right:.8rem;z-index:2;
       background:none;border:none;color:var(--acct-ink,#fff);font-size:3.2rem;line-height:.7;
@@ -276,7 +287,7 @@ window.CollateraViews = {
     .cauth-userline{text-align:center;font-size:1.02rem;line-height:1.4;margin:.1rem 0 .9rem}
     .cauth-userline .ul{font-weight:400;color:var(--acct-lbl,#F0B8D4)}
     .cauth-userline .ue{display:block;font-weight:700;word-break:break-all}
-    .cauth-pill-email{max-width:180px}
+    .cauth-pill-email{max-width:100%}
     .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
     .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
     .cauth-avatar{width:66px;height:66px;border-radius:50%;
@@ -315,15 +326,16 @@ window.CollateraViews = {
       background:var(--acct-lbl,#F0B8D4);color:var(--acct-open,#0F3A54);font:inherit;font-weight:700;cursor:pointer}
     .cauth-save:disabled{opacity:.6;cursor:default}
     .cauth-rule{border:none;height:1px;margin:1.1rem 0 .8rem;
-      background:linear-gradient(to right,transparent,var(--acct-edge,#FAD8E9),transparent);
+      background:linear-gradient(to right,transparent,var(--brand,#7CC0EC),transparent);
       opacity:.75}
     .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
       color:var(--acct-val,#8ECBF2);padding:.22em .5em;cursor:pointer;text-decoration:none;border-radius:6px;font-size:.9em}
     .cauth-link:hover{background:var(--acct-hover,rgba(255,255,255,.14));color:var(--acct-ink,#fff)}
     .cauth-admin{color:var(--acct-admin,#F49E9E);font-weight:600}
     .cauth-admin:hover{color:var(--acct-admin,#F49E9E)}
+    /* both section rules use the brand blue */
     .cauth-rule-admin{margin:.55rem 0 .5rem;
-      background:linear-gradient(to right,transparent,var(--acct-admin,#F49E9E),transparent)}
+      background:linear-gradient(to right,transparent,var(--brand,#7CC0EC),transparent)}
     .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
     .cauth-note.ok{color:var(--acct-ok,#BFEBC8)} .cauth-note.err{color:var(--acct-err,#FFC9C9)}
 
@@ -352,6 +364,10 @@ window.CollateraViews = {
      never expands in place; letting the slot size to its content keeps the
      button in normal flow and stops it jumping when opened. */
   function reserveSlot(){ if (slotEl) slotEl.style.width = ""; }
+
+  /* Size the button to the signed-in address once, then keep it fixed. The
+     label swaps to "Profile" while the drawer is open, and a right-anchored
+     cluster would shift sideways if the width changed with the text. */
   reserveSlot();
   window.cauthReserveSlot = reserveSlot;
 
@@ -364,7 +380,9 @@ window.CollateraViews = {
     if (!el || !u) return;
     const em = u.email || "";
     const open = document.getElementById("cauthBox")?.classList.contains("open");
-    el.textContent = (!open && em.length > 25) ? em.slice(0, 20) + "\u2026" : em;
+    /* the same text in both states: truncating only while closed changed the
+       button's width on open and shifted the right-anchored cluster */
+    el.textContent = em;
     el.title = em;
     if (window.cauthReserveSlot) window.cauthReserveSlot();
   }
@@ -376,7 +394,7 @@ window.CollateraViews = {
     const open = forceOpen !== undefined ? forceOpen : bx?.classList.contains("open");
     const narrow = window.matchMedia("(max-width: 720px)").matches;
     if (!window.collateraUser) lead.textContent = open ? "Not currently signed in" : "Sign in";
-    else lead.textContent = open ? "Profile" : "";
+    else lead.textContent = "";   /* the address stays on the button */
     /* the address lives in the popup while it is open */
     const line = $("cauthUserLine"), ue = $("cauthUserEmail");
     if (line && ue){
@@ -384,7 +402,7 @@ window.CollateraViews = {
       else line.hidden = true;
     }
     const pe = $("cauthPillEmail");
-    if (pe) pe.hidden = !window.collateraUser || !!open;
+    if (pe) pe.hidden = !window.collateraUser;   /* unchanged while open */
     const ps = $("cauthPillShort");
     if (ps) ps.textContent = window.collateraUser ? "Profile" : "Sign in";
     if (window.cauthReserveSlot) window.cauthReserveSlot();
