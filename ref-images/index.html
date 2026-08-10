@@ -13,6 +13,7 @@
 <body>
 
 <div class="rf-bg" aria-hidden="true"></div>
+<div class="rf-wash" aria-hidden="true"></div>
 <div class="rf-slab" aria-hidden="true"></div>
 
 <!-- Search + filter chips (the shared header/banner are injected by site.js above) -->
@@ -480,6 +481,11 @@ body{ position:relative; background:var(--bg); }
   opacity:var(--rf-texop); filter:var(--rf-coral, none);
 }
 
+.rf-wash{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:var(--rf-pad); opacity:var(--rf-wash);
+}
+
 .rf-slab{
   position:absolute; z-index:0; pointer-events:none;
   left:50%; transform:translateX(-50%);
@@ -504,37 +510,37 @@ body{ position:relative; background:var(--bg); }
 
 /* one frame without the filter on a theme swap, so the composited layer is
    discarded and repaints in the new palette instead of the previous one */
-:root.theme-swap .rf-slab{ opacity:0; }
+:root.theme-swap .rf-slab, :root.theme-swap .rf-wash{ opacity:0; }
 
 /* ---- page-local tokens (light / dark / auto, mirroring the site) ---- */
 :root{
   --rf-tile:url("/assets/collatera-tile-coral.png");
   --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
   --rf-pad:#FFFDF8;
-  --rf-texop:.62; --rf-texsize:820px;
-  --rf-core:1260px; --rf-band:65px; --rf-op:.80;
+  --rf-texop:.55; --rf-texsize:570px; --rf-wash:.73;
+  --rf-core:1220px; --rf-band:65px; --rf-op:.62;
   --rf-top:0px; --rf-bot:115px; --rf-round:30px;
 }
 :root[data-theme="dark"]{
   --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
   --rf-pad:#141C22;
-  --rf-texop:.62; --rf-texsize:820px;
-  --rf-core:1260px; --rf-band:65px; --rf-op:.80;
+  --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
+  --rf-core:1300px; --rf-band:65px; --rf-op:.80;
   --rf-top:0px; --rf-bot:115px; --rf-round:30px;
 }
 @media (prefers-color-scheme: dark){
   :root[data-theme="auto"]{
-    --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+  --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
     --rf-pad:#141C22;
-    --rf-texop:.62; --rf-texsize:820px;
-    --rf-core:1260px; --rf-band:65px; --rf-op:.80;
+    --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
+    --rf-core:1300px; --rf-band:65px; --rf-op:.80;
     --rf-top:0px; --rf-bot:115px; --rf-round:30px;
   }
 }
 
 /* ---- narrow screens: shrink the core so the band still reads ---- */
 @media (max-width:1380px){
-  :root, :root[data-theme="dark"]{ --rf-core:min(1260px, calc(100vw - 130px)); }
+  :root, :root[data-theme="dark"]{ --rf-core:min(1300px, calc(100vw - 130px)); }
 }
 @media (max-width:760px){
   :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
