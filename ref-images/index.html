@@ -12,6 +12,9 @@
 </head>
 <body>
 
+<div class="rf-bg" aria-hidden="true"></div>
+<div class="rf-slab" aria-hidden="true"></div>
+
 <!-- Search + filter chips (the shared header/banner are injected by site.js above) -->
 <div class="controls">
   <div class="search-wrap">
@@ -459,5 +462,84 @@ document.addEventListener("collatera:recents-cleared", () => {
 });
 
 </script>
+
+<style>
+/* ============================================================
+   Reference library — page-local background (rf- prefix, no global clash)
+   Tiled topographic texture across the page, with ONE shading element:
+   constant fill through the core, feathering to nothing across a defined
+   band so the outer margins keep the texture at full strength.
+   ============================================================ */
+
+body{ position:relative; background:var(--bg); }
+
+.rf-bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:var(--rf-tile);
+  background-repeat:repeat; background-size:var(--rf-texsize) auto; background-position:center;
+  opacity:var(--rf-texop); filter:var(--rf-coral, none);
+}
+
+.rf-slab{
+  position:absolute; z-index:0; pointer-events:none;
+  left:50%; transform:translateX(-50%);
+  width:calc(var(--rf-core) + 2 * var(--rf-band));
+  top:calc(var(--rf-top) - var(--rf-band));
+  height:calc(100% - var(--rf-top) - var(--rf-bot) + 2 * var(--rf-band));
+  background:var(--rf-pad);
+  opacity:var(--rf-op);
+  border-radius:var(--rf-round);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%);
+  mask-composite:intersect;
+}
+
+/* page content sits above both layers */
+.controls, main, footer{ position:relative; z-index:1; }
+
+/* one frame without the filter on a theme swap, so the composited layer is
+   discarded and repaints in the new palette instead of the previous one */
+:root.theme-swap .rf-slab{ opacity:0; }
+
+/* ---- page-local tokens (light / dark / auto, mirroring the site) ---- */
+:root{
+  --rf-tile:url("/assets/collatera-tile-coral.png");
+  --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
+  --rf-pad:#FFFDF8;
+  --rf-texop:.62; --rf-texsize:820px;
+  --rf-core:1260px; --rf-band:65px; --rf-op:.80;
+  --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+}
+:root[data-theme="dark"]{
+  --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+  --rf-pad:#141C22;
+  --rf-texop:.62; --rf-texsize:820px;
+  --rf-core:1260px; --rf-band:65px; --rf-op:.80;
+  --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+}
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{
+    --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+    --rf-pad:#141C22;
+    --rf-texop:.62; --rf-texsize:820px;
+    --rf-core:1260px; --rf-band:65px; --rf-op:.80;
+    --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+  }
+}
+
+/* ---- narrow screens: shrink the core so the band still reads ---- */
+@media (max-width:1380px){
+  :root, :root[data-theme="dark"]{ --rf-core:min(1260px, calc(100vw - 130px)); }
+}
+@media (max-width:760px){
+  :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
+}
+</style>
+
 </body>
 </html>
