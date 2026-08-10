@@ -1,619 +1,832 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Marcellus&family=Archivo+Narrow:wght@500;600&display=swap");
 /* =================================================================
-   COLLATERA — shared site chrome
-   Builds the header, the hamburger nav menu, and the dev banner on
-   every page from ONE place. To add a section or rename a nav item,
-   edit the SECTIONS list below and every page updates automatically.
-
-   Each page sets its own title before loading this file, e.g.:
-       <script>window.COLLATERA_SECTION = "Reference Image Library";</script>
-       <script src="/assets/site.js"></script>
+   COLLATERA — shared stylesheet
+   One file, loaded by every page. Edit visual styling here once and
+   it applies site-wide. (Nav links and header markup live in site.js.)
+   Palette and type match the live brand: cream Light profile, teal
+   accent, Gill Sans MT headings, Calibri Light body.
    ================================================================= */
 
-/* ---- The four sections. Edit here to change the nav everywhere. ---- */
-const SECTIONS = [
-  { title: "About",                        href: "/about/",        sub: "The project, in brief" },
-  { title: "Reference Image Library",      href: "/ref-images/",   sub: "Clinical reference images" },
-  { title: "Guideline Repository",         href: "/guidelines/",   sub: "Society guideline links" },
-  { title: "Slide Decks",                  href: "/decks/",        sub: "Presentations and talks" }, 
-  { title: "How To Guides",                href: "/how-to/",       sub: "Walkthroughs and how-tos" },
-  { title: "Self-Education Resource Hub",  href: "/self-educate/", sub: "Learning resources" },
-  { title: "Reportable (demo)",            href: "/reportabledev/",sub: "Project demo — reporting duty lookup", dev: true }
-];
+:root {
+  /* ---- Light palette ---- */
+  --bg:        #FAF7F0;   /* page background  */
+  --surface:   #F0EDE6;   /* cards, header    */
+  --ink:       #2E2C2A;   /* body text        */
+  --muted:     #6B6860;   /* secondary text   */
+  --border:    #D8D4CC;   /* hairlines        */
+  --accent:        #E39FC4;  /* pink base — highlights, borders, focus rings */
+  --accent-deep:   #A84E7C;  /* pink deep (text on tint) */
+  --accent-tint:   #FBEAF3;  /* pink tint  */
+  --brand:         #1C6390;  /* logo blue — wordmark & em-dash, stays blue */
+  --panel:         #DEEDF8;  /* search panel: pale logo-blue tint */
+  --panel-ink:     #2E2C2A;  /* text inside the panel = normal ink */
+  --panel-line:    #1F6EA3;  /* edge: slightly darker than the logo blue */
+  --title:         #A8455C;  /* page title — deep coral */
+  /* account pill / menu (light: pale pink surface, deep coral edge) */
+  --acct:       #FCEBF1;  --acct-open:  #FCEBF1;  --acct-ink:   #3A2630;
+  --acct-edge:  #A8455C;  --acct-edge2: #E9A0AC;  --acct-lbl:   #2E86BE;
+  --acct-val:   #17557A;  --acct-user:  #2E86BE;  --acct-admin: #B0303A;
+  --acct-field: #FFFFFF;  --acct-line:  #E0BCC8;  --acct-mute:  #9A8792;
+  --acct-hover: rgba(168,69,92,.12);
+  --acct-ok:    #1D7A4C;  --acct-err:   #B23B3B;
+  --banner-ink:    #2F7FB5;  /* dev banner — light blue accent */
+  --footer-ink:    #17557A;  /* footer — deep blue */
+  --logo-ring:     #A8455C;  /* ring around the header logo */
+  --hdr-h:         40px;     /* shared height of every header control */
+  --header-bg:     #F0EDE6;  /* header bar */
+  --pink:          #FAD8E9;  /* logo pink — search panel tint */
+  --pink-line:     #EFB9D3;  /* logo pink, darkened for hairlines */
+--shadow:    rgba(46,44,42,0.10);
+  --radius:    16px;
+  --pill-ink:  #1F1D1B;  /* fixed dark text for society/category pills — pill backgrounds don't change with theme, so this shouldn't either */
 
-/* Disclaimer text shown in the strip under the header */
-const DEV_BANNER_TEXT = "";
-
-const SECTION = (window.COLLATERA_SECTION || "").trim();
-/* compact titles for narrow screens; desktop keeps the full wording */
-const SECTION_SHORT_MAP = {
-  "Reference Image Library": "Reference",
-  "Guideline Repository":    "Guidelines",
-  "How To Guides":           "How To",
-  "Self-Education Hub":      "Self-Education",
-  "Slide Decks":             "Decks",
-};
-const SECTION_SHORT = window.COLLATERA_SECTION_SHORT
-  || SECTION_SHORT_MAP[SECTION] || SECTION;
-
-/* favicon (the logo) for the browser tab */
-(() => {
-  const fav = document.createElement("link");
-  fav.rel = "icon"; fav.type = "image/png"; fav.href = "/assets/favicon.png";
-  document.head.appendChild(fav);
-})();
-
-/* normalise the current path so we can mark the active nav item */
-function currentPath() {
-  let p = location.pathname;
-  if (!p.endsWith("/")) p = p.replace(/index\.html$/, "");
-  if (!p.endsWith("/")) p += "/";
-  return p;
+  /* Category accent colours, rotating through the brand palette */
+  --c1: #85CCCC; --c2: #90C0D8; --c3: #8DD4A8;
+  --c4: #A5C878; --c5: #C0AEDD; --c6: #F0A860;
 }
-const HERE = currentPath();
 
-/* ---- build the header ---- */
-const header = document.createElement("header");
-header.innerHTML = `
-  <div class="header-inner">
-    <div class="header-top">
-      <button class="menu-btn is-brand" id="menuBtn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"><svg class="menu-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 2.9 20.4 7 12 11.1 3.6 7 12 2.9z" fill="currentColor" fill-opacity=".22"/><path d="M3.6 11.6 12 15.7l8.4-4.1"/><path d="M3.6 16.2 12 20.3l8.4-4.1" opacity=".55"/></svg><span class="brand"><span class="brand-c">C</span>ollatera</span><img class="menu-logo-m" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"></button>
-      <div class="brand-group">
-        ${SECTION ? `<img class="hdr-seplogo" src="/assets/collatera-logo-v2.png" alt="" aria-hidden="true"><span class="section-title"><span class="st-full">${SECTION}</span><span class="st-short">${SECTION_SHORT}</span></span>` : ""}
-      </div>
-      <span class="spacer"></span>
-      <span class="hdr-right">
-        <button class="theme-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch light or dark mode">&#9680;</button>
-        <span class="cauth-slot" id="cauthSlot"></span>
-      </span>
-    </div>
-  </div>`;
-
-/* ---- build the dev banner ---- */
-const banner = document.createElement("div");
-banner.className = "dev-banner";
-banner.textContent = DEV_BANNER_TEXT;
-
-/* ---- build the slide-in nav panel ---- */
-const scrim = document.createElement("div");
-scrim.className = "nav-scrim";
-scrim.id = "navScrim";
-
-const nav = document.createElement("nav");
-nav.className = "nav-panel";
-nav.id = "navPanel";
-nav.setAttribute("aria-label", "Sections");
-nav.innerHTML = `
-  <div class="nav-head">
-    <a class="brand" href="/ref-images/"><span class="brand-c">C</span>ollatera</a>
-    <button class="nav-close" id="navClose" aria-label="Close menu">&#10005;</button>
-  </div>
-  ${SECTIONS.map((s, i) => {
-    const active = s.href === HERE ? ' aria-current="page"' : "";
-    const divider = s.dev && !SECTIONS[i - 1]?.dev ? '<div class="nav-divider"></div>' : "";
-    return `${divider}<a class="nav-link" href="${s.href}"${active}>${s.title}
-      <span class="nl-sub">${s.sub}</span></a>`;
-  }).join("")}
-`;
-
-/* ---- insert everything at the very top of the page, in order ---- */
-if (DEV_BANNER_TEXT) {
-  document.body.insertBefore(banner, document.body.firstChild);
-  document.body.insertBefore(header, banner);
-} else {
-  document.body.insertBefore(header, document.body.firstChild);
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg:#141C22; --surface:#1B242B; --ink:#EAF0F3; --muted:#93A2AC;
+    --border:#2B3841; --accent:#E9A6C8; --accent-deep:#F3C2DC;
+    --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
+    --title:#E8909E; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+    --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
+    --acct-edge:#7CC0EC; --acct-edge2:#7CC0EC; --acct-admin:#FF9B9B;
+    --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
+    --acct-user:#F0B8D4; --acct-field:rgba(255,255,255,.13);
+    --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
+    --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
+    --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
+    --logo-ring:transparent; --logo-ring-w:0px; --header-bg:#141C22;
+    --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
+  }
 }
-document.body.appendChild(scrim);
-document.body.appendChild(nav);
+:root[data-theme="dark"] {
+  --bg:#141C22; --surface:#1B242B; --ink:#EAF0F3; --muted:#93A2AC;
+  --border:#2B3841; --accent:#E9A6C8; --accent-deep:#F3C2DC;
+  --accent-tint:#3A2A33; --pink:#3A2A33; --pink-line:#6E4A5E;
+  --title:#E8909E; --brand:#7CC0EC; --panel:#22394D; --panel-ink:#F2EFE7;
+  --acct:#1B5E85; --acct-open:#0F3A54; --acct-ink:#FFFFFF;
+  --acct-edge:#7CC0EC; --acct-edge2:#7CC0EC; --acct-admin:#FF9B9B;
+  --acct-lbl:#F0B8D4; --acct-val:#8ECBF2;
+  --acct-user:#F0B8D4; --acct-field:rgba(255,255,255,.13);
+  --acct-line:rgba(255,255,255,.32); --acct-mute:rgba(255,255,255,.5);
+  --acct-hover:rgba(255,255,255,.14); --acct-ok:#BFEBC8; --acct-err:#FFC9C9;
+  --banner-ink:#8CC6E8; --footer-ink:#FAD8E9;
+  --logo-ring:transparent; --logo-ring-w:0px; --header-bg:#141C22;
+  --panel-line:#6FB6E4; --shadow:rgba(0,0,0,0.35);
+}
 
-/* ---- menu open / close ---- */
-const menuBtn = document.getElementById("menuBtn");
-function openMenu()  { nav.classList.add("open"); scrim.classList.add("open"); menuBtn.setAttribute("aria-expanded","true"); }
-function closeMenu() { nav.classList.remove("open"); scrim.classList.remove("open"); menuBtn.setAttribute("aria-expanded","false"); }
-menuBtn.onclick = openMenu;
-document.getElementById("navClose").onclick = closeMenu;
-scrim.onclick = closeMenu;
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ---- theme toggle (light <-> dark, remembers choice for the session) ---- */
-const root = document.documentElement;
-const THEME_KEY = "collatera_theme";
-let savedTheme = null;
-try { savedTheme = localStorage.getItem(THEME_KEY); } catch {}
-root.setAttribute("data-theme", savedTheme || "auto");
-document.getElementById("themeBtn").onclick = () => {
-  const cur = root.getAttribute("data-theme");
-  const next = cur === "dark" ? "light" : "dark";
-  root.setAttribute("data-theme", next);
-  try { localStorage.setItem(THEME_KEY, next); } catch {}
-  /* Blurred pads live in their own composited layer; swapping the palette via
-     a CSS variable does not always force that layer to re-rasterise, so the
-     old theme's colour can linger until a reload. Dropping the filter for one
-     frame discards the stale layer and forces a clean repaint. */
-  root.classList.add("theme-swap");
-  void root.offsetWidth;
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    root.classList.remove("theme-swap");
-  }));
-};
+body {
+  font-family: "Calibri Light", "Calibri", "Hanken Grotesk", system-ui, sans-serif;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(var(--border) 0.5px, transparent 0.5px),
+    radial-gradient(var(--border) 0.5px, var(--bg) 0.5px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+  background-attachment: fixed;
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
 
-/* =================================================================
-   VIEW TRACKING  (per-device, stored in this browser only)
-   Records how often and how recently each item is opened, so the
-   library and guidelines can float your most-used items to the top.
-   This data never leaves the device; "Clear" wipes it.
-   ================================================================= */
-const VIEWS_KEY = "collatera_views_v1";
-window.CollateraViews = {
-  all() {
-    try { return JSON.parse(localStorage.getItem(VIEWS_KEY)) || {}; }
-    catch { return {}; }
-  },
-  record(id) {
-    if (!id) return;
-    const d = this.all();
-    const e = d[id] || { c: 0, t: 0 };
-    e.c += 1; e.t = Date.now();
-    d[id] = e;
-    try { localStorage.setItem(VIEWS_KEY, JSON.stringify(d)); } catch {}
-  },
-  // blended score: view count plus a recency boost that decays over days
-  score(e) {
-    if (!e) return 0;
-    const days = (Date.now() - e.t) / 86400000;
-    return e.c + (1 / (1 + days)) * 2;
-  },
-  clear() { try { localStorage.removeItem(VIEWS_KEY); } catch {} }
-};
+h1, h2, h3, .brand, .chip, .count, .section-title, .brandmark, .cs-title {
+  font-family: "Gill Sans MT", "Gill Sans", "Gill Sans Nova",
+               "Hanken Grotesk", "Segoe UI", sans-serif;
+}
 
 /* =================================================================
-   ACCOUNT  (Supabase) — sign-in + profile dropdown
-   The logo in the header is the account button. Signed out it offers
-   Sign in; signed in it opens a panel with the editable profile
-   (position / title / bio), change password, clear recent history,
-   and sign out. The upload link is shown to the admin account only.
-   Content stays public; signing in unlocks the personal layer.
-   The publishable key is meant to be public — RLS guards the data.
-   Exposes: window.sb, window.sbReady, window.collateraUser
+   HEADER  (top bar injected by site.js)
    ================================================================= */
-(() => {
-  const SUPABASE_URL = "https://pxustifbonzhldrepcyp.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_XmuebDlA0AtVPpFxQCfaUA_3mR-1S3n";
-  const ADMIN_EMAIL   = "jdmca90@gmail.com";
-  const UPLOAD_URL    = "https://collatera.org/4f5bqdxxo937e7/";
-  const POSITIONS     = ["Fellow","Resident","Medical Student","Cardiologist","Hospitalist","Attending"];
-  const BIO_MAX = 300, TITLE_MAX = 40;
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: transparent;
+  border-bottom: none;
+}
+/* translucent bar whose lower edge dissolves into the page */
+header::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0;
+  bottom: calc(-1 * var(--hdr-fade, 60px));
+  z-index: -1; pointer-events: none;
+  background: color-mix(in srgb, var(--header-bg) 80%, transparent);
+  /* solid for the full bar (so the title never sits in the gradient),
+     then dissolves across --hdr-fade below it */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--hdr-fade, 60px)), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - var(--hdr-fade, 60px)), transparent 100%);
+}
+/* soft fade at the header's lower edge rather than a hard rule */
 
-  let _resolveReady;
-  window.sbReady = new Promise(r => { _resolveReady = r; });
-  window.collateraUser = null;
+.header-inner {
+  max-width: 1180px; margin: 0 auto;
+  padding: 8px 20px;
+}
+.header-top {
+  display: flex; align-items: center; gap: 10px;
+}
 
-  /* ---- scoped styles (cauth- prefix; no global class clash) ---- */
-  const style = document.createElement("style");
-  style.textContent = `
-    .menu-btn.is-brand{display:inline-flex;align-items:center;gap:.42em;
-      width:auto;height:auto;padding:.2em .6em .2em .2em;background:transparent;
-      border-color:transparent;border-radius:999px}
-    .menu-btn.is-brand:hover{background:var(--accent-tint);border-color:transparent}
-    .menu-btn.is-brand .brand{font-size:28px;line-height:1;color:var(--brand);
-      font-family:"Sora",system-ui,sans-serif;letter-spacing:.005em;font-weight:700}
-    .menu-logo{width:var(--hdr-h,40px);height:var(--hdr-h,40px);border-radius:50%;display:block;flex:none;
-      border:var(--logo-ring-w,2.5px) solid var(--logo-ring,#A8455C);box-sizing:border-box}
-    .cauth-slot{position:relative;display:inline-flex;align-items:center;flex:0 0 auto;width:auto}
-    /* fixed width: the label swaps between the address and "Profile", and a
-       right-anchored cluster would shift every time the width changed */
-    .cauth-box{width:max-content;max-width:min(46vw,320px)}
-    .cauth-pill{justify-content:center;text-align:center}
-    
-    /* The button sizes to the address via max-content and the text never
-       changes, so the right-anchored cluster cannot shift. Long addresses are
-       ellipsised by max-width, which is a purely visual clamp. */
-    .cauth-pill-short{display:none;white-space:nowrap}
-    /* one label node only, capped in ch (not %) so it cannot resolve
-       differently against the box's max-content width when the drawer opens */
-    .cauth-pill-email{display:block;max-width:26ch;overflow:hidden;
-      text-overflow:ellipsis;white-space:nowrap}
-    .cauth-pill-lead{display:none}
-    .cauth-pill-email,.cauth-pill-lead{display:block;max-width:100%;
-      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    /* the pill fills its box so the whole control is clickable, not just the text */
-    .cauth-pill{width:100%;box-sizing:border-box}
-    /* lock the button's box in both states: the cluster is right-anchored and
-       vertically centred, so any width/height change would shift it */
-    /* The button sizes to its own label and the label never changes, so the
-       right-anchored cluster has nothing to shift against. */
-    .cauth-box,.cauth-box.open{box-sizing:border-box;width:max-content;
-      max-width:min(46vw,320px);height:var(--cauth-h,40px);min-height:var(--cauth-h,40px)}
-    .cauth-pill{height:100%;min-height:0;box-sizing:border-box}
-    .cauth-box{position:relative;width:max-content;max-width:min(46vw,320px);
-      background:var(--acct,#1B5E85);
-      border:2px solid var(--acct-edge2,#FAD8E9);border-radius:14px;
-      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 2px 8px rgba(0,0,0,.22);
-      overflow:hidden;text-align:left;
-      transition:border-radius .18s ease,border-width .2s ease,background .18s ease,
-                 width .22s cubic-bezier(.22,.61,.36,1)}
-    .cauth-box.open{background:var(--acct,#1B5E85);
-      box-shadow:0 0 0 1.5px var(--acct-open,#0F3A54),0 18px 50px rgba(0,0,0,.42)}
-    .cauth-x{display:none;position:absolute;top:.15rem;right:.35rem;z-index:2;
-      background:none;border:none;color:#fff;font:inherit;font-weight:700;
-      font-size:2.4rem;line-height:.8;cursor:pointer;padding:.05em .2em;
-      border-radius:10px}
-    .cauth-x:hover{background:var(--acct-hover,rgba(255,255,255,.14))}
-    .cauth-box.open .cauth-x{display:block}
-    .cauth-box{border-radius:16px}
-    .cauth-box.open .cauth-pill{border-radius:11px 11px 0 0}
-    .cauth-box.open .cauth-panel{border-radius:0 0 11px 11px}
-    .cauth-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:.05em;width:auto;box-sizing:border-box;padding:0 .9em;cursor:pointer;
-      min-height:calc(var(--hdr-h,40px) - 4px);
-      background:none;border:none;color:var(--acct-ink,#fff);font:inherit;line-height:1.2}
-    .cauth-box.open .cauth-pill{width:100%;padding:1.25em 1.9em .55em;cursor:default;pointer-events:none}
-    .cauth-pill:focus-visible{outline:2px solid var(--acct-edge,#FAD8E9);outline-offset:-4px}
-    .cauth-pill-lead{display:none}
-    .cauth-box.open .cauth-pill-lead,
-    .cauth-box.is-out .cauth-pill-lead{display:inline;font-style:normal;
-      font-weight:700;font-size:.95em}
-    .cauth-box.is-out.open .cauth-pill-lead{font-size:1.1em;color:var(--acct-user,#F49E9E)}
-    .cauth-pill-email{font-size:.9em;font-weight:700;letter-spacing:-.005em;
-      font-family:"Avenir Next Condensed","Roboto Condensed","Hanken Grotesk",system-ui,sans-serif;
-      max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    /* (removed) the address used to enlarge and wrap when the button expanded
-       into the panel; with a separate drawer that only changed the button's
-       width on open and shifted the right-anchored cluster. */
+/* hamburger menu button (top-left) */
+.menu-btn {
+  flex: 0 0 auto;
+  width: var(--hdr-h, 40px); height: var(--hdr-h, 40px);
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg); color: var(--ink);
+  cursor: pointer; font-size: 20px; line-height: 1;
+  display: grid; place-items: center; transition: .18s;
+}
+.menu-btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+/* logo sits on a dark disc so its pale ring keeps contrast on cream */
+/* logo + wordmark act as the menu trigger; a coral ring gives the pale
+   logo edge definition without a heavy filled disc */
 
-    .cauth-panel{display:block;color:var(--acct-ink,#fff);text-align:left;
-      position:fixed;top:0;right:0;height:100%;z-index:70;
-      width:0;padding:0;max-height:0;opacity:0;overflow:hidden;pointer-events:none;
-      transition:max-height .26s cubic-bezier(.22,.61,.36,1),opacity .18s ease,padding .26s ease}
-    /* closed: parked off-screen to the right, so it slides rather than fades */
-    .cauth-panel{width:min(88vw,368px);max-height:none;height:100%;overflow-y:auto;
-      padding:1.15rem 1.2rem 1.4rem;opacity:1;pointer-events:none;
-      background:var(--acct-open,#0F3A54);
-      border-left:12px solid var(--acct-edge,#FAD8E9);border-top:none;
-      border-right:none;border-bottom:none;border-radius:0;
-      box-shadow:-6px 0 30px var(--shadow);
-      transform:translateX(100%);transition:transform .24s ease}
-    .cauth-panel.open{transform:none;pointer-events:auto}
-    /* the button itself never expands any more */
-    /* open state must not change the button's box at all: the cluster is
-       right-anchored, so any width change would shift it sideways */
-    .cauth-box.open{position:relative;top:auto;right:auto;
-      border-width:2px;border-radius:16px;box-shadow:0 1px 5px rgba(0,0,0,.14)}
-    .cauth-box.open .cauth-pill{width:auto;padding:0 .9em;cursor:pointer;pointer-events:auto}
-    .cauth-box.open .cauth-x{display:none}
-    .cauth-panel .cauth-x{display:block;position:absolute;top:.5rem;right:.8rem;z-index:2;
-      background:none;border:none;color:var(--acct-ink,#fff);font-size:3.2rem;line-height:.7;
-      cursor:pointer;opacity:.85}
-    .cauth-panel .cauth-x:hover{opacity:1}
-    .cauth-userline{text-align:center;font-size:1.02rem;line-height:1.4;margin:.1rem 0 .9rem}
-    .cauth-userline .ul{font-weight:400;color:var(--acct-lbl,#F0B8D4)}
-    .cauth-userline .ue{display:block;font-weight:700;word-break:break-all}
-    .cauth-pill-email{max-width:100%}
-    .cauth-email{font-size:.86em;color:var(--muted,#6B6860);word-break:break-all;margin-bottom:.8rem}
-    .cauth-avatarwrap{display:flex;justify-content:center;margin:.2rem 0 1.1rem}
-    .cauth-avatar{width:66px;height:66px;border-radius:50%;
-      border:3px solid var(--acct-edge,#FAD8E9);background:rgba(255,255,255,.10);
-      background-size:cover;background-position:center;
-      display:flex;align-items:center;justify-content:center;
-      font-size:3.1rem;line-height:1;color:var(--acct-edge,#FAD8E9);overflow:hidden}
-    .cauth-avatar::after{content:"\\1F464";opacity:.5;transform:translateY(.08em) scale(1.15)}
-    .cauth-avatar.has-img::after{content:""}
-    .cauth-row[hidden]{display:none}
-    .cauth-row{display:grid;grid-template-columns:4.4em 1fr;align-items:baseline;
-      column-gap:.5em;margin:.45rem 0}
-    .cauth-row-bio{align-items:start}
-    .cauth-row-bio .cauth-inlbl{padding-top:.1em}
-    .cauth-inlbl{font-size:.95em;color:var(--acct-lbl,#F0B8D4);text-align:right;
-      letter-spacing:.01em;line-height:1.35}
-    .cauth-panel input,.cauth-panel textarea{width:100%;min-width:0;box-sizing:border-box;
-      background:var(--acct-field,rgba(255,255,255,.13));
-      border:1px solid var(--acct-line,rgba(255,255,255,.32));
-      color:var(--acct-val,#8ECBF2);border-radius:8px;padding:.34em .5em;
-      font:inherit;font-size:1.02em}
-    .cauth-panel #cauthPos{font-weight:700}
-    .cauth-panel textarea{resize:vertical;min-height:1.4em;line-height:1.35}
-    .cauth-panel input::placeholder,.cauth-panel textarea::placeholder{
-      color:var(--acct-mute,rgba(255,255,255,.5));font-weight:400}
-    .cauth-panel input[readonly],.cauth-panel textarea[readonly]{background:transparent;
-      border-color:transparent;padding:0;cursor:default;resize:none;height:auto;min-height:0}
-    .cauth-edit{display:none}
-    .cauth-lbl{display:block;font-size:.78em;color:var(--muted,#6B6860);margin:.6rem 0 .2rem}
-    .cauth-panel select,.cauth-panel input,.cauth-panel textarea{width:100%;box-sizing:border-box;
-      padding:.5em .6em;border:1px solid var(--border,#D8D4CC);border-radius:8px;font:inherit;
-      background:var(--surface,#F0EDE6);color:var(--ink,#2E2C2A)}
-    .cauth-panel textarea{resize:vertical;min-height:4.2em}
-    .cauth-count{font-size:.72em;color:rgba(255,255,255,.7);text-align:right;margin-top:.15rem}
-    .cauth-save{margin-top:.7rem;width:100%;padding:.55em;border:none;border-radius:8px;
-      background:var(--acct-lbl,#F0B8D4);color:var(--acct-open,#0F3A54);font:inherit;font-weight:700;cursor:pointer}
-    .cauth-save:disabled{opacity:.6;cursor:default}
-    .cauth-rule{border:none;height:1px;margin:1.1rem 0 .8rem;
-      background:linear-gradient(to right,transparent,var(--brand,#7CC0EC),transparent);
-      opacity:.75}
-    .cauth-link{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;
-      color:var(--acct-val,#8ECBF2);padding:.22em .5em;cursor:pointer;text-decoration:none;border-radius:6px;font-size:.9em}
-    .cauth-link:hover{background:var(--acct-hover,rgba(255,255,255,.14));color:var(--acct-ink,#fff)}
-    .cauth-admin{color:var(--acct-admin,#F49E9E);font-weight:600}
-    .cauth-admin:hover{color:var(--acct-admin,#F49E9E)}
-    /* both section rules use the brand blue */
-    .cauth-rule-admin{margin:.55rem 0 .5rem;
-      background:linear-gradient(to right,transparent,var(--brand,#7CC0EC),transparent)}
-    .cauth-note{font-size:.78em;min-height:1.1em;margin-top:.4rem}
-    .cauth-note.ok{color:var(--acct-ok,#BFEBC8)} .cauth-note.err{color:var(--acct-err,#FFC9C9)}
+.brand-group {
+  display: flex; align-items: baseline; gap: 0;
+}
+/* em-dash separator between the wordmark and the page title */
+.section-title::before { content: none; }
+.brand {
+  font-size: 26px; font-weight: 700; letter-spacing: .005em;
+  color: var(--brand); text-decoration: none; line-height: 1;
+  font-family: "Sora", system-ui, sans-serif;
+}
+.brand .brand-c { font-size: 1.34em; letter-spacing: 0; }
+.section-title {
+  font-family: "Marcellus", Georgia, serif;
+  font-size: 34px; font-weight: 400; letter-spacing: .02em;
+  color: var(--title); line-height: 1;
+  text-transform: none;
+}
+.brand-group { margin-left: 16px; display: flex; align-items: center; }
+.header-top { align-items: center; }
+.spacer { flex: 1 1 auto; }
+.hdr-seplogo { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; display: block; margin: 0 16px 0 -7px; align-self: center; }
 
-  `;
-  document.head.appendChild(style);
+.theme-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); border-radius: 999px;
+  width: var(--hdr-h, 40px); height: var(--hdr-h, 40px); cursor: pointer; font-size: 15px;
+  display: grid; place-items: center; transition: .2s;
+}
+.theme-btn { border-width: 2px; border-color: var(--ring, var(--brand)); color: var(--ring, var(--brand)); }
 
-  /* The account box now lives inline in the header, in the account slot to the
-     left of the mode switch. It stays in normal flow while collapsed (so the
-     header never reflows), and becomes a right-anchored absolute overlay when
-     open, dropping its panel below the bar. The solid (no backdrop-filter)
-     header means no stacking-context trap, so nothing clips the open panel. */
-  const boxEl = document.createElement("span");
-  boxEl.className = "cauth-box";
-  boxEl.id = "cauthBox";
-  boxEl.innerHTML =
-    '<button class="cauth-pill" id="cauthAvatarBtn" aria-haspopup="true" aria-expanded="false">' +
-      '<span class="cauth-pill-lead" id="cauthPillLead">Sign in</span>' +
-      '<span class="cauth-pill-email" id="cauthPillEmail" hidden></span>' +
-      '<span class="cauth-pill-short" id="cauthPillShort"></span>' +
-    '</button>' +
-    '';
-  const slotEl = document.getElementById("cauthSlot");
-  (slotEl || document.body).appendChild(boxEl);
 
-  /* No width reservation any more. The panel is a fixed drawer, so the button
-     never expands in place; letting the slot size to its content keeps the
-     button in normal flow and stops it jumping when opened. */
-  function reserveSlot(){ if (slotEl) slotEl.style.width = ""; }
+/* upload button (top-right, next to theme toggle) — same size as theme-btn */
+.upload-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); border-radius: 999px;
+  width: 38px; height: 38px; cursor: pointer; font-size: 19px; font-weight: 600;
+  display: grid; place-items: center; transition: .2s;
+  text-decoration: none; line-height: 1;
+}
+.upload-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
 
-  /* Size the button to the signed-in address once, then keep it fixed. The
-     label swaps to "Profile" while the drawer is open, and a right-anchored
-     cluster would shift sideways if the width changed with the text. */
-  reserveSlot();
-  window.cauthReserveSlot = reserveSlot;
+/* brand-mark logo (top-right) */
+.brandmark {
+  flex: 0 0 auto;
+  height: 40px; width: auto; display: block;
+  object-fit: contain; user-select: none;
+}
 
-  const $ = id => document.getElementById(id);
-  const avatarBtn = $("cauthAvatarBtn");
-  /* collapsed shows a shortened address; expanded shows it in full */
-  function paintEmail(){
-    const el = document.getElementById("cauthPillEmail");
-    const u = window.collateraUser;
-    if (!el || !u) return;
-    const em = u.email || "";
-    const open = document.getElementById("cauthBox")?.classList.contains("open");
-    /* the same text in both states: truncating only while closed changed the
-       button's width on open and shifted the right-anchored cluster */
-    el.textContent = em;
-    el.title = em;
-    if (window.cauthReserveSlot) window.cauthReserveSlot();
+/* =================================================================
+   NAV PANEL  (opens from the hamburger)
+   ================================================================= */
+.nav-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(20,18,16,0.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.nav-scrim.open { opacity: 1; pointer-events: auto; }
+
+.nav-panel {
+  position: fixed; top: 0; left: 0; z-index: 70;
+  width: 300px; max-width: 84vw; height: 100%;
+  background: var(--surface); border-right: 1px solid var(--border);
+  box-shadow: 6px 0 30px var(--shadow);
+  transform: translateX(-100%); transition: transform .24s ease;
+  display: flex; flex-direction: column; padding: 18px 16px;
+}
+.nav-panel.open { transform: none; }
+.nav-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; padding: 2px 4px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-head .brand { font-size: 24px; }
+.nav-close {
+  width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--muted); cursor: pointer; font-size: 18px;
+  display: grid; place-items: center; transition: .18s;
+}
+.nav-close:hover { color: var(--ink); border-color: var(--accent); }
+.nav-divider { border-top: 1px solid var(--border); margin: 8px 0; }
+.nav-link {
+  display: block; text-decoration: none;
+  color: var(--ink); font-size: 16px; font-weight: 600;
+  padding: 13px 14px; border-radius: 11px; margin-bottom: 4px;
+  border: 1px solid transparent; transition: .15s;
+}
+.nav-link:hover { background: var(--bg); border-color: var(--border); }
+.nav-link[aria-current="page"] {
+  background: var(--accent-tint); color: var(--accent-deep);
+  border-color: var(--accent);
+}
+.nav-link .nl-sub {
+  display: block; font-family: "Calibri Light","Hanken Grotesk",sans-serif;
+  font-weight: 400; font-size: 12.5px; color: var(--muted);
+  text-transform: none; letter-spacing: 0; margin-top: 2px;
+}
+
+/* =================================================================
+   DEV / DISCLAIMER BANNER
+   ================================================================= */
+.dev-banner {
+  text-align: center;
+  font-size: 12.5px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--banner-ink);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 16px;
+}
+
+/* =================================================================
+   SEARCH + CHIP FILTER  (library & guidelines)
+   ================================================================= */
+.controls {
+  max-width: 1180px; margin: 18px auto; padding: 18px 20px 4px;
+  background: var(--panel); border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+}
+
+/* contents of the tinted panel keep normal ink; only hairlines follow the panel */
+.controls .search-input {
+  background: var(--bg); border-color: var(--panel-line);
+  color: var(--panel-ink);
+}
+.controls .search-input::placeholder { color: var(--muted); }
+.controls .chip { color: var(--muted); border-color: var(--border); }
+.controls .chip:hover { color: var(--panel-ink); border-color: var(--accent); }
+.controls .chip[aria-pressed="true"] {
+  background: var(--accent); color: var(--pill-ink); border-color: var(--accent);
+}
+
+.search-wrap { position: relative; margin: 0 0 14px; }
+.search-wrap svg {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none;
+}
+.search-input {
+  width: 100%; padding: 13px 16px 13px 46px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg); color: var(--ink);
+  font: inherit; font-size: 16px; outline: none; transition: .2s;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.controls .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+
+.chips {
+  display: flex; align-items: center; gap: 8px; overflow-x: auto;
+  padding: 0 0 14px; scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; cursor: pointer; user-select: none;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); padding: 7px 15px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; white-space: nowrap; transition: .18s;
+}
+.chip:hover { color: var(--ink); border-color: var(--accent); }
+.chip[aria-pressed="true"] {
+  background: var(--accent-tint); color: var(--accent-deep);
+  border-color: var(--accent);
+}
+/* view-mode chips (Recent / Most used) — pinned at the front */
+.chip.is-mode {
+  color: var(--accent-deep); border-color: var(--accent);
+  background: var(--bg);
+}
+.chip.is-mode::before { content: "★"; font-size: 11px; margin-right: 5px; opacity: .8; }
+.chip.is-mode[aria-pressed="true"] { background: var(--accent-tint); }
+/* tag chips read as a lighter, secondary class of filter than categories */
+.chip.is-tag {
+  font-size: 13px; font-weight: 600; padding: 6px 13px;
+  border-style: dashed; color: var(--muted);
+}
+.chip.is-tag::before {
+  content: "#"; opacity: .55; margin-right: 1px; font-weight: 700;
+}
+.chip.is-tag[aria-pressed="true"] {
+  border-style: solid; background: var(--accent-tint); color: var(--accent-deep);
+}
+/* thin divider between the category group and the tag group */
+.chip-sep {
+  flex: 0 0 auto; width: 1px; align-self: stretch;
+  background: var(--border); margin: 2px 4px;
+}
+
+/* pinned static repository links (guidelines page) */
+.repos {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 2px 0 16px;
+}
+.repos-label {
+  font-size: 12.5px; font-weight: 600; color: var(--muted);
+  letter-spacing: .02em; margin-right: 2px;
+}
+.repo-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 600; text-decoration: none;
+  color: var(--accent-deep); background: var(--accent-tint);
+  border: 1px solid var(--accent); border-radius: 999px;
+  padding: 5px 12px; transition: .16s;
+}
+.repo-link:hover { background: var(--bg); }
+.repo-link::after { content: "↗"; font-size: 11px; opacity: .7; }
+
+/* =================================================================
+   MAIN + GALLERY GRID
+   ================================================================= */
+main { max-width: 1180px; margin: 0 auto; padding: 18px 20px 80px; }
+.count { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+
+/* 7 per row on desktop, 3 on mobile (smaller thumbnails) */
+.grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(7, 1fr);
+}
+@media (max-width: 720px) {
+  .grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+}
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  display: flex; flex-direction: column; text-align: left;
+  font: inherit; color: inherit; padding: 0;
+  box-shadow: 0 1px 2px var(--shadow); transition: transform .18s, box-shadow .18s;
+  opacity: 0; transform: translateY(10px);
+  animation: rise .45s ease forwards;
+  border-top: 3px solid var(--cat, var(--border));  /* category colour accent */
+}
+@keyframes rise { to { opacity: 1; transform: none; } }
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px var(--shadow); }
+.card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.thumb {
+  aspect-ratio: 4 / 3; width: 100%; object-fit: cover;
+  background: var(--bg); border-bottom: 1px solid var(--border); display: block;
+}
+/* compact card: category + title only — note/tags are shown in the lightbox */
+.card-body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 5px; }
+.card-cat {
+  align-self: flex-start;
+  font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px; color: var(--pill-ink); line-height: 1.3;
+}
+.card-title {
+  font-size: 13px; font-weight: 600; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 720px) {
+  .card-title { font-size: 12px; }
+  .card-cat { font-size: 9px; }
+}
+
+.empty { text-align: center; color: var(--muted); padding: 70px 20px; }
+.empty strong { color: var(--ink); display: block; font-size: 18px; margin-bottom: 6px;
+  font-family: "Gill Sans MT","Hanken Grotesk",sans-serif; }
+
+/* =================================================================
+   GUIDELINE LINK CARDS  (catalog — opens an external link)
+   ================================================================= */
+.grid.links {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1100px) { .grid.links { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 720px) { .grid.links { grid-template-columns: 1fr; } }
+.linkcard {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--cat, var(--accent));
+  border-radius: 12px; padding: 16px 18px; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 6px;
+  align-items: center; text-align: center;
+  box-shadow: 0 1px 2px var(--shadow); transition: transform .18s, box-shadow .18s;
+  opacity: 0; transform: translateY(10px); animation: rise .45s ease forwards;
+}
+.linkcard:hover { transform: translateY(-3px); box-shadow: 0 8px 20px var(--shadow); }
+.linkcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.lc-soc {
+  align-self: flex-start; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 999px; color: var(--pill-ink);
+}
+.lc-title { font-size: 32px; font-weight: 700; line-height: 1.2;
+  font-family:"Gill Sans MT","Hanken Grotesk",sans-serif; }
+.lc-meta { font-size: 18px; color: var(--muted); }
+.lc-socrow { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+
+/* =================================================================
+   LIGHTBOX  (image expanded — title, category, tags, note appear here)
+   ================================================================= */
+.lightbox {
+  position: fixed; inset: 0; z-index: 100; display: none;
+  background: rgba(20,18,16,0.72); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.lightbox.open { display: flex; }
+.lb-panel {
+  background: var(--bg); border-radius: 18px; max-width: 1000px; width: 100%;
+  max-height: 92vh; overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5); animation: pop .25s ease;
+}
+@keyframes pop { from { opacity:0; transform: scale(.97);} to {opacity:1; transform:none;} }
+.lb-imgwrap {
+  background: var(--surface); display: grid; place-items: center;
+  overflow: auto; padding: 16px; flex: 1 1 auto; min-height: 0;
+}
+.lb-imgwrap img { max-width: 100%; max-height: 70vh; border-radius: 8px; }
+.lb-meta {
+  padding: 16px 22px 20px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.lb-tagrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.lb-cat {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; color: var(--pill-ink);
+}
+.lb-tag {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  padding: 3px 9px; border-radius: 999px;
+  border: 1px dashed var(--border);
+}
+.lb-tag::before { content: "#"; opacity: .55; }
+.lb-title { font-size: 20px; font-weight: 700;
+  font-family:"Gill Sans MT","Hanken Grotesk",sans-serif; }
+.lb-note { font-size: 15px; color: var(--muted); }
+.lb-close, .lb-nav {
+  position: absolute; top: 18px; right: 18px;
+  width: 44px; height: 44px; border-radius: 999px; border: none;
+  background: rgba(0,0,0,0.45); color: #fff; font-size: 22px;
+  cursor: pointer; display: grid; place-items: center; transition: .2s;
+}
+.lb-close:hover { background: rgba(0,0,0,0.7); }
+.lb-nav { top: 50%; transform: translateY(-50%); }
+.lb-prev { left: 18px; right: auto; }
+.lb-next { right: 18px; }
+.lb-nav:hover { background: rgba(0,0,0,0.7); }
+
+/* =================================================================
+   COMING-SOON PAGES  (how-to, self-educate)
+   ================================================================= */
+.coming-soon {
+  max-width: 760px; margin: 0 auto; padding: 90px 24px;
+  text-align: center;
+}
+.cs-badge {
+  display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent-deep);
+  background: var(--accent-tint); border: 1px solid var(--accent);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+}
+.cs-title { font-size: 34px; font-weight: 700; line-height: 1.15; margin-bottom: 14px; }
+.cs-body { font-size: 16.5px; color: var(--muted); max-width: 520px; margin: 0 auto; }
+
+/* =================================================================
+   FOOTER
+   ================================================================= */
+footer {
+  max-width: 1180px; margin: 0 auto; padding: 0 20px 50px;
+  color: var(--footer-ink); font-size: 13px; font-weight: 700; text-align: center;
+}
+footer a { color: var(--accent-deep); }
+
+@media (max-width: 560px) {
+  .brand { font-size: 24px; }
+  .section-title { font-size: 13px; letter-spacing: .13em; }
+  .lb-meta { padding: 14px 18px 18px; }
+}
+/* =================================================================
+   SLIDE DECKS  (/decks/)
+   Card grid reuses .grid/.card from the image library; these rules
+   cover the deck-specific extras, the passphrase gate, and the viewer.
+   ================================================================= */
+.grid.decks { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1100px) { .grid.decks { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px)  { .grid.decks { grid-template-columns: 1fr; } }
+
+.deckcard { position: relative; }
+.deck-thumb {
+  aspect-ratio: 16 / 9; object-fit: contain; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.deck-lock {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  font-size: 12px; line-height: 1; padding: 5px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+}
+.deck-meta { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- passphrase gate ---------- */
+.decks-gate {
+  display: none; position: fixed; inset: 0; z-index: 120;
+  background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 20px;
+}
+.decks-gate.open { display: flex; }
+.gate-panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 26px 24px; width: 100%; max-width: 380px; text-align: center;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+}
+.gate-lock { font-size: 26px; margin-bottom: 10px; }
+.gate-title {
+  font-family: "Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif;
+  font-size: 21px; font-weight: 700; margin-bottom: 5px;
+}
+.gate-sub { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+.gate-input {
+  width: 100%; padding: 11px 13px; font-size: 15px; font-family: inherit;
+  color: var(--ink); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 10px; outline: none;
+}
+.gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+.gate-err { font-size: 13px; color: #C0503A; margin-top: 9px; }
+.gate-actions { display: flex; gap: 9px; margin-top: 16px; }
+.gate-btn {
+  flex: 1; padding: 10px 12px; font-size: 14.5px; font-family: inherit;
+  border-radius: 10px; cursor: pointer; border: 1px solid var(--border);
+}
+.gate-btn.ghost { background: transparent; color: var(--muted); }
+.gate-btn.ghost:hover { color: var(--ink); border-color: var(--accent); }
+.gate-btn.solid { background: var(--accent); border-color: var(--accent); color: var(--pill-ink); font-weight: 600; }
+.gate-btn.solid:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+
+/* ---------- deck viewer ---------- */
+.dv {
+  display: none; position: fixed; inset: 0; z-index: 130;
+  background: var(--bg); flex-direction: column;
+}
+.dv.open { display: flex; }
+.dv-bar {
+  display: flex; align-items: center; gap: 10px; flex: 0 0 auto;
+  padding: 9px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.dv-title {
+  font-family: "Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif;
+  font-size: 16px; font-weight: 700; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 46vw;
+}
+.dv-counter {
+  font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dv-btn {
+  background: transparent; border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); font-size: 15px; line-height: 1; cursor: pointer;
+  padding: 6px 9px; flex: 0 0 auto;
+}
+.dv-btn:hover { color: var(--accent-deep); border-color: var(--accent); }
+
+.dv-body { display: flex; flex: 1 1 auto; min-height: 0; }
+
+.dv-rail {
+  flex: 0 0 132px; overflow-y: auto; padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--surface); border-right: 1px solid var(--border);
+}
+.dv.rail-hidden .dv-rail { display: none; }
+.dv-thumb {
+  position: relative; padding: 0; cursor: pointer; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+  aspect-ratio: 16 / 9; flex: 0 0 auto;
+}
+.dv-thumb canvas { width: 100%; height: 100%; display: block; object-fit: contain; }
+.dv-thumb.current { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-tint); }
+.dv-thumb-n {
+  position: absolute; bottom: 3px; right: 4px; font-size: 10.5px; padding: 1px 4px;
+  border-radius: 4px; background: rgba(0,0,0,0.6); color: #fff;
+}
+
+.dv-stage {
+  flex: 1 1 auto; min-width: 0; position: relative;
+  display: flex; align-items: center; justify-content: center; padding: 14px 56px;
+}
+.dv-canvas-wrap {
+  flex: 1 1 auto; height: 100%; display: flex;
+  align-items: center; justify-content: center; position: relative; min-width: 0;
+}
+#dvCanvas { max-width: 100%; max-height: 100%; border-radius: 6px; box-shadow: 0 6px 24px var(--shadow); }
+.dv-loading { position: absolute; font-size: 14.5px; color: var(--muted); }
+.dv-loading[hidden] { display: none; }
+.dv-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 50%;
+  color: var(--ink); font-size: 24px; line-height: 1; cursor: pointer;
+  width: 40px; height: 40px; z-index: 2;
+}
+.dv-nav:hover { border-color: var(--accent); color: var(--accent-deep); }
+.dv-prev { left: 10px; }
+.dv-next { right: 10px; }
+
+@media (max-width: 720px) {
+  .dv-rail { display: none; }
+  .dv.rail-hidden .dv-rail { display: none; }
+  .dv-stage { padding: 10px 44px; }
+  .dv-title { max-width: 40vw; font-size: 15px; }
+  #dvRailBtn { display: none; }
+}
+/* =================================================================
+   SELF-EDUCATION RESOURCE HUB  (/self-educate/)
+   Same card language as the guideline linkcards: --cat drives the
+   left border and the glyph stroke, rotating through --c1..--c6.
+   The CATEGORY is carried by the glyph shape, not by colour.
+   ================================================================= */
+.grid.se-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1100px) { .grid.se-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px)  { .grid.se-grid { grid-template-columns: 1fr; } }
+
+.se-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--cat, var(--accent));
+  border-radius: 12px; padding: 18px 18px 20px; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 8px;
+  align-items: center; text-align: center;
+  box-shadow: 0 1px 2px var(--shadow); transition: transform .18s, box-shadow .18s;
+  opacity: 0; transform: translateY(10px); animation: rise .45s ease forwards;
+}
+.se-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px var(--shadow); }
+.se-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.se-glyph { width: 54px; height: 54px; color: var(--cat, var(--accent)); flex: none; }
+.se-glyph svg { width: 100%; height: 100%; display: block; }
+
+.se-title {
+  font-size: 19px; font-weight: 700; line-height: 1.25;
+  font-family: "Gill Sans MT", "Hanken Grotesk", sans-serif;
+}
+.se-desc { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+
+
+/* =================================================================
+   MOBILE HEADER
+   The page title wraps and fights the account button on narrow
+   screens, so it is dropped below the brand and the header keeps to
+   a single compact row. Desktop layout is unchanged.
+   ================================================================= */
+@media (max-width: 720px) {
+  .header-inner { padding: 6px 12px; }
+  .header-top { gap: 6px; }
+
+  /* page title drops to its own line instead of wrapping beside the brand */
+  .header-top { flex-wrap: wrap; }
+  .brand-group { order: 3; flex-basis: 100%; margin-top: 1px; }
+  .section-title { font-size: 13px; letter-spacing: .13em; }
+  .brand-group { margin-left: 0; }
+  .section-title::before { content: none; }
+
+  .menu-btn { width: 42px; height: 42px; border-radius: 11px; }
+  .menu-btn.is-brand { padding: .15em .45em .15em .15em; gap: .3em; }
+  .menu-btn.is-brand .brand { font-size: 20px; }
+  .menu-chev { font-size: .62em; }
+
+  .theme-btn { width: 34px; height: 34px; font-size: 15px; border-width: 2px; }
+
+  /* mobile account button sizing (it now lives in the header flow) */
+  .cauth-box { font-size: 13px; }
+  .cauth-box .cauth-pill { padding: .42em .5em; }
+}
+
+
+/* (removed) the account box used to be fixed-position and tracked the content
+   column's inner edge; it now sits in the header's right-hand cluster, so any
+   right/left offset here would displace it from its slot. */
+
+
+/* header motif sits between the brand button and the page title */
+.hdr-motif { color: var(--brand); opacity: .8; flex: none; margin-right: 2px; vertical-align: middle; }
+.brand-group { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 720px) {
+  .hdr-motif { display: none; }
+  /* mobile: the short label is handled by .cauth-pill-short */
+}
+
+
+/* the theme button now lives in the fixed account cluster */
+.cauth-cluster .theme-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+
+/* every header element resolves to the same height */
+.menu-btn.is-brand { height: auto; }
+.menu-btn.is-brand .brand,
+.section-title { display: inline-flex; align-items: center; height: var(--hdr-h, 40px); }
+
+
+/* ── header additions (menu glyph, ring inversion) ───────────────── */
+:root{ --ring:#A8455C; --menu-ico:#8E3A4E; }
+:root[data-theme="dark"]{ --ring:#7CC0EC; --menu-ico:#FFFFFF; }
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{ --ring:#7CC0EC; --menu-ico:#FFFFFF; }
+}
+.menu-glyph{ flex:none; width:24px; height:24px; color:var(--menu-ico); display:block; }
+.menu-btn.is-brand{ gap:15px; }
+
+/* light rests coral-on-cream, hovers to the dark-mode resting look */
+:root:not([data-theme="dark"]) .theme-btn:hover{
+  background:#141C22; border-color:#7CC0EC; color:#7CC0EC;
+}
+/* dark rests blue-on-dark, hovers to the light-mode resting look */
+:root[data-theme="dark"] .theme-btn:hover{
+  background:#FAF7F0; border-color:#A8455C; color:#A8455C;
+}
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"] .theme-btn:hover{
+    background:#FAF7F0; border-color:#A8455C; color:#A8455C;
+  }
+}
+@media (max-width: 720px){
+  .hdr-seplogo{ width:34px; height:34px; margin-right:10px; }
+  .section-title{ font-size:22px; }
+}
+
+
+/* ── Option A: pin the account + mode switch to the header's right edge ──
+   Taking them out of the flex flow means the button's width (which changes
+   with the signed-in address) can no longer push anything out of alignment. */
+.header-inner{ position: relative; padding-right: 20px; }
+.hdr-right{
+  position: absolute; top: 50%; right: 20px; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 10px; z-index: 60;
+}
+.hdr-right .theme-btn{ margin: 0; }
+.header-inner > .spacer{ flex: 1 1 auto; }
+
+/* menu button: bigger glyph, more air before the wordmark, squarer corners */
+.menu-btn.is-brand{ gap: 19px; border-radius: 14px; }
+.menu-glyph{ width: 31px; height: 31px; }
+.menu-btn.is-brand .brand{ text-align: center; }
+
+@media (max-width: 720px){
+  .hdr-right{ right: 12px; gap: 7px; }
+  .menu-glyph{ width: 26px; height: 26px; }
+  .menu-btn.is-brand{ gap: 12px; }
+}
+
+
+/* ── account scrim (mirrors the menu drawer's) ─────────────────── */
+.cauth-scrim{
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(20,18,16,0.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.cauth-scrim.open{ opacity: 1; pointer-events: auto; }
+
+
+/* ── page title: full on desktop, compact on mobile ───────────── */
+.st-short{ display: none; }
+.menu-logo-m{ display: none; }
+.cauth-pill-short{ display: none; }
+
+@media (max-width: 720px){
+  /* the logo becomes the menu button; the wordmark and the separator go */
+  .menu-btn.is-brand .brand,
+  .menu-btn.is-brand .menu-glyph{ display: none; }
+  .menu-logo-m{
+    display: block; width: 40px; height: 40px; border-radius: 50%;
+  }
+  .menu-btn.is-brand{ gap: 0; padding: 2px 6px; border-radius: 999px; }
+  .hdr-seplogo{ display: none; }
+
+  /* compact title */
+  .st-full{ display: none; }
+  .st-short{ display: inline; }
+  .section-title{
+    font-family: "Archivo Narrow", "Sora", system-ui, sans-serif;
+    font-size: 25px; font-weight: 600; letter-spacing: .04em;
   }
 
-  /* pill wording depends on auth state and whether the panel is open */
-  function paintLead(forceOpen){
-    const lead = $("cauthPillLead"); if (!lead) return;
-    const bx = document.getElementById("cauthBox");
-    const open = forceOpen !== undefined ? forceOpen : bx?.classList.contains("open");
-    const narrow = window.matchMedia("(max-width: 720px)").matches;
-    if (!window.collateraUser) lead.textContent = open ? "Not currently signed in" : "Sign in";
-    else lead.textContent = "";   /* the address stays on the button */
-    /* the address lives in the popup while it is open */
-    const line = $("cauthUserLine"), ue = $("cauthUserEmail");
-    if (line && ue){
-      if (window.collateraUser){ line.hidden = false; ue.textContent = window.collateraUser.email || ""; }
-      else line.hidden = true;
-    }
-    const pe = $("cauthPillEmail");
-    if (pe) pe.hidden = !window.collateraUser;   /* unchanged while open */
-    const ps = $("cauthPillShort");
-    if (ps) ps.textContent = window.collateraUser ? "Profile" : "Sign in";
-    if (window.cauthReserveSlot) window.cauthReserveSlot();
-  }
+  /* the account button shows a short label, never the address */
+  .cauth-pill-email{ display: none !important; }
+  .cauth-pill-lead{ display: none !important; }
+  .cauth-pill-short{ display: block !important; }
+  .cauth-pill{ font-size: 14px; }
 
-  /* ---- the dropdown panel ---- */
-  const panel = document.createElement("div");
-  panel.className = "cauth-panel";
-  panel.id = "cauthPanel";
-  panel.innerHTML = `
-    <button class="cauth-x" id="cauthClose" type="button" aria-label="Close">&times;</button>
-    <div class="cauth-userline" id="cauthUserLine" hidden><span class="ul">User:</span><span class="ue" id="cauthUserEmail"></span></div>
-    <div id="cauthOut">
-      <div class="cauth-row">
-        <label class="cauth-inlbl" for="cauthEmail">Email:</label>
-        <input id="cauthEmail" type="email" autocomplete="username"
-               autocapitalize="off" spellcheck="false" placeholder="you@example.com">
-      </div>
-      <div class="cauth-row">
-        <label class="cauth-inlbl" for="cauthPass">Password:</label>
-        <input id="cauthPass" type="password" autocomplete="current-password" placeholder="">
-      </div>
-      <button class="cauth-save" id="cauthSubmit" type="button">Sign in</button>
-      <div class="cauth-note" id="cauthMsg" role="alert"></div>
-    </div>
-    <div id="cauthIn" hidden>
-      <div class="cauth-avatarwrap">
-        <div class="cauth-avatar" id="cauthAvatar" aria-hidden="true"></div>
-      </div>
-      <div class="cauth-row">
-        <label class="cauth-inlbl" for="cauthPos">Position:</label>
-        <input id="cauthPos" list="cauthPosList" maxlength="${TITLE_MAX}" autocomplete="off"
-               placeholder="&lt;none&gt;">
-      </div>
-      <datalist id="cauthPosList">
-        ${POSITIONS.map(p => `<option value="${p}"></option>`).join("")}
-      </datalist>
-      <div class="cauth-row cauth-row-bio">
-        <label class="cauth-inlbl" for="cauthBio">Bio:</label>
-        <textarea id="cauthBio" maxlength="${BIO_MAX}" rows="2" placeholder="&lt;none&gt;"></textarea>
-      </div>
-      <div class="cauth-count" id="cauthBioCount">0 / ${BIO_MAX}</div>
-      <div class="cauth-row" id="cauthPwRow" hidden>
-        <label class="cauth-inlbl" for="cauthPw">New password:</label>
-        <input id="cauthPw" type="password" autocomplete="new-password"
-               placeholder="leave blank to keep current">
-      </div>
-      <button class="cauth-save" id="cauthSave" type="button">Save changes</button>
-      <div class="cauth-note" id="cauthNote"></div>
-      <hr class="cauth-rule">
-      <div id="cauthAdmin" hidden>
-        <a class="cauth-link cauth-admin" id="cauthReview" href="/review/">Review queue</a>
-        <a class="cauth-link cauth-admin" id="cauthUpload" href="${UPLOAD_URL}">Upload an image</a>
-        <hr class="cauth-rule cauth-rule-admin">
-      </div>
-      <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile / password</button>
-      <a class="cauth-link" id="cauthSubmit2" href="/submit/">Submit to the library</a>
-      <button class="cauth-link" id="cauthClearBtn" type="button">Clear Recently Viewed</button>
-      <button class="cauth-link" id="cauthOutBtn" type="button">Sign out</button>
-    </div>`;
-  document.body.appendChild(panel);
+  /* keep the logo button and the page title on one line */
+  .header-inner{ gap: 8px; padding-left: 12px; flex-wrap: nowrap; }
+  .header-top{ flex-wrap: nowrap; }
+  .brand-group{ min-width: 0; flex: 1 1 auto; }
+  .section-title{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-btn.is-brand{ flex: 0 0 auto; }
+}
 
-  /* dimming scrim behind the drawer, same as the navigation menu uses */
-  const cScrim = document.createElement("div");
-  cScrim.className = "cauth-scrim";
-  cScrim.id = "cauthScrim";
-  document.body.appendChild(cScrim);
-
-
-  /* the submit link carries a hint about where the person came from */
-  function tagSubmitLink(){
-    const a = $("cauthSubmit2"); if (!a) return;
-    const p = location.pathname;
-    const kind = p.startsWith("/decks") ? "deck"
-               : p.startsWith("/guidelines") ? "guideline"
-               : p.startsWith("/self-educate") ? "resource"
-               : "image";
-    a.href = "/submit/?kind=" + kind;
-  }
-
-  const box = () => document.getElementById("cauthBox");
-  const openPanel  = () => {
-    tagSubmitLink();
-    box().classList.add("open");
-    paintLead(true);
-    paintEmail();
-    panel.classList.add("open");
-    document.getElementById("cauthScrim")?.classList.add("open");
-    avatarBtn?.setAttribute("aria-expanded","true");
-  };
-  const closePanel = () => {
-    box().classList.remove("open");
-    paintLead(false);
-    paintEmail();
-    panel.classList.remove("open");
-    document.getElementById("cauthScrim")?.classList.remove("open");
-    setEditing(false);
-    avatarBtn?.setAttribute("aria-expanded","false");
-    if (window.cauthReserveSlot) window.cauthReserveSlot();
-  };
-
-  if (avatarBtn) avatarBtn.onclick = (e) => {
-    e.stopPropagation();
-    box().classList.contains("open") ? closePanel() : openPanel();
-  };
-  document.getElementById("cauthScrim").onclick = closePanel;
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
-  $("cauthClose").onclick = (e) => { e.stopPropagation(); closePanel(); };
-
-  const bioEl = $("cauthBio"), noteEl = $("cauthNote");
-
-  /* fields are read-only until Edit is pressed; Save returns them to locked */
-  function setEditing(on){
-    const pos = $("cauthPos");
-    if (!pos) return;
-    [pos, bioEl].forEach(el => { el.readOnly = !on; });
-    pos.setAttribute("list", on ? "cauthPosList" : "");
-    $("cauthSave").style.display  = on ? "" : "none";
-    $("cauthPwRow").hidden = !on;
-    if (!on) $("cauthPw").value = "";
-    $("cauthBioCount").style.display = on ? "" : "none";
-    $("cauthEditBtn").style.display = on ? "none" : "";
-    $("cauthEditBtn").textContent = "Edit profile / password";
-    if (on) pos.focus();
-  }
-  bioEl.addEventListener("input", () => { $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`; });
-  function note(msg, ok){ noteEl.textContent = msg; noteEl.className = "cauth-note " + (ok ? "ok" : "err"); }
-
-  /* ---- paint signed-in / signed-out state ---- */
-  async function paint(sb, session){
-    const user = session?.user || null;
-    window.collateraUser = user;
-    const pmail = $("cauthPillEmail");
-    box()?.classList.toggle("is-out", !user);
-    if (user) { pmail.hidden = false; }
-    else      { pmail.textContent = ""; pmail.hidden = true; }
-    paintLead();
-    paintEmail();
-    $("cauthOut").hidden = !!user;
-    $("cauthIn").hidden  = !user;
-    if (!user) return;
-    $("cauthAdmin").hidden = (user.email !== ADMIN_EMAIL);
-    const { data } = await sb.from("profiles")
-      .select("title, position, bio").eq("user_id", user.id).maybeSingle();
-    $("cauthPos").value = data?.position || data?.title || "";
-    bioEl.value           = data?.bio || "";
-    $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`;
-    note("", true);
-    setEditing(false);
-  }
-
-  /* ---- load supabase-js, then wire everything ---- */
-  const libEl = document.createElement("script");
-  libEl.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-  libEl.onload = async () => {
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    window.sb = sb;
-    const { data: { session } } = await sb.auth.getSession();
-    await paint(sb, session);
-    _resolveReady(sb);
-    sb.auth.onAuthStateChange(async (_e, s) => { await paint(sb, s); });
-
-    async function doLogin(){
-      const email = $("cauthEmail").value.trim(), pass = $("cauthPass").value, msg = $("cauthMsg");
-      if (!email || !pass) { msg.textContent = "Enter your email and password."; msg.className = "cauth-note err"; return; }
-      $("cauthSubmit").disabled = true; msg.textContent = "Signing in\u2026"; msg.className = "cauth-note";
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-      $("cauthSubmit").disabled = false;
-      if (error) { msg.textContent = error.message || "Sign-in failed."; msg.className = "cauth-note err"; return; }
-      $("cauthPass").value = ""; $("cauthEmail").value = ""; msg.textContent = "";
-    }
-    $("cauthSubmit").onclick = doLogin;
-    $("cauthPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
-
-    $("cauthSave").onclick = async () => {
-      const u = window.collateraUser; if (!u) return;
-      $("cauthSave").disabled = true; note("Saving\u2026", true);
-      const { error } = await sb.from("profiles").upsert({
-        user_id: u.id,
-        position: $("cauthPos").value.trim().slice(0, TITLE_MAX) || null,
-        title: null,
-        bio: bioEl.value.trim().slice(0, BIO_MAX) || null,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "user_id" });
-      let pwErr = null;
-      const pw = $("cauthPw").value;
-      if (!error && pw) {
-        if (pw.length < 6) pwErr = "Password must be at least 6 characters.";
-        else {
-          const r = await sb.auth.updateUser({ password: pw });
-          if (r.error) pwErr = r.error.message;
-        }
-      }
-      $("cauthSave").disabled = false;
-      if (error)      note(error.message || "Couldn't save.", false);
-      else if (pwErr) note(pwErr, false);
-      else { note(pw ? "Saved. Password changed." : "Saved.", true); setEditing(false); }
-    };
-
-    $("cauthClearBtn").onclick = async () => {
-      const u = window.collateraUser; if (!u) return;
-      if (!confirm("Clear your recently-viewed history? This can't be undone.")) return;
-      const { error } = await sb.from("recent_views").delete().eq("user_id", u.id);
-      if (error) { note(error.message || "Couldn't clear history.", false); return; }
-      note("Recent history cleared.", true);
-      document.dispatchEvent(new CustomEvent("collatera:recents-cleared"));
-    };
-
-    $("cauthEditBtn").onclick = () => setEditing(true);
-    $("cauthOutBtn").onclick = async () => { await sb.auth.signOut(); closePanel(); };
-  };
-  libEl.onerror = () => { const b = $("cauthSubmit"); if (b) { b.textContent = "Sign-in unavailable"; b.disabled = true; } };
-  document.head.appendChild(libEl);
-})();
+/* account button: fixed size, static label */
+:root{ --cauth-w: 122px; }
+@media (max-width: 720px){ :root{ --cauth-w: 104px; } }
