@@ -113,7 +113,7 @@ header::before {
   content: ""; position: absolute; left: 0; right: 0; top: 0;
   bottom: calc(-1 * var(--hdr-fade, 60px));
   z-index: -1; pointer-events: none;
-  background: color-mix(in srgb, var(--header-bg) 80%, transparent);
+  background: color-mix(in srgb, var(--header-bg) 97%, transparent);
   /* solid for the full bar (so the title never sits in the gradient),
      then dissolves across --hdr-fade below it */
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--hdr-fade, 60px)), transparent 100%);
