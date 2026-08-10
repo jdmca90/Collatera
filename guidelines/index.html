@@ -550,6 +550,15 @@ body{ position:relative; background:var(--bg); }
 }
 
 
+
+
+/* ---- guidelines: even vertical rhythm inside the bar ----
+   search -> buttons, buttons -> repositories, repositories -> border
+   all use the same gap as the search field's bottom margin */
+.controls .sb-bar{ margin-bottom:0 !important; }
+.controls .repos{ padding:0 !important; margin:var(--sb-stack) 0 0 !important; }
+.controls{ padding-bottom:var(--sb-stack) !important; }
+
 </style>
 <script>
 
