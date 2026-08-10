@@ -819,9 +819,14 @@ footer a { color: var(--accent-deep); }
   .cauth-pill-short{ display: block !important; }
   .cauth-pill{ font-size: 14px; }
 
-  .header-inner{ gap: 8px; padding-left: 12px; }
+  /* keep the logo button and the page title on one line */
+  .header-inner{ gap: 8px; padding-left: 12px; flex-wrap: nowrap; }
+  .header-top{ flex-wrap: nowrap; }
+  .brand-group{ min-width: 0; flex: 1 1 auto; }
+  .section-title{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-btn.is-brand{ flex: 0 0 auto; }
 }
 
-@media (max-width: 720px){
-  :root{ --cauth-w: 104px; }
-}
+/* account button: fixed size, static label */
+:root{ --cauth-w: 122px; }
+@media (max-width: 720px){ :root{ --cauth-w: 104px; } }
