@@ -376,6 +376,31 @@ window.CollateraViews = {
     .cauth-admin{color:var(--accent-deep)}
     .cauth-avatar{border-color:var(--brand)}
 
+    /* ---- account button: 2px accent hairline, colours per mode ----
+       light: coral border over a faint coral wash, brand-blue type
+       dark:  brand-blue border, coral type on plain glass ---- */
+    .cauth-box{
+      border-width:2px !important;
+      background:color-mix(in srgb, var(--accent) 12%, color-mix(in srgb, var(--surface) 82%, transparent)) !important;
+      border-color:var(--accent-deep) !important;
+      color:var(--brand) !important;
+    }
+    .cauth-pill{ color:var(--brand) !important; }
+    :root[data-theme="dark"] .cauth-box{
+      background:color-mix(in srgb, var(--surface) 84%, transparent) !important;
+      border-color:var(--brand) !important;
+      color:var(--accent-deep) !important;
+    }
+    :root[data-theme="dark"] .cauth-pill{ color:var(--accent-deep) !important; }
+    @media (prefers-color-scheme: dark){
+      :root[data-theme="auto"] .cauth-box{
+        background:color-mix(in srgb, var(--surface) 84%, transparent) !important;
+        border-color:var(--brand) !important;
+        color:var(--accent-deep) !important;
+      }
+      :root[data-theme="auto"] .cauth-pill{ color:var(--accent-deep) !important; }
+    }
+
   `;
   document.head.appendChild(style);
 
