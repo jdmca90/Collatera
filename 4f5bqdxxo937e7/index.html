@@ -33,12 +33,15 @@
   .btn:hover { opacity: 0.9; }
 
   /* ---- form shell ---- */
-  .up-main { max-width: 680px; margin: 20px auto 60px; padding: 0 18px; position: relative; z-index: 1; }
+  .up-main { max-width: 1180px; margin: 20px auto 60px; padding: 0 20px; position: relative; z-index: 1; }
   .up-card { background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; }
+    border-radius: var(--radius); padding: 22px 26px 44px; margin-bottom: 18px; }
 
-  .lbl-blue { font-weight:700; color:var(--brand); }
-  .lbl-pink { font-weight:700; color:var(--accent-deep); }
+  .flbl { font-weight:700; font-size:14px; }
+  .flbl.t { color:var(--ink); }         /* Title — white */
+  .flbl.c { color:var(--brand); }        /* Category — blue */
+  .flbl.g { color:var(--accent-deep); }  /* Tags — pink */
+  .flbl.p { color:var(--muted); }        /* Caption — light grey */
   .lbl-q { font-style:italic; font-weight:400; color:var(--muted); font-size:.82em; }
 
   .up-card input[type=text], .up-card textarea {
@@ -53,10 +56,10 @@
   .tl-row input { flex:1; }
 
   /* category + tags side by side */
-  .ct-wrap { display:flex; gap:22px; flex-wrap:wrap; margin-top:16px; }
-  .ct-col.cat  { flex:0 1 230px; min-width:190px; }
-  .ct-col.tags { flex:1 1 330px; min-width:250px; }
-  .ct-head { font-size:13px; margin-bottom:7px; }
+  .ct-wrap { display:flex; gap:40px; flex-wrap:wrap; margin-top:18px; }
+  .ct-col.cat  { flex:0 1 34%; min-width:240px; }
+  .ct-col.tags { flex:1 1 60%; min-width:340px; }
+  .ct-head { margin-bottom:8px; }
   .addrow { display:flex; gap:7px; margin-top:9px; }
   .addrow input { flex:1; font-size:12.5px; padding:7px 9px; }
   .add-blue, .add-pink { font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
@@ -69,10 +72,12 @@
   .cap-head { display:block; margin:18px 0 6px; font-size:14px; }
 
   .drop {
+    max-width: 720px; margin: 0 auto 6px; min-height: 200px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
     border: 1.5px dashed var(--border); border-radius: 12px;
     background: color-mix(in srgb, var(--bg) 70%, transparent);
-    padding: 30px 20px; text-align: center; color: var(--muted);
-    cursor: pointer; transition: border-color .15s, background .15s; margin-bottom: 6px;
+    padding: 20px; text-align: center; color: var(--muted);
+    cursor: pointer; transition: border-color .15s, background .15s;
   }
   .drop.drag { border-color: var(--accent-deep); background: var(--accent-tint); }
   .drop img.preview { max-width: 100%; max-height: 320px; border-radius: 10px; margin-bottom: 12px; }
@@ -86,11 +91,15 @@
     overflow:hidden; background:var(--bg); }
   .cti-grid.cats { grid-template-columns: repeat(2,1fr); }
   .cti-grid.tags { grid-template-columns: repeat(6,1fr); }
-  .cti-tile { padding:6px 4px; font-size:11.5px; text-align:center; cursor:pointer; user-select:none;
-    background:var(--bg); color:var(--ink); box-shadow:0 0 0 .5px var(--border); transition:background .12s; }
-  .cti-tile:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
-  .cti-tile.on { background:var(--accent); color:var(--pill-ink); font-weight:600;
-    box-shadow:0 0 0 .5px color-mix(in srgb, var(--accent) 70%, #000); position:relative; z-index:1; }
+  .cti-tile { padding:8px 5px; font-size:10px; line-height:1.2; text-align:center; cursor:pointer;
+    user-select:none; background:var(--bg); color:var(--ink);
+    box-shadow:0 0 0 .5px var(--border); transition:background .12s; }
+  .cti-tile:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  /* faded highlight, like the search-bar filter buttons — blue for category, pink for tags */
+  .cti-grid.cats .cti-tile.on { background: color-mix(in srgb, var(--brand) 20%, transparent);
+    box-shadow:0 0 0 .5px var(--brand); color:var(--ink); font-weight:600; position:relative; z-index:1; }
+  .cti-grid.tags .cti-tile.on { background: color-mix(in srgb, var(--accent) 26%, transparent);
+    box-shadow:0 0 0 .5px var(--accent); color:var(--ink); font-weight:600; position:relative; z-index:1; }
   @media (max-width:560px){ .cti-grid.tags { grid-template-columns: repeat(4,1fr); } }
 
   /* publish — centered, auto width */
@@ -146,14 +155,14 @@
     --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
     --rf-pad:#FFFDF8;
     --rf-texop:.55; --rf-texsize:570px; --rf-wash:.73;
-    --rf-core:760px; --rf-band:65px; --rf-op:.62;
+    --rf-core:1220px; --rf-band:65px; --rf-op:.62;
     --rf-top:0px; --rf-bot:115px; --rf-round:30px;
   }
   :root[data-theme="dark"]{
     --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
     --rf-pad:#141C22;
     --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
-    --rf-core:760px; --rf-band:65px; --rf-op:.80;
+    --rf-core:1300px; --rf-band:65px; --rf-op:.80;
     --rf-top:0px; --rf-bot:115px; --rf-round:30px;
   }
   @media (prefers-color-scheme: dark){
@@ -161,12 +170,12 @@
       --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
       --rf-pad:#141C22;
       --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
-      --rf-core:760px; --rf-band:65px; --rf-op:.80;
+      --rf-core:1300px; --rf-band:65px; --rf-op:.80;
       --rf-top:0px; --rf-bot:115px; --rf-round:30px;
     }
   }
   @media (max-width:1380px){
-    :root, :root[data-theme="dark"]{ --rf-core:min(760px, calc(100vw - 56px)); }
+    :root, :root[data-theme="dark"]{ --rf-core:min(1300px, calc(100vw - 130px)); }
   }
   @media (max-width:760px){
     :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
@@ -216,14 +225,14 @@
       </div>
 
       <div class="tl-row">
-        <label class="lbl-blue" for="titleInput">Title:</label>
+        <label class="flbl t" for="titleInput">Title:</label>
         <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
       </div>
       <div class="filename-preview" id="filenamePreview"></div>
 
       <div class="ct-wrap">
         <div class="ct-col cat">
-          <div class="ct-head"><span class="lbl-blue">Category:</span> <span class="lbl-q">(required)</span></div>
+          <div class="ct-head"><span class="flbl c">Category:</span> <span class="lbl-q">(required)</span></div>
           <div id="catGrid" class="cti-grid cats"></div>
           <div class="addrow">
             <input type="text" id="newCatInput" placeholder="New category…">
@@ -231,7 +240,7 @@
           </div>
         </div>
         <div class="ct-col tags">
-          <div class="ct-head"><span class="lbl-pink">Tags:</span> <span class="lbl-q">(at least one required)</span></div>
+          <div class="ct-head"><span class="flbl g">Tags:</span> <span class="lbl-q">(at least one required)</span></div>
           <div id="tagGrid" class="cti-grid tags"></div>
           <div class="addrow">
             <input type="text" id="newTagInput" placeholder="New tag…">
@@ -240,7 +249,7 @@
         </div>
       </div>
 
-      <label class="cap-head lbl-blue" for="noteInput">Caption: <span class="lbl-q">(optional)</span></label>
+      <label class="cap-head flbl p" for="noteInput">Caption:</label>
       <textarea id="noteInput" rows="3" placeholder="[Optional…]"></textarea>
 
       <div class="up-actions">
@@ -250,8 +259,6 @@
 
     <div id="statusBox"></div>
   </div>
-
-  <a class="finish-btn" href="/ref-images/">Finish and return to site</a>
 </main>
 
 <script>
@@ -439,6 +446,7 @@ function renderTagGrid() {
     const t = document.createElement("div");
     t.className = "cti-tile" + (selectedTags.has(tag) ? " on" : "");
     t.textContent = tag;
+    if (tag.length > 8) t.style.fontSize = (tag.length > 11 ? "8px" : "8.5px");
     t.onclick = () => {
       selectedTags.has(tag) ? selectedTags.delete(tag) : selectedTags.add(tag);
       renderTagGrid();
