@@ -32,19 +32,41 @@
   }
   .btn:hover { opacity: 0.9; }
 
-  /* ---- form shell, mirroring /submit/ ---- */
-  .up-main { max-width: 760px; margin: 22px auto 60px; padding: 0 18px; position: relative; z-index: 1; }
+  /* ---- form shell ---- */
+  .up-main { max-width: 680px; margin: 20px auto 60px; padding: 0 18px; position: relative; z-index: 1; }
   .up-card { background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
-  .up-lbl { display:block; margin:16px 0 6px; font-size:.88em; color:var(--muted); }
-  .up-lbl:first-of-type { margin-top: 0; }
-  .up-req { color: var(--accent-deep); font-size:.92em; }
+    border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; }
+
+  .lbl-blue { font-weight:700; color:var(--brand); }
+  .lbl-pink { font-weight:700; color:var(--accent-deep); }
+  .lbl-q { font-style:italic; font-weight:400; color:var(--muted); font-size:.82em; }
+
   .up-card input[type=text], .up-card textarea {
-    width:100%; box-sizing:border-box; padding:.6em .7em; border:1px solid var(--border);
-    border-radius:10px; background:var(--bg); color:var(--ink); font:inherit;
+    box-sizing:border-box; padding:.55em .7em; border:1px solid var(--border);
+    border-radius:10px; background:var(--bg); color:var(--ink); font:inherit; font-size:14px;
   }
-  .up-card textarea { resize: vertical; }
+  .up-card textarea { width:100%; resize: vertical; }
   .up-card input:focus, .up-card textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+
+  /* title: inline label + input */
+  .tl-row { display:flex; align-items:center; gap:10px; margin:14px 0 4px; }
+  .tl-row input { flex:1; }
+
+  /* category + tags side by side */
+  .ct-wrap { display:flex; gap:22px; flex-wrap:wrap; margin-top:16px; }
+  .ct-col.cat  { flex:0 1 230px; min-width:190px; }
+  .ct-col.tags { flex:1 1 330px; min-width:250px; }
+  .ct-head { font-size:13px; margin-bottom:7px; }
+  .addrow { display:flex; gap:7px; margin-top:9px; }
+  .addrow input { flex:1; font-size:12.5px; padding:7px 9px; }
+  .add-blue, .add-pink { font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+    background:transparent; border-radius:8px; padding:7px 14px; transition:.15s; }
+  .add-blue { border:1px solid var(--brand); color:var(--brand); }
+  .add-blue:hover { background:color-mix(in srgb, var(--brand) 12%, transparent); }
+  .add-pink { border:1px solid var(--accent); color:var(--accent-deep); }
+  .add-pink:hover { background:var(--accent-tint); }
+
+  .cap-head { display:block; margin:18px 0 6px; font-size:14px; }
 
   .drop {
     border: 1.5px dashed var(--border); border-radius: 12px;
@@ -59,24 +81,23 @@
 
   .filename-preview { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
-  /* option tiles — single-select category, multi-select tags */
+  /* option tiles — compact; single-select category, multi-select tags */
   .cti-grid { display:grid; border:1px solid var(--border); border-radius:8px;
     overflow:hidden; background:var(--bg); }
   .cti-grid.cats { grid-template-columns: repeat(2,1fr); }
   .cti-grid.tags { grid-template-columns: repeat(6,1fr); }
-  .cti-tile { padding:9px 6px; font-size:13px; text-align:center; cursor:pointer; user-select:none;
+  .cti-tile { padding:6px 4px; font-size:11.5px; text-align:center; cursor:pointer; user-select:none;
     background:var(--bg); color:var(--ink); box-shadow:0 0 0 .5px var(--border); transition:background .12s; }
   .cti-tile:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
   .cti-tile.on { background:var(--accent); color:var(--pill-ink); font-weight:600;
     box-shadow:0 0 0 .5px color-mix(in srgb, var(--accent) 70%, #000); position:relative; z-index:1; }
-  @media (max-width:520px){ .cti-grid.tags { grid-template-columns: repeat(3,1fr); } }
+  @media (max-width:560px){ .cti-grid.tags { grid-template-columns: repeat(4,1fr); } }
 
-  .tag-add { display: flex; gap: 8px; margin-top: 10px; }
-  .tag-add input { flex: 1; }
-  .tag-add button { margin-top: 0; padding: 8px 14px; font-size: 13px; }
-
-  .up-btn { margin-top: 20px; width:100%; padding:.75em; border:none; border-radius:10px;
-    background:var(--accent); color:var(--pill-ink); font:inherit; font-weight:700; cursor:pointer; }
+  /* publish — centered, auto width */
+  .up-actions { text-align:center; margin-top:22px; }
+  .up-btn { display:inline-block; width:auto; padding:.7em 2.6em; border:none; border-radius:10px;
+    background:var(--accent); color:var(--pill-ink); font:inherit; font-weight:700;
+    letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
   .up-btn:disabled { opacity:.6; cursor:default; }
 
   .status { margin-top: 20px; padding: 14px 16px; border-radius: 10px; font-size: 14px; }
@@ -194,24 +215,37 @@
         <input type="file" id="fileInput" accept="image/*" style="display:none">
       </div>
 
-      <label class="up-lbl" for="titleInput">Title</label>
-      <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
+      <div class="tl-row">
+        <label class="lbl-blue" for="titleInput">Title:</label>
+        <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
+      </div>
       <div class="filename-preview" id="filenamePreview"></div>
 
-      <label class="up-lbl">Category <span class="up-req">required</span></label>
-      <div id="catGrid" class="cti-grid cats"></div>
-
-      <label class="up-lbl">Tags <span class="up-req">at least one</span></label>
-      <div id="tagGrid" class="cti-grid tags"></div>
-      <div class="tag-add">
-        <input type="text" id="newTagInput" placeholder="New tag">
-        <button class="btn" id="newTagBtn" type="button">Add</button>
+      <div class="ct-wrap">
+        <div class="ct-col cat">
+          <div class="ct-head"><span class="lbl-blue">Category:</span> <span class="lbl-q">(required)</span></div>
+          <div id="catGrid" class="cti-grid cats"></div>
+          <div class="addrow">
+            <input type="text" id="newCatInput" placeholder="New category…">
+            <button class="add-blue" id="newCatBtn" type="button">Add</button>
+          </div>
+        </div>
+        <div class="ct-col tags">
+          <div class="ct-head"><span class="lbl-pink">Tags:</span> <span class="lbl-q">(at least one required)</span></div>
+          <div id="tagGrid" class="cti-grid tags"></div>
+          <div class="addrow">
+            <input type="text" id="newTagInput" placeholder="New tag…">
+            <button class="add-pink" id="newTagBtn" type="button">Add</button>
+          </div>
+        </div>
       </div>
 
-      <label class="up-lbl" for="noteInput">Caption <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label>
-      <textarea id="noteInput" rows="3" placeholder="Shown when the image is opened, not on the thumbnail"></textarea>
+      <label class="cap-head lbl-blue" for="noteInput">Caption: <span class="lbl-q">(optional)</span></label>
+      <textarea id="noteInput" rows="3" placeholder="[Optional…]"></textarea>
 
-      <button class="up-btn" id="publishBtn" type="button">Publish image</button>
+      <div class="up-actions">
+        <button class="up-btn" id="publishBtn" type="button">Publish</button>
+      </div>
     </fieldset>
 
     <div id="statusBox"></div>
@@ -413,6 +447,16 @@ function renderTagGrid() {
   });
 }
 
+document.getElementById("newCatBtn").onclick = () => {
+  const input = document.getElementById("newCatInput");
+  const cat = input.value.trim();
+  if (!cat) return;
+  if (!CATEGORIES.includes(cat)) CATEGORIES.push(cat);
+  selectedCat = cat;
+  input.value = "";
+  renderCatGrid();
+};
+
 document.getElementById("newTagBtn").onclick = () => {
   const input = document.getElementById("newTagInput");
   const tag = input.value.trim();
@@ -518,6 +562,8 @@ document.getElementById("publishBtn").onclick = async () => {
 
     const { sha: latestSha, content: latestContent } = await getFile(IMAGES_JSON_PATH);
     const latestJson = JSON.parse(latestContent);
+    if (!Array.isArray(latestJson.categories)) latestJson.categories = [];
+    if (!latestJson.categories.includes(cat)) latestJson.categories.push(cat);
     const newId = "img_" + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => "0123456789abcdefghijklmnopqrstuvwxyz"[b % 36]).join("");
     latestJson.images.push({ id: newId, file: filename, title, cat, tags: [...selectedTags], note });
     const newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(latestJson, null, 2))));
@@ -537,6 +583,7 @@ function resetForm() {
   document.getElementById("titleInput").value = "";
   document.getElementById("noteInput").value = "";
   document.getElementById("newTagInput").value = "";
+  document.getElementById("newCatInput").value = "";
   document.getElementById("filenamePreview").textContent = "";
   selectedCat = "";
   selectedTags = new Set();
