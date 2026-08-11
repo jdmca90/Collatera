@@ -1527,6 +1527,17 @@
         "AV"
       ],
       "note": ""
+    },
+    {
+      "id": "img_ma802hzb",
+      "file": "/images/lvot-aorta-continuum.jpg",
+      "title": "LVOT-Aorta Continuum",
+      "cat": "Echo",
+      "tags": [
+        "Views",
+        "Aorta"
+      ],
+      "note": ""
     }
   ]
 }
