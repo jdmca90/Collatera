@@ -151,6 +151,7 @@ function render() {
 
   visible = IMAGES.filter(img => {
     if (!matchesFilter(img)) return false;
+    if (window.EchoMode && EchoMode.on && img.cat !== "Echo") return false;
     const hay = (img.title + " " + img.cat + " " + (img.note||"") + " " + (img.tags||[]).join(" ")).toLowerCase();
     if (q && !hay.includes(q)) return false;
     return true;
@@ -180,6 +181,9 @@ function render() {
   }
 
   grid.innerHTML = "";
+  if (window.EchoMode && EchoMode.on) { buildEchoLayout(visible); }
+  else {
+  grid.className = "grid";
   visible.forEach((img, i) => {
     const card = document.createElement("button");
     card.className = "card";
@@ -196,6 +200,7 @@ function render() {
     if (ME) card.appendChild(makeStar(img));
     grid.appendChild(card);
   });
+  }
 
   const n = visible.length;
   let label = `${n} ${n === 1 ? "image" : "images"}`;
@@ -206,8 +211,183 @@ function render() {
   if (q) label += ` matching \u201c${query.trim()}\u201d`;
   countEl.textContent = label;
   emptyEl.style.display = n ? "none" : "block";
-  grid.style.display = n ? "grid" : "none";
+  grid.style.display = n ? ((window.EchoMode && EchoMode.on) ? "block" : "grid") : "none";
 }
+
+/* ============================================================
+   Echo reader mode — groups Echo-category cards into an
+   echoguide-style reading protocol. Sections are keyed to tags;
+   a card can appear in several sections. State persists in
+   localStorage across refresh and is cleared on sign-out
+   (handled in the auth listener below).
+   ============================================================ */
+function echoHas(img, t){ return (img.tags || []).indexOf(t) >= 0; }
+
+var ECHO_SECTIONS = [
+  { name: "Views / Orientation",        match: function(im){ return echoHas(im,"Views"); } },
+  { name: "Left Ventricle",             match: function(im){ return echoHas(im,"LV"); } },
+  { name: "Diastology",                 match: function(im){ return echoHas(im,"diastology"); } },
+  { name: "Right Ventricle",            match: function(im){ return echoHas(im,"RV"); } },
+  { name: "Left Atrium",                match: function(im){ return echoHas(im,"LA"); } },
+  { name: "Right Atrium",               match: function(im){ return echoHas(im,"RA"); } },
+  { name: "Aorta",                      match: function(im){ return echoHas(im,"Aorta"); } },
+  { name: "Aortic Regurgitation",       match: function(im){ return echoHas(im,"AR") && !echoHas(im,"Pros"); } },
+  { name: "Aortic Stenosis",            match: function(im){ return echoHas(im,"AS") && !echoHas(im,"Pros"); } },
+  { name: "Mitral Regurgitation",       match: function(im){ return echoHas(im,"MR") && !echoHas(im,"Pros"); } },
+  { name: "Mitral Stenosis",            match: function(im){ return echoHas(im,"MS") && !echoHas(im,"Pros"); } },
+  { name: "Tricuspid Regurgitation",    match: function(im){ return echoHas(im,"TR") && !echoHas(im,"Pros"); } },
+  { name: "Tricuspid Stenosis",         match: function(im){ return echoHas(im,"TS") && !echoHas(im,"Pros"); } },
+  { name: "Pulmonic Regurgitation",     match: function(im){ return echoHas(im,"PR") && !echoHas(im,"Pros"); } },
+  { name: "Pulmonic Stenosis",          match: function(im){ return echoHas(im,"PS") && !echoHas(im,"Pros"); } },
+  { name: "Prosthetic Aortic Valve",    match: function(im){ return echoHas(im,"Pros") && echoHas(im,"AV"); } },
+  { name: "Prosthetic Mitral Valve",    match: function(im){ return echoHas(im,"Pros") && echoHas(im,"MV"); } },
+  { name: "Prosthetic Tricuspid Valve", match: function(im){ return echoHas(im,"Pros") && echoHas(im,"TV"); } },
+  { name: "Prosthetic Pulmonic Valve",  match: function(im){ return echoHas(im,"Pros") && echoHas(im,"PV"); } }
+];
+
+function makeEchoCard(img, i){
+  var card = document.createElement("button");
+  card.className = "card";
+  card.setAttribute("data-echo-title", img.title);
+  card.style.setProperty("--cat", colorFor(img.cat));
+  card.style.animationDelay = (Math.min(i, 24) * 0.02) + "s";
+  card.onclick = function(e){ e.stopPropagation(); openLightbox(i); };
+  var im = document.createElement("img");
+  im.className = "thumb"; im.loading = "lazy";
+  im.src = encodeURI(img.file); im.alt = img.title;
+  im.onerror = function(){ this.style.opacity = 0.4; };
+  var body = document.createElement("div"); body.className = "card-body";
+  var ttl = document.createElement("span"); ttl.className = "card-title"; ttl.textContent = img.title;
+  body.appendChild(ttl);
+  card.appendChild(im); card.appendChild(body);
+  if (ME) card.appendChild(makeStar(img));
+  return card;
+}
+
+function makeEchoThumb(img, i, sectionName){
+  var t = document.createElement("button");
+  t.className = "echo-thumb";
+  t.setAttribute("data-echo-title", img.title);
+  t.title = img.title;
+  t.style.animationDelay = (Math.min(i, 30) * 0.015) + "s";
+  t.onclick = function(e){
+    e.stopPropagation();
+    if (window.EchoMode) EchoMode.open(sectionName);
+    openLightbox(i);
+  };
+  var im = document.createElement("img");
+  im.loading = "lazy"; im.src = encodeURI(img.file); im.alt = img.title;
+  im.onerror = function(){ this.style.opacity = 0.35; };
+  t.appendChild(im);
+  return t;
+}
+
+function echoSectionEl(name, members, list, isOpen){
+  var wrap = document.createElement("div");
+  wrap.className = "echo-section" + (isOpen ? " is-open" : "");
+  wrap.setAttribute("data-echo-section", name);
+  wrap.onclick = function(){ if (window.EchoMode) EchoMode.toggle(name); };
+
+  var head = document.createElement("button");
+  head.className = "echo-head"; head.type = "button";
+  head.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  var nm = document.createElement("span"); nm.className = "eh-name"; nm.textContent = name;
+  head.appendChild(nm);
+
+  var cards = document.createElement("div");
+  cards.className = "echo-cards " + (isOpen ? "expanded" : "collapsed");
+  members.forEach(function(img){
+    var idx = list.indexOf(img);
+    cards.appendChild(isOpen ? makeEchoCard(img, idx) : makeEchoThumb(img, idx, name));
+  });
+
+  wrap.appendChild(head); wrap.appendChild(cards);
+  return wrap;
+}
+
+function buildEchoLayout(list){
+  grid.className = "echo-wrap";
+  grid.innerHTML = "";
+  var open = (window.EchoMode && EchoMode.openSection) || null;
+  var homed = {};
+  ECHO_SECTIONS.forEach(function(sec){
+    var members = list.filter(sec.match);
+    if (!members.length) return;               // empty sections don't render
+    members.forEach(function(im){ homed[im.id] = 1; });
+    grid.appendChild(echoSectionEl(sec.name, members, list, open === sec.name));
+  });
+  var orphans = list.filter(function(im){ return !homed[im.id]; });
+  if (orphans.length) grid.appendChild(echoSectionEl("Other", orphans, list, open === "Other"));
+  requestAnimationFrame(echoReflow);
+}
+
+/* one native row -> spill to a 2nd row -> beyond that, a 2-row-tall
+   horizontally scrollable strip. Applies to collapsed thumbs and
+   expanded cards alike. */
+function echoReflow(){
+  var maxRows = 2;
+  try {
+    var mr = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--ov-rows"), 10);
+    if (mr) maxRows = mr;
+  } catch(e){}
+  var rows = document.querySelectorAll(".echo-cards");
+  for (var r = 0; r < rows.length; r++){
+    var el = rows[r];
+    el.classList.remove("ov-1row", "ov-2row", "ov-scroll");
+    var items = [].slice.call(el.children).filter(function(c){ return c.style.display !== "none"; });
+    var count = items.length;
+    if (!count) continue;
+    var cs = getComputedStyle(el);
+    var gap = parseFloat(cs.columnGap || cs.gap) || 8;
+    var iw = items[0].getBoundingClientRect().width || 100;
+    var avail = el.clientWidth || el.getBoundingClientRect().width || 1;
+    var perRow = Math.max(1, Math.floor((avail + gap) / (iw + gap)));
+    el.style.setProperty("--ov-col", iw + "px");
+    if (count <= perRow) el.classList.add("ov-1row");
+    else if (count <= perRow * maxRows) el.classList.add("ov-2row");
+    else el.classList.add("ov-scroll");
+  }
+}
+
+function collapseEchoSections(){
+  var secs = document.querySelectorAll(".echo-section");
+  for (var k = 0; k < secs.length; k++){
+    var cs = secs[k].querySelectorAll(".card, .echo-thumb"), any = false;
+    for (var j = 0; j < cs.length; j++){ if (cs[j].style.display !== "none"){ any = true; break; } }
+    secs[k].style.display = any ? "" : "none";
+  }
+}
+
+var _echoResizeT = null;
+window.addEventListener("resize", function(){
+  if (!window.EchoMode || !EchoMode.on) return;
+  clearTimeout(_echoResizeT); _echoResizeT = setTimeout(echoReflow, 120);
+});
+
+window.EchoMode = {
+  on: false,
+  openSection: null,           // accordion: name of the one open section, or null
+  enable: function(){
+    this.on = true; this.openSection = null; document.body.classList.add("echo-view");
+    try { localStorage.setItem("collateraEchoMode", "1"); } catch(e){}
+    render();
+  },
+  disable: function(){
+    this.on = false; this.openSection = null; document.body.classList.remove("echo-view");
+    try { localStorage.removeItem("collateraEchoMode"); } catch(e){}
+    if (grid) grid.className = "grid";
+    var btns = document.querySelectorAll(".sb-btn");
+    for (var k = 0; k < btns.length; k++){
+      if (btns[k].textContent.trim().indexOf("Echo reader") === 0) btns[k].setAttribute("aria-pressed", "false");
+    }
+    render();
+  },
+  open:  function(name){ this.openSection = name; render(); },
+  close: function(){ this.openSection = null; render(); },
+  toggle:function(name){ if (this.openSection === name) this.close(); else this.open(name); },
+  restore: function(){ try { return localStorage.getItem("collateraEchoMode") === "1"; } catch(e){ return false; } },
+  collapse: function(){ collapseEchoSections(); echoReflow(); }
+};
 
 /* ----- lightbox (title, category, tags, note all appear here) ----- */
 const lb = document.getElementById("lightbox");
@@ -351,7 +531,8 @@ async function loadFaves(){
   if (!window.sbReady) { setTimeout(initUser, 50); return; }   // wait for site.js
   window.sbReady.then(async (sb) => {
     await loadFaves(); await loadRecents(); updateModeChips(); render();
-    sb.auth.onAuthStateChange(async () => {
+    sb.auth.onAuthStateChange(async (event) => {
+      if (event === "SIGNED_OUT" && window.EchoMode) EchoMode.disable();
       await loadFaves(); await loadRecents(); updateModeChips(); render();
     });
   });
@@ -677,6 +858,142 @@ body{ position:relative; background:var(--bg); }
   :root{ --sb-w:calc(100vw - 20px); --pop-wide:calc(100vw - 40px); --pop-cols:3; --pop-cols-cat:2; }
 }
 
+
+/* ============================================================
+   Echo reader mode — accordion (echo- prefix, page-local)
+   Collapsed row: compact header (left) + horizontal strip of
+   image-only thumbnails (right). Expanded row: accent header +
+   grid of legible cards (title + star). One section open at a time.
+   Tunable values are CSS variables with sensible defaults.
+   ============================================================ */
+:root{
+  /* collapsed thumbnails */
+  --et-size: 47px;      /* thumbnail width  */
+  --et-ar: 1.333;       /* thumbnail aspect (w/h): 1.333 = 4:3, 1 = square */
+  --et-gap: 6px;        /* gap between thumbnails */
+  --ech-fs: 16px;       /* collapsed header font size */
+  /* expanded cards */
+  --ec-w: 170px;        /* card width */
+  --ec-th: 106px;       /* card thumbnail height */
+  --ec-title-fs: 14px;  /* card title font size */
+  --eh-fs: 35px;        /* active (expanded) header font size */
+  --eh-color: #1C6390;  /* active header color — blue in light mode */
+  /* collapsed header text: coral (light) / light-blue (dark); hover swaps */
+  --ech-color: #A8455C;
+  --ech-hover: #1C6390;
+  /* overflow */
+  --ov-rows: 2;         /* rows before a section becomes horizontally scrollable */
+  --ov-col: var(--ec-w);
+}
+:root[data-theme="dark"]{ --eh-color:#E8909E; --ech-color:#7CC0EC; --ech-hover:#E8909E; }
+@media (prefers-color-scheme: dark){ :root[data-theme="auto"]{ --eh-color:#E8909E; --ech-color:#7CC0EC; --ech-hover:#E8909E; } }
+
+#grid.echo-wrap{ display:block; }
+body.echo-view .card-cat{ display:none; }          /* safety: no badge in reader mode */
+
+/* ---- section shell ---- */
+.echo-section{
+  display:flex; align-items:flex-start; gap:16px;
+  padding:8px 0; margin:0; cursor:pointer;
+}
+.echo-section + .echo-section{
+  border-top:1px solid color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
+/* ---- header (button; toggles the accordion) ---- */
+.echo-head{
+  flex:0 0 150px; box-sizing:border-box;
+  display:flex; flex-direction:column; gap:2px; align-items:flex-start;
+  padding:6px 8px 6px 0; margin:0; background:none; border:none; cursor:pointer;
+  text-align:left; font:inherit; color:var(--muted);
+  transition:color .15s;
+}
+.echo-head .eh-name{
+  font-size:var(--ech-fs); font-weight:600; letter-spacing:.01em; line-height:1.2;
+  color:var(--ech-color); text-transform:uppercase; transition:font-size .15s, color .15s, font-weight .15s;
+}
+.echo-head .n{ font-size:10.5px; font-weight:500; color:var(--muted); opacity:.8; }
+.echo-head:hover .eh-name{ color:var(--ech-hover); }
+
+/* open section: header enlarges, bolds, takes the accent color */
+.echo-section.is-open .echo-head .eh-name{
+  font-size:var(--eh-fs); font-weight:800; letter-spacing:0;
+  color:var(--eh-color); text-transform:none;
+}
+.echo-section.is-open .echo-head .n{ color:var(--eh-color); opacity:.75; }
+
+/* ---- the item row (thumbs when collapsed, cards when expanded) ---- */
+.echo-cards{ flex:1 1 auto; min-width:0; }
+.echo-cards.ov-1row{ display:flex; flex-wrap:nowrap; gap:var(--et-gap); }
+.echo-cards.ov-2row{ display:flex; flex-wrap:wrap; }
+.echo-cards.ov-scroll{
+  display:grid; grid-auto-flow:column;
+  grid-template-rows:repeat(var(--ov-rows), max-content);
+  grid-auto-columns:var(--ov-col);
+  overflow-x:auto; overflow-y:hidden;
+  padding-bottom:6px; scrollbar-width:thin;
+}
+/* collapsed strips use the thumb gap; expanded grids use the card gap */
+.echo-cards.collapsed.ov-2row{ gap:var(--et-gap); }
+.echo-cards.collapsed.ov-scroll{ gap:var(--et-gap); }
+.echo-cards.expanded.ov-1row{ gap:10px; }
+.echo-cards.expanded.ov-2row{ display:flex; flex-wrap:wrap; gap:10px; }
+.echo-cards.expanded.ov-scroll{ gap:10px; }
+
+/* ---- collapsed: image-only thumbnails ---- */
+.echo-thumb{
+  flex:0 0 var(--et-size); width:var(--et-size);
+  aspect-ratio:var(--et-ar);
+  padding:0; border:none; background:none; cursor:pointer; border-radius:5px;
+  overflow:hidden; position:relative;
+  transition:transform .12s, box-shadow .15s, outline-color .15s;
+}
+.echo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.echo-thumb:hover{ transform:translateY(-2px); z-index:2; }
+.echo-cards.ov-scroll .echo-thumb, .echo-cards.ov-2row .echo-thumb{ width:auto; }
+
+/* thumbnail style variants (data-ethumb on #grid) */
+#grid[data-ethumb="hairline"] .echo-thumb{ box-shadow:0 0 0 1px var(--border); }
+#grid[data-ethumb="hairline"] .echo-thumb:hover{ box-shadow:0 0 0 1px var(--brand); }
+#grid[data-ethumb="accent"]   .echo-thumb{ box-shadow:0 0 0 1px color-mix(in srgb, var(--eh-color) 55%, transparent); }
+#grid[data-ethumb="accent"]   .echo-thumb:hover{ box-shadow:0 0 0 2px var(--eh-color); }
+#grid[data-ethumb="soft"]     .echo-thumb{ box-shadow:0 1px 4px var(--shadow); }
+#grid[data-ethumb="soft"]     .echo-thumb:hover{ box-shadow:0 3px 9px var(--shadow); }
+#grid[data-ethumb="plain"]    .echo-thumb{ box-shadow:none; }
+/* default when no attribute set */
+#grid:not([data-ethumb]) .echo-thumb{ box-shadow:0 0 0 1px var(--border); }
+
+/* ---- expanded: legible cards (thumb + title + star) ---- */
+body.echo-view .echo-cards .card,
+body.echo-view .echo-cards .echo-thumb{ animation:none; opacity:1; transform:none; }
+body.echo-view .echo-cards.expanded .card{
+  width:var(--ec-w); flex:0 0 var(--ec-w); border-radius:9px;
+}
+body.echo-view .echo-cards.expanded .thumb{
+  aspect-ratio:auto; height:var(--ec-th);
+}
+body.echo-view .echo-cards.expanded .card-body{ padding:5px 7px 7px; }
+body.echo-view .echo-cards.expanded .card-title{
+  font-size:var(--ec-title-fs); line-height:1.2;
+}
+body.echo-view .echo-cards.expanded .cfav-star{
+  width:1.5rem; height:1.5rem; font-size:.95rem; top:.25rem; right:.25rem;
+}
+
+/* ---- expanded header position: top bar (default) vs left column ---- */
+#grid[data-eh-pos="top"] .echo-section.is-open{ flex-direction:column; gap:8px; }
+#grid[data-eh-pos="top"] .echo-section.is-open .echo-head{
+  flex:none; width:100%; flex-direction:row; align-items:baseline; gap:10px;
+  padding-bottom:2px; border-bottom:2px solid color-mix(in srgb, var(--eh-color) 30%, transparent);
+}
+#grid[data-eh-pos="top"] .echo-section.is-open .echo-cards{ width:100%; }
+
+@media (max-width:760px){
+  .echo-section{ flex-direction:column; gap:8px; }
+  .echo-head{ flex:none; width:100%; flex-direction:row; align-items:baseline; gap:8px; }
+  .echo-cards{ width:100%; }
+}
+
 </style>
 
 
@@ -777,13 +1094,15 @@ body{ position:relative; background:var(--bg); }
     (typeof IMAGES !== "undefined" ? IMAGES : []).forEach(function(im){
       meta[im.title] = { cat: String(im.cat || ""), tags: String(im.tags || "") };
     });
-    document.querySelectorAll("#grid > .card").forEach(function(card){
+    document.querySelectorAll("#grid .card, #grid .echo-thumb").forEach(function(card){
       var t = card.querySelector(".card-title");
-      var m = t ? meta[t.textContent.trim()] : null;
+      var title = card.getAttribute("data-echo-title") || (t ? t.textContent.trim() : "");
+      var m = meta[title] || null;
       var okC = !cats.length || (m && cats.indexOf(m.cat) >= 0);
       var okT = !tags.length || (m && tags.some(function(x){ return m.tags.indexOf(x) >= 0; }));
       card.style.display = (okC && okT) ? "" : "none";
     });
+    if (window.EchoMode && EchoMode.collapse) EchoMode.collapse();
   }
 
   function proxy(btn, src){
@@ -797,10 +1116,25 @@ body{ position:relative; background:var(--bg); }
   }
   proxy(bAll, srcAll); proxy(bFav, srcFav); proxy(bRec, srcRec);
 
-  var echo = mk("Echo reader", "is-soon");
-  echo.title = "Reader view \u2014 coming soon";
-  echo.setAttribute("aria-disabled","true");
-  echo.onclick = function(e){ e.preventDefault(); };
+  var echo = mk("Echo reader");
+  echo.title = "Group echo images into a reading protocol";
+  echo.setAttribute("aria-pressed","false");
+  function setEcho(on){
+    echo.setAttribute("aria-pressed", on ? "true" : "false");
+    if (on){
+      bFav.setAttribute("aria-pressed","false");
+      bRec.setAttribute("aria-pressed","false");
+      bAll.setAttribute("aria-pressed","true");
+      clearPicks();
+      if (window.EchoMode) EchoMode.enable();
+      if (srcAll) srcAll.click();
+    } else {
+      if (window.EchoMode) EchoMode.disable();
+    }
+    applyPicks();
+  }
+  echo.onclick = function(){ setEcho(echo.getAttribute("aria-pressed") !== "true"); };
+  if (window.EchoMode && EchoMode.restore && EchoMode.restore()) setEcho(true);
 
   var s1 = document.createElement("span"); s1.className = "sb-sep";
   var s2 = document.createElement("span"); s2.className = "sb-sep";
