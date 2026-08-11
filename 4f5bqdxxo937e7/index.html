@@ -4,87 +4,165 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Collatera</title>
+<title>Admin Image Uploader — Collatera</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css?v=7">
 <style>
   /* ---- page-local styles, additive to styles.css ---- */
-  main.uploader { max-width: 720px; margin: 0 auto; padding: 60px 20px 100px; }
-  .gate { max-width: 380px; margin: 100px auto; text-align: center; }
+  body{ position:relative; background:var(--bg); }
+
+  .gate { max-width: 380px; margin: 40px auto 0; text-align: center; position:relative; z-index:1; }
   .gate h1 { font-size: 22px; margin-bottom: 18px; }
-  .gate input, .field input, .field textarea, .field select {
+  .gate input {
     width: 100%; font: inherit; font-size: 15px; color: var(--ink);
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 12px; margin-top: 6px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-top: 6px; box-sizing: border-box;
   }
-  .gate input:focus, .field input:focus, .field textarea:focus, .field select:focus {
-    outline: 2px solid var(--accent); outline-offset: 1px;
-  }
-  .gate button, .btn {
+  .gate input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .gate .err { color: #B4483A; font-size: 13.5px; margin-top: 10px; }
+  .gate .hint { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+  /* buttons: accent-deep for gate/Add actions (matches the tile Add buttons) */
+  .btn {
     font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer;
     background: var(--accent-deep); color: #fff; border: none;
     border-radius: 10px; padding: 10px 18px; margin-top: 14px;
   }
-  .gate button:hover, .btn:hover { opacity: 0.9; }
-  .gate .err, .form-err { color: #B4483A; font-size: 13.5px; margin-top: 10px; }
-  .gate .hint { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .btn:hover { opacity: 0.9; }
+
+  /* ---- form shell, mirroring /submit/ ---- */
+  .up-main { max-width: 760px; margin: 22px auto 60px; padding: 0 18px; position: relative; z-index: 1; }
+  .up-card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+  .up-lbl { display:block; margin:16px 0 6px; font-size:.88em; color:var(--muted); }
+  .up-lbl:first-of-type { margin-top: 0; }
+  .up-req { color: var(--accent-deep); font-size:.92em; }
+  .up-card input[type=text], .up-card textarea {
+    width:100%; box-sizing:border-box; padding:.6em .7em; border:1px solid var(--border);
+    border-radius:10px; background:var(--bg); color:var(--ink); font:inherit;
+  }
+  .up-card textarea { resize: vertical; }
+  .up-card input:focus, .up-card textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
 
   .drop {
-    border: 2px dashed var(--border); border-radius: var(--radius);
-    padding: 40px 20px; text-align: center; color: var(--muted);
-    cursor: pointer; transition: border-color .15s, background .15s;
-    margin-bottom: 24px;
+    border: 1.5px dashed var(--border); border-radius: 12px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    padding: 30px 20px; text-align: center; color: var(--muted);
+    cursor: pointer; transition: border-color .15s, background .15s; margin-bottom: 6px;
   }
   .drop.drag { border-color: var(--accent-deep); background: var(--accent-tint); }
   .drop img.preview { max-width: 100%; max-height: 320px; border-radius: 10px; margin-bottom: 12px; }
-  .drop .drop-msg { font-size: 14.5px; }
+  .drop .drop-msg { font-size: 14.5px; color: var(--ink); }
   .drop .drop-sub { font-size: 12.5px; margin-top: 4px; }
 
-  .field { margin-bottom: 20px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .filename-preview { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
-  .tagpick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  .tagchip {
-    font-size: 13px; padding: 6px 12px; border-radius: 999px;
-    border: 1px solid var(--border); background: var(--surface);
-    color: var(--ink); cursor: pointer;
-  }
-  .tagchip.on { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+  /* option tiles — single-select category, multi-select tags */
+  .cti-grid { display:grid; border:1px solid var(--border); border-radius:8px;
+    overflow:hidden; background:var(--bg); }
+  .cti-grid.cats { grid-template-columns: repeat(2,1fr); }
+  .cti-grid.tags { grid-template-columns: repeat(6,1fr); }
+  .cti-tile { padding:9px 6px; font-size:13px; text-align:center; cursor:pointer; user-select:none;
+    background:var(--bg); color:var(--ink); box-shadow:0 0 0 .5px var(--border); transition:background .12s; }
+  .cti-tile:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .cti-tile.on { background:var(--accent); color:var(--pill-ink); font-weight:600;
+    box-shadow:0 0 0 .5px color-mix(in srgb, var(--accent) 70%, #000); position:relative; z-index:1; }
+  @media (max-width:520px){ .cti-grid.tags { grid-template-columns: repeat(3,1fr); } }
+
   .tag-add { display: flex; gap: 8px; margin-top: 10px; }
-  .tag-add input { flex: 1; margin-top: 0; }
+  .tag-add input { flex: 1; }
   .tag-add button { margin-top: 0; padding: 8px 14px; font-size: 13px; }
 
-  .filename-preview { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .up-btn { margin-top: 20px; width:100%; padding:.75em; border:none; border-radius:10px;
+    background:var(--accent); color:var(--pill-ink); font:inherit; font-weight:700; cursor:pointer; }
+  .up-btn:disabled { opacity:.6; cursor:default; }
+
   .status { margin-top: 20px; padding: 14px 16px; border-radius: 10px; font-size: 14px; }
   .status.ok { background: var(--accent-tint); color: var(--accent-deep); }
   .status.err { background: #FBEAD6; color: #8A4A1E; }
-  .status.busy { background: var(--surface); color: var(--muted); }
-  h1.page-title { font-size: 26px; margin-bottom: 4px; }
-  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .status.busy { background: var(--bg); color: var(--muted); }
   fieldset { border: none; padding: 0; }
   fieldset[disabled] { opacity: 0.5; }
-  .return-link {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 13.5px; font-weight: 600; text-decoration: none;
-    color: var(--muted); margin-bottom: 18px; transition: .15s;
-  }
-  .return-link:hover { color: var(--accent-deep); }
   .finish-btn {
-    display: inline-block; margin-top: 28px; text-decoration: none;
+    display: inline-block; margin-top: 6px; text-decoration: none;
     font: inherit; font-size: 14.5px; font-weight: 600; text-align: center;
-    background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 18px; transition: .15s;
   }
   .finish-btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+
+  /* ============================================================
+     page-local topographic background + shading slab (rf- prefix),
+     mirroring /submit/ with the core narrowed to the form column.
+     ============================================================ */
+  .rf-bg{ position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:var(--rf-tile); background-repeat:repeat;
+    background-size:var(--rf-texsize) auto; background-position:center;
+    opacity:var(--rf-texop); filter:var(--rf-coral, none); }
+  .rf-wash{ position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:var(--rf-pad); opacity:var(--rf-wash); }
+  .rf-slab{ position:absolute; z-index:0; pointer-events:none;
+    left:50%; transform:translateX(-50%);
+    width:calc(var(--rf-core) + 2 * var(--rf-band));
+    top:calc(var(--rf-top) - var(--rf-band));
+    height:calc(100% - var(--rf-top) - var(--rf-bot) + 2 * var(--rf-band));
+    background:var(--rf-pad); opacity:var(--rf-op); border-radius:var(--rf-round);
+    -webkit-mask-image:
+      linear-gradient(to right, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%);
+    -webkit-mask-composite:source-in;
+    mask-image:
+      linear-gradient(to right, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%);
+    mask-composite:intersect; }
+  main, .gate, footer{ position:relative; z-index:1; }
+  :root.theme-swap .rf-slab, :root.theme-swap .rf-wash{ opacity:0; }
+
+  :root{
+    --rf-tile:url("/assets/collatera-tile-coral.png");
+    --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
+    --rf-pad:#FFFDF8;
+    --rf-texop:.55; --rf-texsize:570px; --rf-wash:.73;
+    --rf-core:760px; --rf-band:65px; --rf-op:.62;
+    --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+  }
+  :root[data-theme="dark"]{
+    --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+    --rf-pad:#141C22;
+    --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
+    --rf-core:760px; --rf-band:65px; --rf-op:.80;
+    --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root[data-theme="auto"]{
+      --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+      --rf-pad:#141C22;
+      --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
+      --rf-core:760px; --rf-band:65px; --rf-op:.80;
+      --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+    }
+  }
+  @media (max-width:1380px){
+    :root, :root[data-theme="dark"]{ --rf-core:min(760px, calc(100vw - 56px)); }
+  }
+  @media (max-width:760px){
+    :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
+  }
 </style>
 </head>
 <body>
 
+<div class="rf-bg" aria-hidden="true"></div>
+<div class="rf-wash" aria-hidden="true"></div>
+<div class="rf-slab" aria-hidden="true"></div>
+
+<script>window.COLLATERA_SECTION = "Admin Image Uploader";</script>
+<script src="/assets/site.js?v=7"></script>
+
 <!-- ================= GATE 1: password ================= -->
 <div class="gate" id="gatePw">
-  <a class="return-link" href="/ref-images/">&larr; Return to site</a>
   <h1>Collatera admin</h1>
   <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
   <button id="pwBtn" class="btn">Continue</button>
@@ -93,7 +171,6 @@
 
 <!-- ================= GATE 2: GitHub token ================= -->
 <div class="gate" id="gateToken" style="display:none">
-  <a class="return-link" href="/ref-images/">&larr; Return to site</a>
   <h1>GitHub token</h1>
   <p class="hint" style="margin-top:0">
     Paste a fine-grained personal access token scoped to just this repo
@@ -106,53 +183,41 @@
 </div>
 
 <!-- ================= MAIN UPLOADER ================= -->
-<main class="uploader" id="uploaderMain" style="display:none">
-  <a class="return-link" href="/ref-images/">&larr; Return to site</a>
-  <h1 class="page-title">Add an image</h1>
-  <p class="page-sub">Publishes directly to collatera.org — no separate GitHub editing step.</p>
-
-  <fieldset id="formFieldset">
-    <div class="drop" id="drop">
-      <div id="dropInner">
-        <div class="drop-msg">Drag an image here, paste it, or click to browse</div>
-        <div class="drop-sub">Resized and compressed automatically before upload</div>
+<main class="up-main" id="uploaderMain" style="display:none">
+  <div class="up-card">
+    <fieldset id="formFieldset">
+      <div class="drop" id="drop">
+        <div id="dropInner">
+          <div class="drop-msg">Drag an image here, paste it, or click to browse</div>
+          <div class="drop-sub">Resized and compressed automatically before upload</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
       </div>
-      <input type="file" id="fileInput" accept="image/*" style="display:none">
-    </div>
 
-    <div class="field">
-      <label for="titleInput">Title</label>
+      <label class="up-lbl" for="titleInput">Title</label>
       <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
       <div class="filename-preview" id="filenamePreview"></div>
-    </div>
 
-    <div class="field">
-      <label for="catInput">Category</label>
-      <select id="catInput"></select>
-    </div>
+      <label class="up-lbl">Category <span class="up-req">required</span></label>
+      <div id="catGrid" class="cti-grid cats"></div>
 
-    <div class="field">
-      <label>Tags</label>
-      <div class="tagpick" id="tagPick"></div>
+      <label class="up-lbl">Tags <span class="up-req">at least one</span></label>
+      <div id="tagGrid" class="cti-grid tags"></div>
       <div class="tag-add">
         <input type="text" id="newTagInput" placeholder="New tag">
         <button class="btn" id="newTagBtn" type="button">Add</button>
       </div>
-    </div>
 
-    <div class="field">
-      <label for="noteInput">Caption <span style="text-transform:none;font-weight:400">(optional)</span></label>
+      <label class="up-lbl" for="noteInput">Caption <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label>
       <textarea id="noteInput" rows="3" placeholder="Shown when the image is opened, not on the thumbnail"></textarea>
-    </div>
 
-    <button class="btn" id="publishBtn" type="button">Publish</button>
-  </fieldset>
+      <button class="up-btn" id="publishBtn" type="button">Publish image</button>
+    </fieldset>
 
-  <div id="statusBox"></div>
-
-  <div>
-    <a class="finish-btn" href="/ref-images/">Finish and return to site</a>
+    <div id="statusBox"></div>
   </div>
+
+  <a class="finish-btn" href="/ref-images/">Finish and return to site</a>
 </main>
 
 <script>
@@ -160,7 +225,7 @@
    CONFIG — repo details and the password check.
    ================================================================= */
 const REPO_OWNER = "jdmca90";
-const REPO_NAME  = "collatera";
+const REPO_NAME  = "Collatera";
 const BRANCH     = "main";
 const IMAGES_JSON_PATH = "data/images.json";
 const IMAGES_DIR = "images";
@@ -252,6 +317,21 @@ async function getFile(path) {
   return { sha: data.sha, content: decodeURIComponent(escape(atob(data.content))) };
 }
 
+/* Query the repo for a file's current blob SHA. Returns null if it doesn't
+   exist. Used before writing an image so a re-upload of an orphaned file
+   (present in the repo but missing from images.json) updates in place
+   instead of failing with HTTP 422. */
+async function ghGetSha(path) {
+  const r = await fetch(
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`,
+    { headers: ghHeaders() }
+  );
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`Couldn't check ${path} (HTTP ${r.status})`);
+  const data = await r.json();
+  return data.sha || null;
+}
+
 async function putFile(path, base64Content, message, sha) {
   const body = { message, content: base64Content, branch: BRANCH };
   if (sha) body.sha = sha;
@@ -271,6 +351,7 @@ async function putFile(path, base64Content, message, sha) {
    ================================================================= */
 let CATEGORIES = [];
 let ALL_TAGS = [];
+let selectedCat = "";
 let selectedTags = new Set();
 let compressedDataUrl = null;
 let compressedExt = "jpg";
@@ -296,8 +377,8 @@ async function startUploader() {
     CATEGORIES = imagesJsonParsed.categories || [];
     ALL_TAGS = [...new Set((imagesJsonParsed.images || []).flatMap(i => i.tags || []))].sort((a,b)=>a.localeCompare(b));
     existingFilenames = new Set((imagesJsonParsed.images || []).map(i => i.file));
-    populateCategories();
-    populateTags();
+    renderCatGrid();
+    renderTagGrid();
     setStatus("", "");
   } catch (err) {
     setStatus("err", `Couldn't load <code>/data/images.json</code> — ${err.message}`);
@@ -305,27 +386,31 @@ async function startUploader() {
   }
 }
 
-function populateCategories() {
-  const sel = document.getElementById("catInput");
-  sel.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join("");
+function renderCatGrid() {
+  const g = document.getElementById("catGrid");
+  g.innerHTML = "";
+  CATEGORIES.forEach(c => {
+    const t = document.createElement("div");
+    t.className = "cti-tile" + (selectedCat === c ? " on" : "");
+    t.textContent = c;
+    t.onclick = () => { selectedCat = c; renderCatGrid(); };
+    g.appendChild(t);
+  });
 }
 
-function populateTags() {
-  const box = document.getElementById("tagPick");
-  box.innerHTML = "";
-  ALL_TAGS.forEach(tag => box.appendChild(tagChipEl(tag)));
-}
-
-function tagChipEl(tag) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "tagchip";
-  b.textContent = tag;
-  b.onclick = () => {
-    if (selectedTags.has(tag)) { selectedTags.delete(tag); b.classList.remove("on"); }
-    else { selectedTags.add(tag); b.classList.add("on"); }
-  };
-  return b;
+function renderTagGrid() {
+  const g = document.getElementById("tagGrid");
+  g.innerHTML = "";
+  ALL_TAGS.forEach(tag => {
+    const t = document.createElement("div");
+    t.className = "cti-tile" + (selectedTags.has(tag) ? " on" : "");
+    t.textContent = tag;
+    t.onclick = () => {
+      selectedTags.has(tag) ? selectedTags.delete(tag) : selectedTags.add(tag);
+      renderTagGrid();
+    };
+    g.appendChild(t);
+  });
 }
 
 document.getElementById("newTagBtn").onclick = () => {
@@ -335,13 +420,10 @@ document.getElementById("newTagBtn").onclick = () => {
   if (!ALL_TAGS.includes(tag)) {
     ALL_TAGS.push(tag);
     ALL_TAGS.sort((a,b)=>a.localeCompare(b));
-    populateTags();
   }
   selectedTags.add(tag);
-  [...document.querySelectorAll(".tagchip")].forEach(el => {
-    if (el.textContent === tag) el.classList.add("on");
-  });
   input.value = "";
+  renderTagGrid();
 };
 
 /* ----- title -> filename slug, with collision handling ----- */
@@ -416,11 +498,13 @@ function compressImage(img) {
 /* ----- publish ----- */
 document.getElementById("publishBtn").onclick = async () => {
   const title = document.getElementById("titleInput").value.trim();
-  const cat = document.getElementById("catInput").value;
+  const cat = selectedCat;
   const note = document.getElementById("noteInput").value.trim();
 
   if (!compressedDataUrl) { setStatus("err", "Add an image first."); return; }
   if (!title) { setStatus("err", "Add a title first."); return; }
+  if (!cat) { setStatus("err", "Choose a category."); return; }
+  if (!selectedTags.size) { setStatus("err", "Add at least one tag."); return; }
 
   const filename = computeFilename();
   formFieldset.disabled = true;
@@ -428,7 +512,9 @@ document.getElementById("publishBtn").onclick = async () => {
 
   try {
     const base64Image = compressedDataUrl.split(",")[1];
-    await putFile(filename.slice(1), base64Image, `Add image: ${title}`);
+    const imgPath = filename.slice(1);
+    const existingImgSha = await ghGetSha(imgPath);
+    await putFile(imgPath, base64Image, `Add image: ${title}`, existingImgSha);
 
     const { sha: latestSha, content: latestContent } = await getFile(IMAGES_JSON_PATH);
     const latestJson = JSON.parse(latestContent);
@@ -452,8 +538,11 @@ function resetForm() {
   document.getElementById("noteInput").value = "";
   document.getElementById("newTagInput").value = "";
   document.getElementById("filenamePreview").textContent = "";
+  selectedCat = "";
   selectedTags = new Set();
   compressedDataUrl = null;
+  renderCatGrid();
+  renderTagGrid();
   dropInner.innerHTML = `<div class="drop-msg">Drag an image here, paste it, or click to browse</div>
     <div class="drop-sub">Resized and compressed automatically before upload</div>`;
 }
