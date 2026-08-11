@@ -225,6 +225,7 @@ function echoHas(img, t){ return (img.tags || []).indexOf(t) >= 0; }
 
 var ECHO_SECTIONS = [
   { name: "Views / Orientation",        match: function(im){ return echoHas(im,"Views"); } },
+  { name: "Key Equations",              match: function(im){ return echoHas(im,"math"); } },
   { name: "Left Ventricle",             match: function(im){ return echoHas(im,"LV"); } },
   { name: "Diastology",                 match: function(im){ return echoHas(im,"diastology"); } },
   { name: "Right Ventricle",            match: function(im){ return echoHas(im,"RV"); } },
@@ -239,6 +240,7 @@ var ECHO_SECTIONS = [
   { name: "Tricuspid Stenosis",         match: function(im){ return echoHas(im,"TS") && !echoHas(im,"Pros"); } },
   { name: "Pulmonic Regurgitation",     match: function(im){ return echoHas(im,"PR") && !echoHas(im,"Pros"); } },
   { name: "Pulmonic Stenosis",          match: function(im){ return echoHas(im,"PS") && !echoHas(im,"Pros"); } },
+  { name: "IVC",                        match: function(im){ return echoHas(im,"IVC"); } },
   { name: "Prosthetic Aortic Valve",    match: function(im){ return echoHas(im,"Pros") && echoHas(im,"AV"); } },
   { name: "Prosthetic Mitral Valve",    match: function(im){ return echoHas(im,"Pros") && echoHas(im,"MV"); } },
   { name: "Prosthetic Tricuspid Valve", match: function(im){ return echoHas(im,"Pros") && echoHas(im,"TV"); } },
@@ -875,7 +877,7 @@ body{ position:relative; background:var(--bg); }
   /* expanded cards */
   --ec-w: 170px;        /* card width */
   --ec-th: 106px;       /* card thumbnail height */
-  --ec-title-fs: 14px;  /* card title font size */
+  --ec-title-fs: 28px;  /* card title font size */
   --eh-fs: 35px;        /* active (expanded) header font size */
   --eh-color: #1C6390;  /* active header color — blue in light mode */
   /* collapsed header text: coral (light) / light-blue (dark); hover swaps */
