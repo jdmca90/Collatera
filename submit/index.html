@@ -36,18 +36,22 @@
         <option value="guideline" disabled>Guideline link (coming soon)</option>
       </select>
 
-      <label class="sub-lbl" for="subFile">Image file <span class="sub-req">required</span></label>
-      <input id="subFile" type="file" accept="image/*">
+      <label class="sub-lbl">Image file <span class="sub-req">required</span></label>
+      <div class="sub-drop" id="subDrop">
+        <div class="sub-drop-msg">Drag an image here, paste it, or click to browse</div>
+        <div class="sub-drop-sub">JPG or PNG · up to 12 MB</div>
+        <input id="subFile" type="file" accept="image/*" hidden>
+      </div>
       <div id="subPreviewWrap" class="sub-preview" hidden><img id="subPreview" alt="Preview"></div>
 
       <label class="sub-lbl" for="subTitle">Title <span class="sub-req">required</span></label>
       <input id="subTitle" type="text" maxlength="120" placeholder="e.g. Mitral Valve Anatomy">
 
-      <label class="sub-lbl" for="subCat">Category <span class="sub-req">required</span></label>
-      <select id="subCat"><option value="">Choose a category…</option></select>
+      <label class="sub-lbl">Category <span class="sub-req">required</span></label>
+      <div id="subCatGrid" class="cti-grid cats"></div>
 
       <label class="sub-lbl">Tags <span class="sub-req">at least one</span></label>
-      <div id="subTagRow" class="sub-tags"></div>
+      <div id="subTagGrid" class="cti-grid tags"></div>
       <div class="sub-newtag">
         <input id="subNewTag" type="text" maxlength="28" placeholder="Add a tag and press Enter">
       </div>
@@ -83,10 +87,23 @@
 .sub-main textarea{resize:vertical}
 .sub-preview{margin-top:10px}
 .sub-preview img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--border)}
-.sub-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
-.sub-tag{border:1px solid var(--border);background:var(--bg);color:var(--muted);
-  border-radius:999px;padding:.28em .8em;font:inherit;font-size:.88em;cursor:pointer}
-.sub-tag.on{background:var(--accent);border-color:var(--accent);color:var(--pill-ink);font-weight:600}
+/* option tiles — single-select category, multi-select tags */
+.cti-grid{display:grid;border:1px solid var(--border);border-radius:8px;overflow:hidden;
+  background:var(--bg);margin-bottom:4px}
+.cti-grid.cats{grid-template-columns:repeat(2,1fr)}
+.cti-grid.tags{grid-template-columns:repeat(6,1fr)}
+.cti-tile{padding:9px 6px;font-size:13px;text-align:center;cursor:pointer;user-select:none;
+  background:var(--bg);color:var(--ink);box-shadow:0 0 0 .5px var(--border);transition:background .12s}
+.cti-tile:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.cti-tile.on{background:var(--accent);color:var(--pill-ink);font-weight:600;
+  box-shadow:0 0 0 .5px color-mix(in srgb,var(--accent) 70%,#000);position:relative;z-index:1}
+@media (max-width:520px){ .cti-grid.tags{grid-template-columns:repeat(3,1fr)} }
+/* drop zone */
+.sub-drop{border:1.5px dashed var(--border);border-radius:12px;cursor:pointer;
+  background:color-mix(in srgb,var(--bg) 70%,transparent);padding:26px 16px;text-align:center;transition:.15s}
+.sub-drop.drag{border-color:var(--accent-deep);background:var(--accent-tint)}
+.sub-drop-msg{font-size:14.5px;color:var(--ink)}
+.sub-drop-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
 .sub-chosen{font-size:.85em;color:var(--muted);min-height:1.2em;margin-top:6px}
 .sub-btn{margin-top:20px;width:100%;padding:.75em;border:none;border-radius:10px;
   background:var(--accent);color:var(--pill-ink);font:inherit;font-weight:700;cursor:pointer}
@@ -106,7 +123,7 @@
 
 <script>
 const KNOWN_CATS = [];
-let ALL_TAGS = [], chosen = new Set(), ME = null;
+let ALL_TAGS = [], chosen = new Set(), ME = null, selectedCat = "", pendingFile = null;
 
 const $ = id => document.getElementById(id);
 function msg(t, ok){ const m=$("subMsg"); m.textContent=t; m.className="sub-msg "+(ok?"ok":"err"); }
@@ -122,20 +139,28 @@ async function loadLibraryMeta(){
   try{
     const r = await fetch("/data/images.json");
     const d = await r.json();
-    (d.categories||[]).forEach(c=>{
-      const o=document.createElement("option"); o.value=c; o.textContent=c; $("subCat").appendChild(o);
-    });
+    KNOWN_CATS.length = 0; (d.categories||[]).forEach(c=>KNOWN_CATS.push(c));
+    renderCatGrid();
     ALL_TAGS = [...new Set((d.images||[]).flatMap(i=>i.tags||[]))].sort((a,b)=>a.localeCompare(b));
-    renderTagRow();
+    renderTagGrid();
   }catch(e){ msg("Couldn't load categories — "+e.message, false); }
 }
-function renderTagRow(){
-  const row=$("subTagRow"); row.innerHTML="";
+function renderCatGrid(){
+  const g=$("subCatGrid"); g.innerHTML="";
+  KNOWN_CATS.forEach(c=>{
+    const t=document.createElement("div");
+    t.className="cti-tile"+(selectedCat===c?" on":""); t.textContent=c;
+    t.onclick=()=>{ selectedCat=c; renderCatGrid(); };
+    g.appendChild(t);
+  });
+}
+function renderTagGrid(){
+  const g=$("subTagGrid"); g.innerHTML="";
   ALL_TAGS.forEach(t=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="sub-tag"+(chosen.has(t)?" on":""); b.textContent=t;
-    b.onclick=()=>{ chosen.has(t)?chosen.delete(t):chosen.add(t); renderTagRow(); renderChosen(); };
-    row.appendChild(b);
+    const el=document.createElement("div");
+    el.className="cti-tile"+(chosen.has(t)?" on":""); el.textContent=t;
+    el.onclick=()=>{ chosen.has(t)?chosen.delete(t):chosen.add(t); renderTagGrid(); renderChosen(); };
+    g.appendChild(el);
   });
 }
 function renderChosen(){
@@ -145,23 +170,33 @@ $("subNewTag").addEventListener("keydown",e=>{
   if(e.key!=="Enter") return;
   e.preventDefault();
   const v=e.target.value.trim(); if(!v) return;
-  if(!ALL_TAGS.includes(v)) ALL_TAGS.push(v);
-  chosen.add(v); e.target.value=""; renderTagRow(); renderChosen();
+  if(!ALL_TAGS.includes(v)){ ALL_TAGS.push(v); ALL_TAGS.sort((a,b)=>a.localeCompare(b)); }
+  chosen.add(v); e.target.value=""; renderTagGrid(); renderChosen();
 });
 
-/* live preview */
-$("subFile").addEventListener("change",e=>{
-  const f=e.target.files[0];
-  if(!f){ $("subPreviewWrap").hidden=true; return; }
-  $("subPreview").src=URL.createObjectURL(f); $("subPreviewWrap").hidden=false;
+/* file selection — drag, paste, click-to-browse */
+const subDrop=$("subDrop");
+subDrop.onclick=()=>$("subFile").click();
+$("subFile").addEventListener("change",e=>setFile(e.target.files[0]));
+["dragenter","dragover"].forEach(ev=>subDrop.addEventListener(ev,e=>{ e.preventDefault(); subDrop.classList.add("drag"); }));
+["dragleave","drop"].forEach(ev=>subDrop.addEventListener(ev,e=>{ e.preventDefault(); subDrop.classList.remove("drag"); }));
+subDrop.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) setFile(f); });
+document.addEventListener("paste",e=>{
+  const it=[...((e.clipboardData&&e.clipboardData.items)||[])].find(i=>i.type.startsWith("image/"));
+  if(it) setFile(it.getAsFile());
 });
+function setFile(f){
+  if(!f){ return; }
+  pendingFile=f;
+  try{ $("subPreview").src=URL.createObjectURL(f); $("subPreviewWrap").hidden=false; }catch(e){}
+}
 
 /* submit */
 $("subSend").onclick = async () => {
   const sb = window.sb; if(!sb || !ME) return;
-  const file=$("subFile").files[0];
+  const file=pendingFile || ($("subFile").files && $("subFile").files[0]);
   const title=$("subTitle").value.trim();
-  const cat=$("subCat").value;
+  const cat=selectedCat;
   const note=$("subNote").value.trim();
   if(!file)  return msg("Choose an image file.", false);
   if(!title) return msg("A title is required.", false);
@@ -183,9 +218,10 @@ $("subSend").onclick = async () => {
   if(ins.error) return msg("Couldn't record the submission — "+ins.error.message, false);
 
   msg("Submitted. It'll appear below as pending until reviewed.", true);
-  $("subFile").value=""; $("subTitle").value=""; $("subCat").value="";
+  try{ $("subFile").value=""; }catch(e){} pendingFile=null;
+  $("subTitle").value=""; selectedCat=""; renderCatGrid();
   $("subNote").value=""; chosen=new Set(); $("subPreviewWrap").hidden=true;
-  renderTagRow(); renderChosen(); loadMine();
+  renderTagGrid(); renderChosen(); loadMine();
 };
 
 /* the submitter's own queue */
@@ -279,14 +315,14 @@ body{ position:relative; background:var(--bg); }
   --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
   --rf-pad:#FFFDF8;
   --rf-texop:.55; --rf-texsize:570px; --rf-wash:.73;
-  --rf-core:1220px; --rf-band:65px; --rf-op:.62;
+  --rf-core:760px; --rf-band:65px; --rf-op:.62;
   --rf-top:0px; --rf-bot:115px; --rf-round:30px;
 }
 :root[data-theme="dark"]{
   --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
   --rf-pad:#141C22;
   --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
-  --rf-core:1300px; --rf-band:65px; --rf-op:.80;
+  --rf-core:760px; --rf-band:65px; --rf-op:.80;
   --rf-top:0px; --rf-bot:115px; --rf-round:30px;
 }
 @media (prefers-color-scheme: dark){
@@ -294,14 +330,14 @@ body{ position:relative; background:var(--bg); }
   --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
     --rf-pad:#141C22;
     --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
-    --rf-core:1300px; --rf-band:65px; --rf-op:.80;
+    --rf-core:760px; --rf-band:65px; --rf-op:.80;
     --rf-top:0px; --rf-bot:115px; --rf-round:30px;
   }
 }
 
 /* ---- narrow screens: shrink the core so the band still reads ---- */
 @media (max-width:1380px){
-  :root, :root[data-theme="dark"]{ --rf-core:min(1300px, calc(100vw - 130px)); }
+  :root, :root[data-theme="dark"]{ --rf-core:min(760px, calc(100vw - 56px)); }
 }
 @media (max-width:760px){
   :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
