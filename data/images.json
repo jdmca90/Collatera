@@ -243,7 +243,8 @@
       "title": "Aortic Regurgitation 1",
       "cat": "Echo",
       "tags": [
-        "AV"
+        "AV",
+        "AR"
       ],
       "note": ""
     },
@@ -253,7 +254,8 @@
       "title": "Aortic Regurgitation 2",
       "cat": "Echo",
       "tags": [
-        "AV"
+        "AV",
+        "AR"
       ],
       "note": ""
     },
@@ -263,7 +265,8 @@
       "title": "Aortic Stenosis",
       "cat": "Echo",
       "tags": [
-        "AV"
+        "AV",
+        "AS"
       ],
       "note": ""
     },
@@ -301,9 +304,10 @@
       "id": "img_gr7b3xbs",
       "file": "/images/AS stages.png",
       "title": "AS Stages",
-      "cat": "Valve",
+      "cat": "Echo",
       "tags": [
-        "AV"
+        "AV",
+        "AS"
       ],
       "note": ""
     },
@@ -459,7 +463,8 @@
       "title": "Functional TR",
       "cat": "Echo",
       "tags": [
-        "TV"
+        "TV",
+        "TR"
       ],
       "note": ""
     },
@@ -601,10 +606,11 @@
       "id": "img_s46ffyyw",
       "file": "/images/LFLG AS.png",
       "title": "LFLG AS",
-      "cat": "Valve",
+      "cat": "Echo",
       "tags": [
         "AV",
-        "Algo"
+        "Algo",
+        "AS"
       ],
       "note": ""
     },
@@ -635,7 +641,8 @@
       "cat": "Echo",
       "tags": [
         "MV",
-        "Table"
+        "Table",
+        "Pros"
       ],
       "note": ""
     },
@@ -646,7 +653,8 @@
       "cat": "Echo",
       "tags": [
         "MV",
-        "Algo"
+        "Algo",
+        "MR"
       ],
       "note": ""
     },
@@ -657,7 +665,8 @@
       "cat": "Echo",
       "tags": [
         "MV",
-        "Table"
+        "Table",
+        "MR"
       ],
       "note": ""
     },
@@ -668,7 +677,8 @@
       "cat": "Echo",
       "tags": [
         "MV",
-        "Table"
+        "Table",
+        "MS"
       ],
       "note": ""
     },
@@ -756,7 +766,8 @@
       "cat": "Echo",
       "tags": [
         "AV",
-        "Table"
+        "Table",
+        "Pros"
       ],
       "note": ""
     },
@@ -766,7 +777,8 @@
       "title": "Prosthetic AV Regurgitation",
       "cat": "Echo",
       "tags": [
-        "AV"
+        "AV",
+        "Pros"
       ],
       "note": ""
     },
@@ -776,7 +788,8 @@
       "title": "Prosthetic AV Stenosis",
       "cat": "Echo",
       "tags": [
-        "AV"
+        "AV",
+        "Pros"
       ],
       "note": ""
     },
@@ -786,7 +799,8 @@
       "title": "Prosthetic MV Algo",
       "cat": "Echo",
       "tags": [
-        "MV"
+        "MV",
+        "Pros"
       ],
       "note": ""
     },
@@ -796,7 +810,8 @@
       "title": "Prostehtic MV Table",
       "cat": "Echo",
       "tags": [
-        "MV"
+        "MV",
+        "Pros"
       ],
       "note": ""
     },
@@ -805,7 +820,10 @@
       "file": "/images/ProstheticPPM.png",
       "title": "Prosthetic PPM",
       "cat": "Echo",
-      "tags": [],
+      "tags": [
+        "AV",
+        "Pros"
+      ],
       "note": ""
     },
     {
@@ -814,7 +832,8 @@
       "title": "Pulmonic Regurgitation",
       "cat": "Echo",
       "tags": [
-        "PV"
+        "PV",
+        "PR"
       ],
       "note": ""
     },
@@ -1041,7 +1060,9 @@
       "file": "/images/TEE Probe Positioning.png",
       "title": "TEE Probe Positioning",
       "cat": "Echo",
-      "tags": [],
+      "tags": [
+        "Views"
+      ],
       "note": ""
     },
     {
@@ -1049,7 +1070,9 @@
       "file": "/images/TEE views 1.jpg",
       "title": "TEE Views 1",
       "cat": "Echo",
-      "tags": [],
+      "tags": [
+        "Views"
+      ],
       "note": ""
     },
     {
@@ -1068,7 +1091,8 @@
       "title": "TV Prosthesis",
       "cat": "Echo",
       "tags": [
-        "TV"
+        "TV",
+        "Pros"
       ],
       "note": ""
     },
@@ -1078,7 +1102,8 @@
       "title": "Tricuspid Regurgitation",
       "cat": "Echo",
       "tags": [
-        "TV"
+        "TV",
+        "TR"
       ],
       "note": ""
     },
@@ -1088,7 +1113,8 @@
       "title": "Tricuspid Stenosis",
       "cat": "Echo",
       "tags": [
-        "TV"
+        "TV",
+        "TS"
       ],
       "note": ""
     },
@@ -1098,7 +1124,8 @@
       "title": "TR Quantification Table",
       "cat": "Echo",
       "tags": [
-        "TV"
+        "TV",
+        "TR"
       ],
       "note": ""
     },
@@ -1107,7 +1134,9 @@
       "file": "/images/tteviews.jpg",
       "title": "TTE Views",
       "cat": "Echo",
-      "tags": [],
+      "tags": [
+        "Views"
+      ],
       "note": ""
     },
     {
