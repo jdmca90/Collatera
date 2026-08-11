@@ -1466,6 +1466,17 @@
         "math"
       ],
       "note": ""
+    },
+    {
+      "id": "img_seamlivx",
+      "file": "/images/simpson-s-biplane.jpg",
+      "title": "Simpson's Biplane",
+      "cat": "Echo",
+      "tags": [
+        "math",
+        "LV"
+      ],
+      "note": ""
     }
   ]
 }
