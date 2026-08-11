@@ -1548,6 +1548,16 @@
         "math"
       ],
       "note": ""
+    },
+    {
+      "id": "img_ptec3stc",
+      "file": "/images/ivc-echo-assessment.jpg",
+      "title": "IVC Echo Assessment",
+      "cat": "Echo",
+      "tags": [
+        "IVC"
+      ],
+      "note": ""
     }
   ]
 }
