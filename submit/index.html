@@ -28,15 +28,17 @@
     <div class="sub-card">
       <h2 class="sub-h">Submit to the library</h2>
 
-      <label class="sub-lbl" for="subKind">What are you submitting?</label>
-      <select id="subKind">
-        <option value="image">Reference image</option>
-        <option value="deck" disabled>Slide deck (coming soon)</option>
-        <option value="resource" disabled>Resource link (coming soon)</option>
-        <option value="guideline" disabled>Guideline link (coming soon)</option>
-      </select>
+      <div class="tl-row">
+        <label class="flbl c" for="subKind">What are you submitting?</label>
+        <select id="subKind">
+          <option value="image">Reference image</option>
+          <option value="deck" disabled>Slide deck (coming soon)</option>
+          <option value="resource" disabled>Resource link (coming soon)</option>
+          <option value="guideline" disabled>Guideline link (coming soon)</option>
+        </select>
+      </div>
 
-      <label class="sub-lbl">Image file <span class="sub-req">required</span></label>
+      <label class="flbl c" style="display:block;margin:16px 0 8px">Image file <span class="lbl-q">(required)</span></label>
       <div class="sub-drop" id="subDrop">
         <div class="sub-drop-msg">Drag an image here, paste it, or click to browse</div>
         <div class="sub-drop-sub">JPG or PNG · up to 12 MB</div>
@@ -44,22 +46,31 @@
       </div>
       <div id="subPreviewWrap" class="sub-preview" hidden><img id="subPreview" alt="Preview"></div>
 
-      <label class="sub-lbl" for="subTitle">Title <span class="sub-req">required</span></label>
-      <input id="subTitle" type="text" maxlength="120" placeholder="e.g. Mitral Valve Anatomy">
+      <div class="tl-row">
+        <label class="flbl t" for="subTitle">Title:</label>
+        <input id="subTitle" type="text" maxlength="120" placeholder="e.g. Mitral Valve Anatomy">
+      </div>
 
-      <label class="sub-lbl">Category <span class="sub-req">required</span></label>
-      <div id="subCatGrid" class="cti-grid cats"></div>
-
-      <label class="sub-lbl">Tags <span class="sub-req">at least one</span></label>
-      <div id="subTagGrid" class="cti-grid tags"></div>
-      <div class="sub-newtag">
-        <input id="subNewTag" type="text" maxlength="28" placeholder="Add a tag and press Enter">
+      <div class="ct-wrap">
+        <div class="ct-col cat">
+          <div class="ct-head"><span class="flbl c">Category:</span> <span class="lbl-q">(required)</span></div>
+          <div id="subCatGrid" class="cti-grid cats"></div>
+        </div>
+        <div class="ct-col tags">
+          <div class="ct-head"><span class="flbl g">Tags:</span> <span class="lbl-q">(at least one)</span></div>
+          <div id="subTagGrid" class="cti-grid tags"></div>
+          <div class="sub-newtag">
+            <input id="subNewTag" type="text" maxlength="28" placeholder="Add a tag and press Enter">
+          </div>
+        </div>
       </div>
       <div id="subChosen" class="sub-chosen"></div>
 
-      <label class="sub-lbl" for="subNote">Comments <span class="sub-opt">optional</span></label>
-      <textarea id="subNote" rows="3" maxlength="600"
-        placeholder="Anything I should know — source, context, why it's useful"></textarea>
+      <div class="tl-row cap-row">
+        <label class="flbl p" for="subNote">Comments:</label>
+        <textarea id="subNote" rows="2" maxlength="600"
+          placeholder="Anything I should know — source, context, why it's useful"></textarea>
+      </div>
 
       <button id="subSend" class="sub-btn" type="button">Submit for review</button>
       <div id="subMsg" class="sub-msg" role="status"></div>
@@ -73,40 +84,54 @@
 </main>
 
 <style>
-.sub-main{max-width:760px;margin:22px auto 60px;padding:0 18px}
+.sub-main{max-width:1180px;margin:64px auto 60px;padding:0 20px}
 .sub-card{background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
-.sub-h{font-size:20px;margin-bottom:6px}
+  border-radius:var(--radius);padding:22px 26px 44px;margin-bottom:20px}
+.sub-h{font-size:26px;margin-bottom:14px;text-align:center}
 .sub-p{color:var(--muted);font-size:.95em}
 .sub-lbl{display:block;margin:16px 0 6px;font-size:.88em;color:var(--muted)}
 .sub-req{color:var(--accent-deep);font-size:.92em}
 .sub-opt{opacity:.7;font-size:.92em}
+.flbl{font-weight:700;font-size:20px}
+.flbl.t{color:var(--ink)} .flbl.c{color:var(--brand)} .flbl.g{color:var(--accent-deep)} .flbl.p{color:var(--muted)}
+.lbl-q{font-style:italic;font-weight:400;color:var(--muted);font-size:.8em}
+.tl-row{display:flex;align-items:center;gap:12px;margin:16px 0 4px}
+.tl-row input,.tl-row select,.tl-row textarea{flex:1}
+.cap-row{align-items:flex-start}
+.cap-row label{padding-top:8px}
+.ct-wrap{display:flex;gap:40px;flex-wrap:wrap;margin-top:18px}
+.ct-col.cat{flex:0 1 34%;min-width:240px}
+.ct-col.tags{flex:1 1 60%;min-width:340px}
+.ct-head{margin-bottom:9px}
 .sub-main input[type=text],.sub-main select,.sub-main textarea,.sub-main input[type=file]{
   width:100%;box-sizing:border-box;padding:.6em .7em;border:1px solid var(--border);
-  border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+  border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px}
 .sub-main textarea{resize:vertical}
 .sub-preview{margin-top:10px}
 .sub-preview img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--border)}
-/* option tiles — single-select category, multi-select tags */
-.cti-grid{display:grid;border:1px solid var(--border);border-radius:8px;overflow:hidden;
-  background:var(--bg);margin-bottom:4px}
+/* ghost frame + 6px cushion; single-select category, multi-select tags */
+.cti-grid{display:grid;gap:6px;background:transparent}
 .cti-grid.cats{grid-template-columns:repeat(2,1fr)}
-.cti-grid.tags{grid-template-columns:repeat(6,1fr)}
-.cti-tile{padding:9px 6px;font-size:13px;text-align:center;cursor:pointer;user-select:none;
-  background:var(--bg);color:var(--ink);box-shadow:0 0 0 .5px var(--border);transition:background .12s}
-.cti-tile:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
-.cti-tile.on{background:var(--accent);color:var(--pill-ink);font-weight:600;
-  box-shadow:0 0 0 .5px color-mix(in srgb,var(--accent) 70%,#000);position:relative;z-index:1}
-@media (max-width:520px){ .cti-grid.tags{grid-template-columns:repeat(3,1fr)} }
-/* drop zone */
-.sub-drop{border:1.5px dashed var(--border);border-radius:12px;cursor:pointer;
-  background:color-mix(in srgb,var(--bg) 70%,transparent);padding:26px 16px;text-align:center;transition:.15s}
+.cti-grid.tags{grid-template-columns:repeat(5,1fr)}
+.cti-tile{padding:15px 11px;font-size:15px;line-height:1.2;text-align:center;cursor:pointer;user-select:none;
+  background:var(--bg);color:var(--ink);transition:background .12s}
+.cti-tile:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.cti-grid.cats .cti-tile.on{background:color-mix(in srgb,var(--brand) 67%,transparent);
+  box-shadow:inset 4px 0 0 var(--brand);color:var(--ink);font-weight:600;position:relative;z-index:1}
+.cti-grid.tags .cti-tile.on{background:color-mix(in srgb,var(--accent) 67%,transparent);
+  box-shadow:inset 4px 0 0 var(--accent);color:var(--ink);font-weight:600;position:relative;z-index:1}
+@media (max-width:560px){ .cti-grid.tags{grid-template-columns:repeat(3,1fr)} }
+/* drop zone — 2x tall, centered */
+.sub-drop{max-width:720px;margin:0 auto;min-height:220px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;border:1.5px dashed var(--border);border-radius:12px;cursor:pointer;
+  background:color-mix(in srgb,var(--bg) 70%,transparent);padding:22px;text-align:center;transition:.15s}
 .sub-drop.drag{border-color:var(--accent-deep);background:var(--accent-tint)}
-.sub-drop-msg{font-size:14.5px;color:var(--ink)}
-.sub-drop-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+.sub-drop-msg{font-size:20px;color:var(--ink)}
+.sub-drop-sub{font-size:14px;color:var(--muted);margin-top:5px}
 .sub-chosen{font-size:.85em;color:var(--muted);min-height:1.2em;margin-top:6px}
-.sub-btn{margin-top:20px;width:100%;padding:.75em;border:none;border-radius:10px;
-  background:var(--accent);color:var(--pill-ink);font:inherit;font-weight:700;cursor:pointer}
+.sub-btn{display:block;margin:26px auto 0;width:auto;padding:.7em 2.8em;border:none;border-radius:11px;
+  background:var(--accent);color:var(--pill-ink);font:inherit;font-weight:700;font-size:20px;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
 .sub-btn:disabled{opacity:.6;cursor:default}
 .sub-msg{margin-top:10px;font-size:.9em;min-height:1.2em}
 .sub-msg.ok{color:var(--accent-deep)} .sub-msg.err{color:#B23B3B}
@@ -315,14 +340,14 @@ body{ position:relative; background:var(--bg); }
   --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
   --rf-pad:#FFFDF8;
   --rf-texop:.55; --rf-texsize:570px; --rf-wash:.73;
-  --rf-core:760px; --rf-band:65px; --rf-op:.62;
+  --rf-core:1140px; --rf-band:65px; --rf-op:.62;
   --rf-top:0px; --rf-bot:115px; --rf-round:30px;
 }
 :root[data-theme="dark"]{
   --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
   --rf-pad:#141C22;
   --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
-  --rf-core:760px; --rf-band:65px; --rf-op:.80;
+  --rf-core:1140px; --rf-band:65px; --rf-op:.80;
   --rf-top:0px; --rf-bot:115px; --rf-round:30px;
 }
 @media (prefers-color-scheme: dark){
@@ -330,14 +355,14 @@ body{ position:relative; background:var(--bg); }
   --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
     --rf-pad:#141C22;
     --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
-    --rf-core:760px; --rf-band:65px; --rf-op:.80;
+    --rf-core:1140px; --rf-band:65px; --rf-op:.80;
     --rf-top:0px; --rf-bot:115px; --rf-round:30px;
   }
 }
 
 /* ---- narrow screens: shrink the core so the band still reads ---- */
 @media (max-width:1380px){
-  :root, :root[data-theme="dark"]{ --rf-core:min(760px, calc(100vw - 56px)); }
+  :root, :root[data-theme="dark"]{ --rf-core:min(1140px, calc(100vw - 40px)); }
 }
 @media (max-width:760px){
   :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
