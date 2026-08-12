@@ -187,7 +187,8 @@ window.CollateraViews = {
   const SUPABASE_URL = "https://pxustifbonzhldrepcyp.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_XmuebDlA0AtVPpFxQCfaUA_3mR-1S3n";
   const ADMIN_EMAIL   = "jdmca90@gmail.com";
-  const UPLOAD_URL    = "https://collatera.org/4f5bqdxxo937e7/";
+  const UPLOAD_URL      = "https://collatera.org/4f5bqdxxo937e7/";
+  const DECK_UPLOAD_URL = "https://collatera.org/k3xq8mrv2wtb9/";
   const POSITIONS     = ["Fellow","Resident","Medical Student","Cardiologist","Hospitalist","Attending"];
   const BIO_MAX = 300, TITLE_MAX = 40;
 
@@ -517,7 +518,8 @@ window.CollateraViews = {
       <hr class="cauth-rule">
       <div id="cauthAdmin" hidden>
         <a class="cauth-link cauth-admin" id="cauthReview" href="/review/">Review queue</a>
-        <a class="cauth-link cauth-admin" id="cauthUpload" href="${UPLOAD_URL}">Upload an image</a>
+        <a class="cauth-link cauth-admin" id="cauthUpload" href="${UPLOAD_URL}">Image Uploader [Admin]</a>
+        <a class="cauth-link cauth-admin" id="cauthDeckUpload" href="${DECK_UPLOAD_URL}">Deck Uploader [Admin]</a>
         <hr class="cauth-rule cauth-rule-admin">
       </div>
       <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile / password</button>
