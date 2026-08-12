@@ -1590,6 +1590,16 @@
         "AF"
       ],
       "note": ""
+    },
+    {
+      "id": "img_of3yef0o",
+      "file": "/images/wilkins-score-mitral-stenosis.jpg",
+      "title": "Wilkins Score - Mitral Stenosis",
+      "cat": "Echo",
+      "tags": [
+        "MS"
+      ],
+      "note": ">8 is prohibitive risk for balloon valvuloplasty"
     }
   ]
 }
