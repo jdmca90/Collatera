@@ -1600,6 +1600,16 @@
         "MS"
       ],
       "note": ">8 is prohibitive risk for balloon valvuloplasty"
+    },
+    {
+      "id": "img_ngtx7o1r",
+      "file": "/images/coronary-arteries-cta-reconstruction.jpg",
+      "title": "Coronary Arteries CTA Reconstruction",
+      "cat": "Anatomy",
+      "tags": [
+        "Cor"
+      ],
+      "note": "https://bjcardio.co.uk/2016/08/optimal-angiographic-views-for-invasive-coronary-angiography-a-guide-for-trainees/"
     }
   ]
 }
