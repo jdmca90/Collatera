@@ -41,15 +41,61 @@
   <button class="lb-close" id="lbClose" aria-label="Close">&#10005;</button>
   <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">&#8249;</button>
   <button class="lb-nav lb-next" id="lbNext" aria-label="Next">&#8250;</button>
-  <div class="lb-panel">
-    <div class="lb-imgwrap"><img id="lbImg" src="" alt=""></div>
-    <div class="lb-meta">
-      <div class="lb-tagrow" id="lbTagRow"></div>
-      <div class="lb-title" id="lbTitle"></div>
-      <div class="lb-note" id="lbNote"></div>
+  <div class="lb-card">
+    <div class="lb-imgarea"><div class="lb-imgpanel"><img id="lbImg" src="" alt=""></div></div>
+    <div class="lb-banner">
+      <span class="lb-fav" id="lbFav" role="button" tabindex="0" hidden aria-pressed="false" aria-label="Add to favorites">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6-5.9-3.2-5.9 3.2 1.2-6.6L2.5 9.5l6.6-.9z"/></svg>
+      </span>
+      <div class="lb-badges" id="lbTagRow"></div>
+      <div class="lb-lower">
+        <div class="lb-title" id="lbTitle"></div>
+        <div class="lb-caption" id="lbNote"></div>
+      </div>
     </div>
   </div>
 </div>
+
+<style id="lbCardStyle">
+  /* redesigned expanded-card (lightbox) — theme-adaptive: white in light, charcoal in dark */
+  :root{ --lbcard-bg:#FBFAF6; --lbcard-title:#201E1C; --lbcard-cap:#5F5B54; --lbcard-staron:#C9971F; --lbcard-staroff:#C6C0B6; }
+  :root[data-theme="dark"]{ --lbcard-bg:#232323; --lbcard-title:#F5F2EC; --lbcard-cap:#B9B3A8; --lbcard-staron:#F2B138; --lbcard-staroff:#847E74; }
+  @media (prefers-color-scheme:dark){ :root[data-theme="auto"]{ --lbcard-bg:#232323; --lbcard-title:#F5F2EC; --lbcard-cap:#B9B3A8; --lbcard-staron:#F2B138; --lbcard-staroff:#847E74; } }
+  :root{ --lbtag-bg:#59636D; --lbtag-ink:#F5F2EC; --lb-badgeH:34px; }
+
+  .lb-card{ background:var(--lbcard-bg); border-radius:15px; max-width:min(1000px,94vw); width:max-content;
+    max-height:92vh; overflow:auto; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,.5); animation:pop .25s ease; }
+  .lb-card .lb-imgarea{ padding:11px 11px 0; }
+  .lb-card .lb-imgpanel{ background:#fff; border:1px solid #CDD2D9; border-bottom:none; border-radius:7px 7px 0 0; padding:2px 2px 0; }
+  .lb-card .lb-imgpanel img{ display:block; width:100%; height:auto; max-height:70vh; object-fit:contain; border-radius:4px 4px 0 0; }
+
+  .lb-card .lb-banner{ position:relative; padding:10px 14px 16px; }
+  .lb-card .lb-badges{ display:flex; flex-wrap:wrap; align-items:center; gap:7px; padding-right:74px; }
+  .lb-card .lb-badges .lb-cat,
+  .lb-card .lb-badges .lb-tag{ height:var(--lb-badgeH); display:inline-flex; align-items:center; font-size:15px;
+    border-radius:999px; padding:0 .66em; white-space:nowrap; border:none; }
+  .lb-card .lb-badges .lb-cat{ font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--pill-ink); }
+  .lb-card .lb-badges .lb-tag{ font-weight:600; background:var(--lbtag-bg); color:var(--lbtag-ink); }
+  .lb-card .lb-badges .lb-tag::before{ content:none; }
+
+  .lb-card .lb-fav{ position:absolute; top:10px; right:12px; width:60px; height:60px; cursor:pointer;
+    display:grid; place-items:center; color:var(--lbcard-staroff); }
+  .lb-card .lb-fav svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.6; }
+  .lb-card .lb-fav.is-on{ color:var(--lbcard-staron); }
+  .lb-card .lb-fav.is-on svg{ fill:currentColor; }
+
+  .lb-card .lb-lower{ margin-top:16px; }
+  .lb-card .lb-title{ max-width:80%; font-size:40px; font-weight:800; line-height:1.08; color:var(--lbcard-title);
+    font-family:"Gill Sans MT","Hanken Grotesk",sans-serif; overflow-wrap:anywhere; }
+  .lb-card .lb-caption{ max-width:90%; margin-top:16px; font-size:18px; line-height:1.3; color:var(--lbcard-cap); }
+  .lb-card .lb-caption:empty{ display:none; }
+  @media (max-width:560px){
+    .lb-card .lb-title{ font-size:30px; max-width:100%; }
+    .lb-card .lb-caption{ max-width:100%; }
+    .lb-card .lb-fav{ width:48px; height:48px; }
+    .lb-card .lb-badges{ padding-right:60px; }
+  }
+</style>
 
 <!-- shared header / nav / banner -->
 <script>window.COLLATERA_SECTION = "Reference Image Library";</script>
@@ -412,11 +458,34 @@ function showLb() {
   if (!img) return;
   lbImg.src = encodeURI(img.file); lbImg.alt = img.title;
   lbTitle.textContent = img.title;
-  lbNote.textContent = img.note || "[placeholder — captions under development]";
+  lbNote.textContent = img.note || "";   // blank -> :empty hides it; banner then sits 16px below the title
   lbTagRow.innerHTML =
     `<span class="lb-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>` +
     (img.tags||[]).map(t => `<span class="lb-tag">${t}</span>`).join("");
+  const fav = document.getElementById("lbFav");
+  if (ME) {
+    fav.hidden = false; fav.dataset.cfavId = img.id;
+    const on = FAVES.has(img.id);
+    fav.classList.toggle("is-on", on);
+    fav.setAttribute("aria-pressed", on ? "true" : "false");
+    fav.setAttribute("aria-label", on ? "Remove from favorites" : "Add to favorites");
+  } else { fav.hidden = true; }
 }
+/* favorite toggle in the redesigned banner (signed-in only; reuses toggleFav/FAVES) */
+(function wireLbFav(){
+  const fav = document.getElementById("lbFav"); if (!fav) return;
+  const act = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const id = fav.dataset.cfavId; if (!id) return;
+    toggleFav(id);
+    const on = FAVES.has(id);
+    fav.classList.toggle("is-on", on);
+    fav.setAttribute("aria-pressed", on ? "true" : "false");
+    fav.setAttribute("aria-label", on ? "Remove from favorites" : "Add to favorites");
+  };
+  fav.addEventListener("click", act);
+  fav.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") act(e); });
+})();
 function closeLb() { lb.classList.remove("open"); document.body.style.overflow = ""; }
 function step(d) { lbIndex = (lbIndex + d + visible.length) % visible.length; showLb(); }
 document.getElementById("lbClose").onclick = closeLb;
@@ -599,44 +668,9 @@ function syncStars(id){
     .forEach(el => setStar(el, FAVES.has(id)));
 }
 
-(function lbStarStyle(){
-  const s = document.createElement("style");
-  s.textContent = `
-    .cfav-lbstar{position:static;display:inline-flex;vertical-align:middle;
-      margin-right:.5rem;width:1.6rem;height:1.6rem;font-size:1.3rem;
-      background:transparent;color:inherit}
-    .cfav-lbstar:hover{background:var(--accent-tint,#E7F4F4);transform:scale(1.1)}
-    .cfav-lbstar.is-on{color:#E8A200}
-  `;
-  document.head.appendChild(s);
-})();
-
-(function addLightboxStar(){
-  const lbTitleEl = document.getElementById("lbTitle");
-  if (!lbTitleEl) return;
-  const st = document.createElement("span");
-  st.className = "cfav-star cfav-lbstar";
-  st.setAttribute("role", "button");
-  st.setAttribute("tabindex", "0");
-  st.hidden = true;
-  lbTitleEl.insertAdjacentElement("beforebegin", st);
-
-  const activate = (e) => {
-    e.preventDefault(); e.stopPropagation();
-    const id = st.dataset.cfavId;
-    if (id) toggleFav(id);
-  };
-  st.addEventListener("click", activate);
-  st.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") activate(e); });
-
-  const _origShowLb = showLb;
-  showLb = function(){
-    _origShowLb();
-    const img = visible[lbIndex];
-    if (ME && img) { st.hidden = false; st.dataset.cfavId = img.id; setStar(st, FAVES.has(img.id)); }
-    else { st.hidden = true; }
-  };
-})();
+/* The lightbox favorite toggle and banner are now rendered natively by the
+   redesigned card (see the lightbox markup, .lb-card styles, showLb, and
+   wireLbFav below). */
 
 /* profile panel cleared the history -> drop it locally and re-render */
 document.addEventListener("collatera:recents-cleared", () => {
