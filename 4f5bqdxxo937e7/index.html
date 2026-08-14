@@ -177,9 +177,38 @@
   @media (max-width:1380px){
     :root, :root[data-theme="dark"]{ --rf-core:min(1140px, calc(100vw - 40px)); }
   }
-  @media (max-width:760px){
+ @media (max-width:760px){
     :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
   }
+
+  /* ===== compact uploader layout (param block) — additive overrides ===== */
+  /* top row: square drop left, Title+Caption bottom-anchored to its lower edge */
+  .up-top { display:flex; gap:24px; align-items:flex-end; }
+  .up-top .drop { flex:0 0 39%; aspect-ratio:1; box-sizing:border-box;
+    min-height:0; max-width:none; margin:0; }
+  .up-top .drop img.preview { max-height:100%; }
+  .up-fields { flex:1 1 auto; min-width:0; }
+  .up-fields .tl-row { margin:0 0 10px; }
+  .up-fields .cap-row { margin:10px 0 0; }
+
+  /* field labels + section headers → 22; Title/Caption/Add inputs → 18 */
+  .flbl { font-size:22px; }
+  .up-card input[type=text], .up-card textarea { font-size:18px; }
+
+  /* category + tags below, centered headers, 16px section gap */
+  .ct-wrap { margin-top:16px; }
+  .ct-head { text-align:center; }
+
+  /* tiles: 6px vertical pad, 4px cushion, per-grid fonts */
+  .cti-grid { gap:4px; }
+  .cti-tile { padding:6px 11px; }
+  .cti-grid.cats .cti-tile { font-size:17px; }
+  .cti-grid.tags .cti-tile { font-size:16px; }
+
+  /* publish: centered, 26px below the grids, 24px label */
+  .up-actions { margin-top:26px; }
+  .up-btn { font-size:24px; }
+  /* ===== end compact uploader layout ===== */
 </style>
 </head>
 <body>
@@ -216,19 +245,28 @@
 <main class="up-main" id="uploaderMain" style="display:none">
   <div class="up-card">
     <fieldset id="formFieldset">
-      <div class="drop" id="drop">
-        <div id="dropInner">
-          <div class="drop-msg">Drag an image here, paste it, or click to browse</div>
-          <div class="drop-sub">Resized and compressed automatically before upload</div>
+<div class="up-top">
+        <div class="drop" id="drop">
+          <div id="dropInner">
+            <div class="drop-msg">Drag an image here, paste it, or click to browse</div>
+            <div class="drop-sub">Resized and compressed automatically before upload</div>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none">
         </div>
-        <input type="file" id="fileInput" accept="image/*" style="display:none">
-      </div>
 
-      <div class="tl-row">
-        <label class="flbl t" for="titleInput">Title:</label>
-        <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
+        <div class="up-fields">
+          <div class="tl-row">
+            <label class="flbl t" for="titleInput">Title:</label>
+            <input type="text" id="titleInput" placeholder="e.g. RV Function 2">
+          </div>
+          <div class="filename-preview" id="filenamePreview"></div>
+
+          <div class="tl-row cap-row">
+            <label class="flbl p" for="noteInput">Caption:</label>
+            <textarea id="noteInput" rows="2" placeholder="[Optional…]"></textarea>
+          </div>
+        </div>
       </div>
-      <div class="filename-preview" id="filenamePreview"></div>
 
       <div class="ct-wrap">
         <div class="ct-col cat">
@@ -247,11 +285,6 @@
             <button class="add-pink" id="newTagBtn" type="button">Add</button>
           </div>
         </div>
-      </div>
-
-      <div class="tl-row cap-row">
-        <label class="flbl p" for="noteInput">Caption:</label>
-        <textarea id="noteInput" rows="2" placeholder="[Optional…]"></textarea>
       </div>
 
       <div class="up-actions">
