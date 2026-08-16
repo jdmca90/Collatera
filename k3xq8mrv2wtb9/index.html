@@ -8,6 +8,15 @@
 <link rel="icon" href="/assets/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/styles.css">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#3F8F8F">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+</script>
 <style>
   /* =================================================================
      DECK UPLOADER — page-local styles.
