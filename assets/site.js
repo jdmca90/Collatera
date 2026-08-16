@@ -681,3 +681,35 @@ window.CollateraViews = {
   libEl.onerror = () => { const b = $("cauthSubmit"); if (b) { b.textContent = "Sign-in unavailable"; b.disabled = true; } };
   document.head.appendChild(libEl);
 })();
+/* =================================================================
+   PWA — manifest link + service worker registration
+   Added once here so every page that loads site.js becomes
+   installable, without editing each page's <head> individually.
+   Skips reportabledev pages, which stay out of the installable scope.
+   ================================================================= */
+(() => {
+  if (location.pathname.startsWith("/reportabledev/")) return;
+
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = "/manifest.json";
+    document.head.appendChild(link);
+  }
+
+  if (!document.querySelector('meta[name="theme-color"]')) {
+    const meta = document.createElement("meta");
+    meta.name = "theme-color";
+    meta.content = "#3F8F8F";
+    document.head.appendChild(meta);
+  }
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        // Registration failure (e.g. unsupported browser) is non-fatal —
+        // the site still works fully online without it.
+      });
+    });
+  }
+})();
