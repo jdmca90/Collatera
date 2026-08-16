@@ -12,8 +12,17 @@
      URL stays exactly where it is, nothing downstream breaks.
      ================================================================= -->
 <link rel="canonical" href="/ref-images/">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#3F8F8F">
 <meta http-equiv="refresh" content="0; url=/ref-images/">
 <script>location.replace("/ref-images/");</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+</script>
 <style>
   body { font-family: system-ui, sans-serif; background:#FAF7F0; color:#6B6860;
          display:grid; place-items:center; min-height:100vh; margin:0; }
