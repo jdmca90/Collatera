@@ -1697,6 +1697,18 @@
         "Meds"
       ],
       "note": ""
+    },
+    {
+      "id": "img_i83d88zk",
+      "file": "/images/test-image-for-deletion.jpg",
+      "title": "TEST IMAGE FOR DELETION",
+      "cat": "Shock",
+      "tags": [
+        "math",
+        "MCS",
+        "Meds"
+      ],
+      "note": ""
     }
   ]
 }
