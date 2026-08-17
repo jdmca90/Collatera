@@ -58,7 +58,72 @@
     </div>
   </div>
 </div>
-
+<!-- ---------- Card edit modal (admin only) ---------- -->
+<div class="ced-overlay" id="cedOverlay" hidden>
+  <div class="ced-box" role="dialog" aria-modal="true" aria-labelledby="cedHeading">
+    <button class="ced-close" id="cedClose" aria-label="Close">&#10005;</button>
+    <div id="cedGateToken" hidden>
+      <h2 id="cedHeading">GitHub token</h2>
+      <p class="ced-sub">Paste a fine-grained personal access token scoped to this repo.</p>
+      <input type="password" id="cedTokenInput" placeholder="github_pat_...">
+      <button class="ced-btn" id="cedTokenBtn" type="button">Continue</button>
+      <div class="ced-err" id="cedTokenErr" hidden></div>
+    </div>
+    <div id="cedForm" hidden>
+      <h2 id="cedHeadingForm">Edit card</h2>
+      <label class="ced-lbl">Title</label>
+      <input type="text" id="cedTitle">
+      <label class="ced-lbl">Category</label>
+      <div id="cedCatGrid" class="ced-grid ced-cats"></div>
+      <div class="ced-addrow">
+        <input type="text" id="cedNewCat" placeholder="New category…">
+        <button class="ced-add" id="cedNewCatBtn" type="button">Add</button>
+      </div>
+      <label class="ced-lbl">Tags</label>
+      <div id="cedTagGrid" class="ced-grid ced-tags"></div>
+      <div class="ced-addrow">
+        <input type="text" id="cedNewTag" placeholder="New tag…">
+        <button class="ced-add" id="cedNewTagBtn" type="button">Add</button>
+      </div>
+      <label class="ced-lbl">Caption</label>
+      <textarea id="cedNote" rows="3"></textarea>
+      <button class="ced-save" id="cedSave" type="button">Save changes</button>
+      <div class="ced-status" id="cedStatus"></div>
+    </div>
+  </div>
+</div>
+  <style id="cedStyle">
+  .ced-overlay{ position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55);
+    display:flex; align-items:center; justify-content:center; padding:20px; }
+  .ced-overlay[hidden]{ display:none; }
+  .ced-box{ position:relative; width:min(480px,100%); max-height:88vh; overflow-y:auto;
+    background:var(--lbcard-bg,#FBFAF6); color:var(--lbcard-title,#201E1C);
+    border-radius:14px; padding:28px 24px 22px; box-sizing:border-box; }
+  .ced-close{ position:absolute; top:10px; right:12px; width:32px; height:32px; border:none;
+    background:transparent; color:inherit; font-size:18px; cursor:pointer; }
+  .ced-box h2{ margin:0 0 6px; font-size:22px; }
+  .ced-sub{ margin:0 0 14px; font-size:14px; opacity:.75; }
+  .ced-lbl{ display:block; font-size:13px; font-weight:600; margin:14px 0 5px; }
+  .ced-box input[type="text"], .ced-box input[type="password"], .ced-box textarea{
+    width:100%; box-sizing:border-box; padding:9px 10px; border-radius:8px;
+    border:1px solid var(--lbcard-staroff,#C6C0B6); background:transparent; color:inherit; font:inherit; }
+  .ced-box textarea{ resize:vertical; }
+  .ced-grid{ display:grid; gap:6px; }
+  .ced-grid.ced-cats{ grid-template-columns:repeat(2,1fr); }
+  .ced-grid.ced-tags{ grid-template-columns:repeat(3,1fr); }
+  .ced-grid .ced-tile{ padding:10px 8px; font-size:13px; text-align:center; border-radius:8px;
+    cursor:pointer; border:1px solid var(--lbcard-staroff,#C6C0B6); }
+  .ced-grid.ced-cats .ced-tile.on{ background:var(--lbcard-staron,#C9971F); color:#fff; border-color:transparent; }
+  .ced-grid.ced-tags .ced-tile.on{ background:var(--lbcard-title,#201E1C); color:var(--lbcard-bg,#FBFAF6); border-color:transparent; }
+  .ced-addrow{ display:flex; gap:6px; margin-top:6px; }
+  .ced-addrow input{ flex:1; }
+  .ced-add, .ced-btn, .ced-save{ padding:8px 14px; border-radius:8px; border:none;
+    background:var(--lbcard-title,#201E1C); color:var(--lbcard-bg,#FBFAF6); cursor:pointer; font:inherit; }
+  .ced-save{ width:100%; margin-top:18px; padding:11px; font-weight:600; }
+  .ced-status{ margin-top:10px; font-size:13px; min-height:1.1em; }
+  .ced-status.ok{ color:#3a8f4c; } .ced-status.err{ color:#c94b4b; }
+  .ced-err{ color:#c94b4b; font-size:13px; margin-top:8px; }
+</style>
 <style id="lbCardStyle">
   /* redesigned expanded-card (lightbox) — theme-adaptive: white in light, charcoal in dark */
   :root{ --lbcard-bg:#FBFAF6; --lbcard-title:#201E1C; --lbcard-cap:#5F5B54; --lbcard-staron:#C9971F; --lbcard-staroff:#C6C0B6; }
