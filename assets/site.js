@@ -186,7 +186,6 @@ window.CollateraViews = {
 (() => {
   const SUPABASE_URL = "https://pxustifbonzhldrepcyp.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_XmuebDlA0AtVPpFxQCfaUA_3mR-1S3n";
-  const ADMIN_EMAIL   = "jdmca90@gmail.com";
   const UPLOAD_URL      = "https://collatera.org/4f5bqdxxo937e7/";
   const DECK_UPLOAD_URL = "https://collatera.org/k3xq8mrv2wtb9/";
   const POSITIONS     = ["Fellow","Resident","Medical Student","Cardiologist","Hospitalist","Attending"];
@@ -195,6 +194,7 @@ window.CollateraViews = {
   let _resolveReady;
   window.sbReady = new Promise(r => { _resolveReady = r; });
   window.collateraUser = null;
+window.collateraIsAdmin = false;
 
   /* ---- scoped styles (cauth- prefix; no global class clash) ---- */
   const style = document.createElement("style");
@@ -607,10 +607,11 @@ window.CollateraViews = {
     paintEmail();
     $("cauthOut").hidden = !!user;
     $("cauthIn").hidden  = !user;
-    if (!user) return;
-    $("cauthAdmin").hidden = (user.email !== ADMIN_EMAIL);
+if (!user) { window.collateraIsAdmin = false; return; }
     const { data } = await sb.from("profiles")
-      .select("title, position, bio").eq("user_id", user.id).maybeSingle();
+      .select("title, position, bio, role").eq("user_id", user.id).maybeSingle();
+    window.collateraIsAdmin = data?.role === "admin";
+    $("cauthAdmin").hidden = !window.collateraIsAdmin;
     $("cauthPos").value = data?.position || data?.title || "";
     bioEl.value           = data?.bio || "";
     $("cauthBioCount").textContent = `${bioEl.value.length} / ${BIO_MAX}`;
