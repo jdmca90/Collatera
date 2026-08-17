@@ -48,6 +48,16 @@
          repo and a matching entry in <code>images.json</code>. Also lists any recorded errors.</p>
       <div id="rvHealth" class="rv-health"></div>
     </div>
+
+    <div class="rv-card">
+      <div class="rv-head">
+        <h2 class="rv-h">Deleted cards</h2>
+        <button id="rvDeletedRefresh" class="rv-ghost" type="button">Refresh</button>
+      </div>
+      <p class="rv-p">A log of reference-library cards removed via the edit modal. Image files
+         stay in the repo even after the card is deleted.</p>
+      <div id="rvDeletedList" class="rv-queue">Loading…</div>
+    </div>
   </div>
 </main>
 
@@ -93,7 +103,6 @@ const BRANCH     = "main";
 const IMAGES_JSON_PATH = "data/images.json";
 const IMAGES_DIR = "images";
 const TOKEN_KEY  = "collatera_review_pat";
-const ADMIN_EMAIL = "jdmca90@gmail.com";
 const REJECT_REASONS = [
   "Duplicate of existing image",
   "Image quality too low",
@@ -315,16 +324,33 @@ $("rvCheck").onclick = async () => {
 
 $("rvRefresh").onclick = loadQueue;
 
+async function loadDeleted(){
+  const box = $("rvDeletedList");
+  box.textContent = "Loading…";
+  const { data, error } = await window.sb.from("deleted_cards").select("*").order("deleted_at",{ascending:false});
+  if(error){ box.innerHTML = `<span class="rv-bad">Couldn't load — ${error.message}</span>`; return; }
+  if(!data || !data.length){ box.textContent = "No deleted cards yet."; return; }
+  box.innerHTML = data.map(d => `
+    <div class="rv-item">
+      <div class="rv-thumb"><img src="${encodeURI(d.file)}" alt="${d.title}" onerror="this.style.opacity=.3"></div>
+      <div>
+        <strong>${d.title}</strong>
+        <div class="rv-tagline">${d.cat || ""}${(d.tags&&d.tags.length)?" · "+d.tags.join(", "):""}</div>
+        <div class="rv-meta">Deleted ${new Date(d.deleted_at).toLocaleString()}</div>
+      </div>
+    </div>`).join("");
+}
+$("rvDeletedRefresh").onclick = loadDeleted;
+
 /* ---------- boot: admin only ---------- */
 (function init(){
   if(!window.sbReady){ setTimeout(init,50); return; }
   window.sbReady.then(async sb=>{
     const paint = async () => {
-      const { data:{ session } } = await sb.auth.getSession();
-      const isAdmin = session?.user?.email === ADMIN_EMAIL;
+      const isAdmin = window.collateraIsAdmin === true;
       $("rvDenied").hidden = isAdmin;
       if(!isAdmin){ $("rvTokenCard").hidden=true; $("rvBody").hidden=true; return; }
-      if(sessionStorage.getItem(TOKEN_KEY)){ $("rvTokenCard").hidden=true; $("rvBody").hidden=false; loadQueue(); }
+      if(sessionStorage.getItem(TOKEN_KEY)){ $("rvTokenCard").hidden=true; $("rvBody").hidden=false; loadQueue(); loadDeleted(); }
       else { $("rvTokenCard").hidden=false; $("rvBody").hidden=true; }
     };
     await paint();
