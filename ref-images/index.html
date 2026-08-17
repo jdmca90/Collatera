@@ -47,6 +47,9 @@
       <span class="lb-fav" id="lbFav" role="button" tabindex="0" hidden aria-pressed="false" aria-label="Add to favorites">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6-5.9-3.2-5.9 3.2 1.2-6.6L2.5 9.5l6.6-.9z"/></svg>
       </span>
+      <span class="lb-edit" id="lbEdit" role="button" tabindex="0" hidden aria-label="Edit card">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zM12 8V4m0 16v-4m5.66-9.66l-2.83 2.83M9.17 14.83l-2.83 2.83M20 12h-4M8 12H4m12.66 5.66l-2.83-2.83M9.17 9.17L6.34 6.34"/></svg>
+      </span>
       <div class="lb-badges" id="lbTagRow"></div>
       <div class="lb-lower">
         <div class="lb-title" id="lbTitle"></div>
@@ -82,6 +85,9 @@
     display:grid; place-items:center; color:var(--lbcard-staroff); }
   .lb-card .lb-fav svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.6; }
   .lb-card .lb-fav.is-on{ color:var(--lbcard-staron); }
+  .lb-card .lb-edit{ position:absolute; top:76px; right:12px; width:60px; height:60px; cursor:pointer;
+    display:grid; place-items:center; color:var(--lbcard-staroff); }
+  .lb-card .lb-edit svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.6; }
   .lb-card .lb-fav.is-on svg{ fill:currentColor; }
 
   .lb-card .lb-lower{ margin-top:16px; }
@@ -93,6 +99,7 @@
     .lb-card .lb-title{ font-size:30px; max-width:100%; }
     .lb-card .lb-caption{ max-width:100%; }
     .lb-card .lb-fav{ width:48px; height:48px; }
+    .lb-card .lb-edit{ width:48px; height:48px; top:62px; }
     .lb-card .lb-badges{ padding-right:60px; }
   }
 </style>
@@ -462,7 +469,7 @@ function showLb() {
   lbTagRow.innerHTML =
     `<span class="lb-cat" style="background:${colorFor(img.cat)}">${img.cat}</span>` +
     (img.tags||[]).map(t => `<span class="lb-tag">${t}</span>`).join("");
-  const fav = document.getElementById("lbFav");
+ const fav = document.getElementById("lbFav");
   if (ME) {
     fav.hidden = false; fav.dataset.cfavId = img.id;
     const on = FAVES.has(img.id);
@@ -470,6 +477,9 @@ function showLb() {
     fav.setAttribute("aria-pressed", on ? "true" : "false");
     fav.setAttribute("aria-label", on ? "Remove from favorites" : "Add to favorites");
   } else { fav.hidden = true; }
+  const editIcon = document.getElementById("lbEdit");
+  if (window.collateraIsAdmin) { editIcon.hidden = false; editIcon.dataset.imgId = img.id; }
+  else { editIcon.hidden = true; }
 }
 /* favorite toggle in the redesigned banner (signed-in only; reuses toggleFav/FAVES) */
 (function wireLbFav(){
