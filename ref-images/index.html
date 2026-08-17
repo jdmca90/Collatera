@@ -73,22 +73,41 @@
       <h2 id="cedHeadingForm">Edit card</h2>
       <label class="ced-lbl">Title</label>
       <input type="text" id="cedTitle">
-      <label class="ced-lbl">Category</label>
-      <div id="cedCatGrid" class="ced-grid ced-cats"></div>
-      <div class="ced-addrow">
-        <input type="text" id="cedNewCat" placeholder="New category…">
-        <button class="ced-add" id="cedNewCatBtn" type="button">Add</button>
-      </div>
-      <label class="ced-lbl">Tags</label>
-      <div id="cedTagGrid" class="ced-grid ced-tags"></div>
-      <div class="ced-addrow">
-        <input type="text" id="cedNewTag" placeholder="New tag…">
-        <button class="ced-add" id="cedNewTagBtn" type="button">Add</button>
-      </div>
       <label class="ced-lbl">Caption</label>
-      <textarea id="cedNote" rows="3"></textarea>
+      <textarea id="cedNote" rows="2"></textarea>
+      <div class="ced-cols">
+        <div class="ced-col">
+          <label class="ced-lbl">Category</label>
+          <div id="cedCatGrid" class="ced-grid ced-cats"></div>
+          <div class="ced-addrow">
+            <input type="text" id="cedNewCat" placeholder="New category…">
+            <button class="ced-add" id="cedNewCatBtn" type="button">Add</button>
+          </div>
+        </div>
+        <div class="ced-col">
+          <label class="ced-lbl">Tags</label>
+          <div id="cedTagGrid" class="ced-grid ced-tags"></div>
+          <div class="ced-addrow">
+            <input type="text" id="cedNewTag" placeholder="New tag…">
+            <button class="ced-add" id="cedNewTagBtn" type="button">Add</button>
+          </div>
+        </div>
+      </div>
       <button class="ced-save" id="cedSave" type="button">Save changes</button>
       <div class="ced-status" id="cedStatus"></div>
+      <div class="ced-danger-wrap">
+        <button class="ced-delete" id="cedDelete" type="button">Delete card</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ced-confirm-overlay" id="cedConfirmOverlay" hidden>
+  <div class="ced-confirm-box">
+    <p>Delete this card permanently? The image file stays in the repo, but the card and its metadata will be removed from the library and logged.</p>
+    <div class="ced-confirm-row">
+      <button class="ced-confirm-cancel" id="cedConfirmCancel" type="button">Cancel</button>
+      <button class="ced-confirm-delete" id="cedConfirmDelete" type="button">Delete permanently</button>
     </div>
   </div>
 </div>
@@ -109,8 +128,10 @@
     border:1px solid var(--lbcard-staroff,#C6C0B6); background:transparent; color:inherit; font:inherit; }
   .ced-box textarea{ resize:vertical; }
   .ced-grid{ display:grid; gap:6px; }
+  .ced-cols{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:2px; }
+  .ced-col .ced-lbl{ margin-top:0; }
   .ced-grid.ced-cats{ grid-template-columns:repeat(2,1fr); }
-  .ced-grid.ced-tags{ grid-template-columns:repeat(3,1fr); }
+  .ced-grid.ced-tags{ grid-template-columns:repeat(2,1fr); }
   .ced-grid .ced-tile{ padding:10px 8px; font-size:13px; text-align:center; border-radius:8px;
     cursor:pointer; border:1px solid var(--lbcard-staroff,#C6C0B6); }
   .ced-grid.ced-cats .ced-tile.on{ background:var(--lbcard-staron,#C9971F); color:#fff; border-color:transparent; }
@@ -123,6 +144,20 @@
   .ced-status{ margin-top:10px; font-size:13px; min-height:1.1em; }
   .ced-status.ok{ color:#3a8f4c; } .ced-status.err{ color:#c94b4b; }
   .ced-err{ color:#c94b4b; font-size:13px; margin-top:8px; }
+  .ced-danger-wrap{ border-top:1px solid var(--lbcard-staroff,#C6C0B6); margin-top:18px; padding-top:14px; }
+  .ced-delete{ width:100%; padding:9px; border-radius:8px; border:1px solid #c94b4b;
+    background:transparent; color:#c94b4b; cursor:pointer; font:inherit; font-weight:600; }
+  .ced-delete:hover{ background:rgba(201,75,75,.08); }
+  .ced-confirm-overlay{ position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.6);
+    display:flex; align-items:center; justify-content:center; padding:20px; }
+  .ced-confirm-overlay[hidden]{ display:none; }
+  .ced-confirm-box{ width:min(360px,100%); background:var(--lbcard-bg,#FBFAF6); color:var(--lbcard-title,#201E1C);
+    border-radius:14px; padding:20px; box-sizing:border-box; }
+  .ced-confirm-box p{ margin:0 0 16px; font-size:14px; line-height:1.4; }
+  .ced-confirm-row{ display:flex; gap:10px; }
+  .ced-confirm-row button{ flex:1; padding:9px; border-radius:8px; font:inherit; cursor:pointer; }
+  #cedConfirmCancel{ border:1px solid var(--lbcard-staroff,#C6C0B6); background:transparent; color:inherit; }
+  #cedConfirmDelete{ border:none; background:#c94b4b; color:#fff; font-weight:600; }
 </style>
 <style id="lbCardStyle">
   /* redesigned expanded-card (lightbox) — theme-adaptive: white in light, charcoal in dark */
@@ -563,7 +598,8 @@ function showLb() {
 })();
 function closeLb() { lb.classList.remove("open"); document.body.style.overflow = ""; }
 function step(d) { lbIndex = (lbIndex + d + visible.length) % visible.length; showLb(); }
-  /* =================================================================
+
+/* =================================================================
    Card edit modal (admin only) — GitHub Contents API write,
    mirrors the pattern used by the admin image uploader.
    ================================================================= */
@@ -711,12 +747,58 @@ function step(d) { lbIndex = (lbIndex + d + visible.length) % visible.length; sh
   document.getElementById("cedClose").onclick = closeModal;
   overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
 
+  const deleteBtn = document.getElementById("cedDelete");
+  const confirmOverlay = document.getElementById("cedConfirmOverlay");
+  const confirmCancel = document.getElementById("cedConfirmCancel");
+  const confirmDelete = document.getElementById("cedConfirmDelete");
+
+  deleteBtn.onclick = () => { confirmOverlay.hidden = false; };
+  confirmCancel.onclick = () => { confirmOverlay.hidden = true; };
+
+  confirmDelete.onclick = async () => {
+    confirmDelete.disabled = true;
+    setStatus("busy", "Deleting…");
+    try {
+      const { sha, content } = await getFile(IMAGES_JSON_PATH);
+      const json = JSON.parse(content);
+      const idx = (json.images || []).findIndex(i => i.id === editingId);
+      if (idx === -1) throw new Error("Couldn't find this card — it may have already been removed.");
+      const entry = json.images[idx];
+
+      if (window.sb) {
+        const { error: logErr } = await window.sb.from("deleted_cards").insert({
+          image_id: entry.id, file: entry.file, title: entry.title,
+          cat: entry.cat, tags: entry.tags || [], note: entry.note || "",
+          deleted_by: window.collateraUser ? window.collateraUser.id : null
+        });
+        if (logErr) throw new Error("Couldn't log the deletion: " + logErr.message);
+      }
+
+      json.images.splice(idx, 1);
+      const newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(json, null, 2))));
+      await putFile(IMAGES_JSON_PATH, newContentB64, `Delete card: ${entry.title}`, sha);
+
+      const gi = IMAGES.findIndex(i => i.id === editingId);
+      if (gi !== -1) IMAGES.splice(gi, 1);
+      confirmOverlay.hidden = true;
+      closeModal();
+      closeLb();
+      render();
+    } catch (err) {
+      confirmOverlay.hidden = true;
+      setStatus("err", err.message);
+    } finally {
+      confirmDelete.disabled = false;
+    }
+  };
+
   document.getElementById("lbEdit").addEventListener("click", (e) => {
     e.preventDefault(); e.stopPropagation();
     const img = IMAGES.find(i => i.id === document.getElementById("lbEdit").dataset.imgId);
     if (img) openModal(img);
   });
 })();
+
 document.getElementById("lbClose").onclick = closeLb;
 document.getElementById("lbPrev").onclick = () => step(-1);
 document.getElementById("lbNext").onclick = () => step(1);
