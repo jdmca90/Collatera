@@ -563,6 +563,160 @@ function showLb() {
 })();
 function closeLb() { lb.classList.remove("open"); document.body.style.overflow = ""; }
 function step(d) { lbIndex = (lbIndex + d + visible.length) % visible.length; showLb(); }
+  /* =================================================================
+   Card edit modal (admin only) — GitHub Contents API write,
+   mirrors the pattern used by the admin image uploader.
+   ================================================================= */
+(function cardEditModal(){
+  const REPO_OWNER = "jdmca90";
+  const REPO_NAME  = "Collatera";
+  const BRANCH     = "main";
+  const IMAGES_JSON_PATH = "data/images.json";
+  const TOKEN_KEY  = "collatera_admin_token";
+
+  const overlay   = document.getElementById("cedOverlay");
+  const gateToken = document.getElementById("cedGateToken");
+  const form      = document.getElementById("cedForm");
+  const tokenInput= document.getElementById("cedTokenInput");
+  const tokenBtn  = document.getElementById("cedTokenBtn");
+  const tokenErr  = document.getElementById("cedTokenErr");
+  const titleInp  = document.getElementById("cedTitle");
+  const noteInp   = document.getElementById("cedNote");
+  const catGrid   = document.getElementById("cedCatGrid");
+  const tagGrid   = document.getElementById("cedTagGrid");
+  const newCatInp = document.getElementById("cedNewCat");
+  const newTagInp = document.getElementById("cedNewTag");
+  const saveBtn   = document.getElementById("cedSave");
+  const statusEl  = document.getElementById("cedStatus");
+
+  let editingId = null;
+  let selectedCat = "";
+  let selectedTags = new Set();
+  let localCats = [];
+  let localTags = [];
+
+  function setStatus(kind, msg){ statusEl.textContent = msg || ""; statusEl.className = "ced-status " + (kind||""); }
+
+  function ghHeaders(){
+    return { Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`, Accept: "application/vnd.github+json" };
+  }
+  async function getFile(path){
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`, { headers: ghHeaders() });
+    if (!r.ok) throw new Error(`Couldn't read ${path} (HTTP ${r.status})`);
+    const data = await r.json();
+    return { sha: data.sha, content: decodeURIComponent(escape(atob(data.content))) };
+  }
+  async function putFile(path, base64Content, message, sha){
+    const body = { message, content: base64Content, branch: BRANCH, sha };
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+      { method: "PUT", headers: { ...ghHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) { const d = await r.json().catch(()=>({})); throw new Error(d.message || `Couldn't write ${path} (HTTP ${r.status})`); }
+    return r.json();
+  }
+  async function verifyAndStoreToken(token){
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) throw new Error(`Token check failed (HTTP ${r.status}). Check the token's scope and expiry.`);
+    sessionStorage.setItem(TOKEN_KEY, token);
+  }
+
+  function renderCatGrid(){
+    catGrid.innerHTML = "";
+    localCats.forEach(c => {
+      const t = document.createElement("div");
+      t.className = "ced-tile" + (selectedCat === c ? " on" : "");
+      t.textContent = c;
+      t.onclick = () => { selectedCat = c; renderCatGrid(); };
+      catGrid.appendChild(t);
+    });
+  }
+  function renderTagGrid(){
+    tagGrid.innerHTML = "";
+    localTags.forEach(tag => {
+      const t = document.createElement("div");
+      t.className = "ced-tile" + (selectedTags.has(tag) ? " on" : "");
+      t.textContent = tag;
+      t.onclick = () => { selectedTags.has(tag) ? selectedTags.delete(tag) : selectedTags.add(tag); renderTagGrid(); };
+      tagGrid.appendChild(t);
+    });
+  }
+  newCatInp.parentElement.querySelector("#cedNewCatBtn").onclick = () => {
+    const c = newCatInp.value.trim(); if (!c) return;
+    if (!localCats.includes(c)) localCats.push(c);
+    selectedCat = c; newCatInp.value = ""; renderCatGrid();
+  };
+  newTagInp.parentElement.querySelector("#cedNewTagBtn").onclick = () => {
+    const t = newTagInp.value.trim(); if (!t) return;
+    if (!localTags.includes(t)) { localTags.push(t); localTags.sort((a,b)=>a.localeCompare(b)); }
+    selectedTags.add(t); newTagInp.value = ""; renderTagGrid();
+  };
+
+  function openForm(img){
+    editingId = img.id;
+    titleInp.value = img.title || "";
+    noteInp.value  = img.note || "";
+    selectedCat = img.cat || "";
+    selectedTags = new Set(img.tags || []);
+    localCats = [...CATEGORIES];
+    localTags = [...ALL_TAGS];
+    renderCatGrid(); renderTagGrid();
+    setStatus("", "");
+    gateToken.hidden = true; form.hidden = false;
+  }
+
+  function openModal(img){
+    overlay.hidden = false;
+    if (sessionStorage.getItem(TOKEN_KEY)) { openForm(img); }
+    else { gateToken.hidden = false; form.hidden = true; tokenErr.hidden = true; tokenInput.value = ""; window._cedPendingImg = img; }
+  }
+  function closeModal(){ overlay.hidden = true; editingId = null; }
+
+  tokenBtn.onclick = async () => {
+    tokenErr.hidden = true;
+    try {
+      await verifyAndStoreToken(tokenInput.value.trim());
+      openForm(window._cedPendingImg);
+    } catch (err) { tokenErr.textContent = err.message; tokenErr.hidden = false; }
+  };
+
+  saveBtn.onclick = async () => {
+    const title = titleInp.value.trim();
+    const note  = noteInp.value.trim();
+    if (!title) { setStatus("err", "Title can't be empty."); return; }
+    if (!selectedCat) { setStatus("err", "Choose a category."); return; }
+    if (!selectedTags.size) { setStatus("err", "Add at least one tag."); return; }
+    saveBtn.disabled = true;
+    setStatus("busy", "Saving…");
+    try {
+      const { sha, content } = await getFile(IMAGES_JSON_PATH);
+      const json = JSON.parse(content);
+      const entry = (json.images || []).find(i => i.id === editingId);
+      if (!entry) throw new Error("Couldn't find this card in images.json — it may have moved.");
+      entry.title = title; entry.cat = selectedCat; entry.tags = [...selectedTags]; entry.note = note;
+      if (!Array.isArray(json.categories)) json.categories = [];
+      if (!json.categories.includes(selectedCat)) json.categories.push(selectedCat);
+      const newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(json, null, 2))));
+      await putFile(IMAGES_JSON_PATH, newContentB64, `Edit card: ${title}`, sha);
+      setStatus("ok", "Saved. It'll update on the site within a minute or so.");
+      const img = IMAGES.find(i => i.id === editingId);
+      if (img) { img.title = title; img.cat = selectedCat; img.tags = [...selectedTags]; img.note = note; }
+      showLb();
+      setTimeout(closeModal, 900);
+    } catch (err) {
+      setStatus("err", err.message);
+    } finally {
+      saveBtn.disabled = false;
+    }
+  };
+
+  document.getElementById("cedClose").onclick = closeModal;
+  overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+
+  document.getElementById("lbEdit").addEventListener("click", (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const img = IMAGES.find(i => i.id === document.getElementById("lbEdit").dataset.imgId);
+    if (img) openModal(img);
+  });
+})();
 document.getElementById("lbClose").onclick = closeLb;
 document.getElementById("lbPrev").onclick = () => step(-1);
 document.getElementById("lbNext").onclick = () => step(1);
