@@ -1176,20 +1176,16 @@ body{ position:relative; background:var(--bg); }
 @keyframes sbPop{ from{ opacity:0; transform:translateX(-50%) translateY(-6px) scale(.985); }
                   to{ opacity:1; transform:translateX(-50%); } }
 .pop.wide{ width:var(--pop-wide); }
-.pop-list{ padding:9px 9px 5px; display:grid; gap:1px 6px;
+.pop-list{ padding:9px 9px 5px; display:grid; gap:6px;
   grid-template-columns:repeat(var(--pop-cols-cat), minmax(0,1fr)); }
 .pop.wide .pop-list{ grid-template-columns:repeat(var(--pop-cols), minmax(0,1fr)); }
-.pop-item{ display:flex; align-items:center; gap:8px; padding:5px 7px; border-radius:8px;
-  font-size:12.5px; color:var(--ink); cursor:pointer; user-select:none; }
-.pop-item:hover{ background:color-mix(in srgb, var(--brand) 10%, transparent); }
-.pop-item input{ position:absolute; opacity:0; pointer-events:none; }
-.pop-box{ width:15px; height:15px; flex:none; border-radius:5px;
-  border:1.5px solid color-mix(in srgb, var(--brand) 50%, transparent);
-  display:grid; place-items:center; transition:.13s; }
-.pop-item input:checked + .pop-box{ background:var(--brand); border-color:var(--brand); }
-.pop-box svg{ width:10px; height:10px; opacity:0; transform:scale(.6); transition:.13s; }
-.pop-item input:checked + .pop-box svg{ opacity:1; transform:none; }
-/* find field sits at the foot, directly above Apply */
+.pop-tile{ display:block; width:100%; box-sizing:border-box; padding:7px 6px; border-radius:8px;
+  font:inherit; font-size:12.5px; text-align:center; color:var(--ink); cursor:pointer; user-select:none;
+  background:transparent; border:1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+  transition:.13s; }
+.pop-tile:hover{ background:color-mix(in srgb, var(--brand) 10%, transparent); }
+.pop-tile.on{ background:var(--brand); color:#fff; border-color:var(--brand); }
+/* Clear/Apply sit at the head of the panel; find field sits below the tile grid */
 .pop-find{ display:block; box-sizing:border-box; width:calc(100% - 18px); margin:4px 9px 0;
   padding:6px 9px; font:inherit; font-size:12.5px; border-radius:8px;
   border:1px solid color-mix(in srgb, var(--brand) 26%, transparent);
@@ -1373,9 +1369,6 @@ body.echo-view .echo-cards.expanded .cfav-star{
   var bAll = mk("All"), bFav = mk("\u2605 Favorites"), bRec = mk("\u2605 Recents");
   bAll.setAttribute("aria-pressed","true");
 
-  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" '
-            + 'stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.2 5.2L20 7"/></svg>';
-
   function makePop(label, items, wide){
     var wrap = document.createElement("div"); wrap.className = "pop-wrap";
     var btn  = mk(label);
@@ -1383,21 +1376,22 @@ body.echo-view .echo-cards.expanded .cfav-star{
     var pop = document.createElement("div");
     pop.className = "pop" + (wide ? " wide" : "");
     pop.innerHTML =
-      '<div class="pop-list"></div>' +
-      '<input class="pop-find" type="search" placeholder="Find ' + label.toLowerCase() + '\u2026" autocomplete="off">' +
       '<div class="pop-foot"><button type="button" class="clr">Clear</button>' +
-      '<button type="button" class="primary app">Apply</button></div>';
+      '<button type="button" class="primary app">Apply</button></div>' +
+      '<div class="pop-list"></div>' +
+      '<input class="pop-find" type="search" placeholder="Find ' + label.toLowerCase() + '\u2026" autocomplete="off">';
     var list = pop.querySelector(".pop-list");
     items.forEach(function(t){
-      var l = document.createElement("label"); l.className = "pop-item";
-      l.innerHTML = '<input type="checkbox" value="' + String(t).replace(/"/g,"&quot;") + '">'
-                  + '<span class="pop-box">' + CHECK + '</span><span class="lbl">' + t + '</span>';
-      list.appendChild(l);
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "pop-tile";
+      b.textContent = t; b.dataset.value = t;
+      b.addEventListener("click", function(){ b.classList.toggle("on"); });
+      list.appendChild(b);
     });
     pop.querySelector(".pop-find").addEventListener("input", function(e){
       var q = e.target.value.toLowerCase();
-      list.querySelectorAll(".pop-item").forEach(function(it){
-        it.style.display = it.querySelector(".lbl").textContent.toLowerCase().indexOf(q) >= 0 ? "" : "none";
+      list.querySelectorAll(".pop-tile").forEach(function(it){
+        it.style.display = it.textContent.toLowerCase().indexOf(q) >= 0 ? "" : "none";
       });
     });
     btn.onclick = function(e){
@@ -1408,11 +1402,11 @@ body.echo-view .echo-cards.expanded .cfav-star{
     document.addEventListener("click", function(e){ if (!wrap.contains(e.target)) pop.classList.remove("open"); });
     pop.querySelector(".app").onclick = function(){ pop.classList.remove("open"); applyPicks(); };
     pop.querySelector(".clr").onclick = function(){
-      pop.querySelectorAll("input:checked").forEach(function(i){ i.checked = false; }); applyPicks();
+      list.querySelectorAll(".pop-tile.on").forEach(function(i){ i.classList.remove("on"); }); applyPicks();
     };
     wrap.appendChild(btn); wrap.appendChild(pop);
     wrap._picked = function(){
-      return [].slice.call(pop.querySelectorAll("input:checked")).map(function(i){ return i.value; });
+      return [].slice.call(pop.querySelectorAll(".pop-tile.on")).map(function(i){ return i.dataset.value; });
     };
     wrap._badge = btn.querySelector(".n"); wrap._btn = btn; wrap._pop = pop;
     return wrap;
@@ -1424,7 +1418,7 @@ body.echo-view .echo-cards.expanded .cfav-star{
 
   function clearPicks(){
     [catPop, tagPop].forEach(function(w){
-      w._pop.querySelectorAll("input:checked").forEach(function(i){ i.checked = false; });
+      w._pop.querySelectorAll(".pop-tile.on").forEach(function(i){ i.classList.remove("on"); });
     });
   }
   /* within a group: OR.  across the two groups: AND. */
