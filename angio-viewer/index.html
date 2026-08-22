@@ -28,26 +28,36 @@
   /* ---- adjustable sizing — tuned via the "Adjust sizing" panel below;
      delete both this comment's block-mates (the .avctl markup/CSS/JS)
      before deploying, but leave these var() usages + defaults in place ---- */
-  --av-panel-w: 350px;
-  --av-stage-max: 760px;
-  --av-thumb-size: 90px;
+  --av-panel-w: 315px;
+  --av-stage-max: 900px;
+  --av-thumb-size: 117px;
   --av-thumb-expand: 620px;
-  --av-heading-font: 40px;
   --av-howto-font: 13px;
   --av-label-font: 36px;
-  --av-badge-font: 20px;
   --av-pin-font: 17px;
   --av-badge-font-base: 10px;
-  --av-eye-size: 35px;
+  --av-eye-size: 55px;
 
-  --av-figure-w: 260px;
-  --av-figure-x: -6px;
-  --av-figure-y: 60px;
-  --av-figure-heart-size: 32px;
+  --av-figure-w: 340px;
+  --av-figure-x: -9px;
+  --av-figure-y: 80px;
+  --av-figure-heart-size: 40px;
 }
 body{
-  margin:0; background:var(--bg); color:var(--ink);
+  margin:0; color:var(--ink);
   font-family:"Calibri Light","Calibri","Hanken Grotesk",system-ui,sans-serif;
+  /* matches the dot-grid texture every other page gets from the shared
+     stylesheet's own body{} rule — duplicated here only so this renders
+     correctly in a standalone preview where /assets/styles.css can't
+     load; harmless once deployed since the real rule takes over */
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(var(--border) 0.5px, transparent 0.5px),
+    radial-gradient(var(--border) 0.5px, var(--bg) 0.5px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 .av-heading{
   font-family:"Gill Sans MT","Gill Sans","Gill Sans Nova","Hanken Grotesk","Segoe UI",sans-serif;
@@ -57,11 +67,22 @@ body{
   border-bottom:1px dashed var(--border);
 }
 
+.av-mobile-notice{ display:none; }
+/* (hover:none) targets devices with no real pointer — phones, tablets —
+   rather than just a narrow viewport, so a resized desktop window still
+   gets the real tool instead of this fallback */
+@media (hover:none) and (pointer:coarse){
+  .av-mobile-notice{
+    display:block; max-width:520px; margin:0 auto; padding:28px 20px 40px; text-align:center;
+  }
+  .av-mobile-notice p{ font-size:14px; color:var(--muted); line-height:1.5; margin:0 0 16px; }
+  .av-mobile-notice img{ width:100%; height:auto; border-radius:var(--radius); border:1px solid var(--border); }
+  .av-page{ display:none; }
+  .avctl{ display:none; }
+}
+
 /* ---- page shell ---- */
 .av-page{ max-width:1180px; margin:0 auto; padding:20px 22px 48px; }
-.av-title{ font-family:inherit; }
-.av-title h1{ font-family:"Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif; font-size:var(--av-heading-font); margin:4px 0 14px; color:var(--title); }
-
 .av-howto{ font-size:var(--av-howto-font); line-height:1.55; color:var(--muted); }
 .av-seg{ display:flex; flex-wrap:wrap; gap:6px; }
 .av-seg button{
@@ -141,7 +162,7 @@ body{
   background:rgba(0,0,0,.6); color:#fff; padding:8px 10px; font-size:var(--av-label-font); line-height:1.3;
 }
 .av-thumb:hover .av-thumb-badge, .av-thumb:focus-visible .av-thumb-badge{
-  font-size:var(--av-badge-font); top:12px; left:12px; padding:2px 7px; border-radius:5px;
+  display:none;
 }
 .av-thumb:hover .av-thumb-pin, .av-thumb:focus-visible .av-thumb-pin{
   font-size:var(--av-pin-font); top:10px; right:12px;
@@ -232,11 +253,12 @@ body{
 
 <div class="av-preview-note">Preview mode — shared header/nav loads automatically once this file lives at /angio-viewer/ on the live site.</div>
 
-<div class="av-page">
-  <div class="av-title">
-    <h1>Angiogram Viewer</h1>
-  </div>
+<div class="av-mobile-notice">
+  <p>Mobile isn't supported yet — this tool relies on cursor hover to work. Here's what it looks like on desktop:</p>
+  <img src="assets/desktop-preview.png" alt="Angiogram viewer desktop preview">
+</div>
 
+<div class="av-page">
   <div class="av-main">
     <div class="av-side">
       <div class="av-nav">
@@ -511,24 +533,24 @@ body{
      div below, and its wiring script once sizing is finalized.
      ================================================================= -->
 <div class="avctl" id="avCtl">
-  <button type="button" class="avctl-toggle" id="avCtlToggle" aria-expanded="true">Adjust sizing &#9660;</button>
-  <div class="avctl-body" id="avCtlBody">
+  <button type="button" class="avctl-toggle" id="avCtlToggle" aria-expanded="false">Adjust sizing &#9654;</button>
+  <div class="avctl-body" id="avCtlBody" style="display:none;">
     <div class="avctl-groups">
 
     <div class="avctl-group">
       <h3>Layout</h3>
-      <label>Nav panel width <span id="avOut-avPanelW">325px</span>
-        <input type="range" id="avPanelW" data-var="--av-panel-w" min="200" max="420" step="5" value="325">
+      <label>Nav panel width <span id="avOut-avPanelW">315px</span>
+        <input type="range" id="avPanelW" data-var="--av-panel-w" min="200" max="420" step="5" value="315">
       </label>
-      <label>Grid stage size <span id="avOut-avStageMax">760px</span>
-        <input type="range" id="avStageMax" data-var="--av-stage-max" min="400" max="900" step="10" value="760">
+      <label>Grid stage size <span id="avOut-avStageMax">900px</span>
+        <input type="range" id="avStageMax" data-var="--av-stage-max" min="400" max="1000" step="10" value="900">
       </label>
     </div>
 
     <div class="avctl-group">
       <h3>Thumbnails</h3>
-      <label>Base card size <span id="avOut-avThumbSize">90px</span>
-        <input type="range" id="avThumbSize" data-var="--av-thumb-size" min="24" max="160" step="1" value="90">
+      <label>Base card size <span id="avOut-avThumbSize">117px</span>
+        <input type="range" id="avThumbSize" data-var="--av-thumb-size" min="24" max="160" step="1" value="117">
       </label>
       <label>Expanded card size <span id="avOut-avThumbExpand">620px</span>
         <input type="range" id="avThumbExpand" data-var="--av-thumb-expand" min="240" max="1100" step="10" value="620">
@@ -537,17 +559,11 @@ body{
 
     <div class="avctl-group">
       <h3>Fonts</h3>
-      <label>Page heading <span id="avOut-avHeadingFont">40px</span>
-        <input type="range" id="avHeadingFont" data-var="--av-heading-font" min="16" max="56" step="1" value="40">
-      </label>
       <label>How-to text <span id="avOut-avHowtoFont">13px</span>
         <input type="range" id="avHowtoFont" data-var="--av-howto-font" min="10" max="18" step=".5" value="13">
       </label>
       <label>Expanded card label <span id="avOut-avLabelFont">36px</span>
         <input type="range" id="avLabelFont" data-var="--av-label-font" min="10" max="50" step="1" value="36">
-      </label>
-      <label>Expanded badge (Dx/Ex/An) <span id="avOut-avBadgeFont">20px</span>
-        <input type="range" id="avBadgeFont" data-var="--av-badge-font" min="10" max="30" step="1" value="20">
       </label>
       <label>Expanded pin star <span id="avOut-avPinFont">17px</span>
         <input type="range" id="avPinFont" data-var="--av-pin-font" min="10" max="24" step="1" value="17">
@@ -560,23 +576,23 @@ body{
     <div class="avctl-group">
       <h3>Other</h3>
       <label>Eye icon size <span id="avOut-avEyeSize">35px</span>
-        <input type="range" id="avEyeSize" data-var="--av-eye-size" min="12" max="55" step="1" value="35">
+        <input type="range" id="avEyeSize" data-var="--av-eye-size" min="12" max="75" step="1" value="55">
       </label>
     </div>
 
     <div class="avctl-group">
       <h3>Origin figure</h3>
       <label>Silhouette size <span id="avOut-avFigureW">260px</span>
-        <input type="range" id="avFigureW" data-var="--av-figure-w" min="40" max="340" step="2" value="260">
+        <input type="range" id="avFigureW" data-var="--av-figure-w" min="40" max="440" step="2" value="340">
       </label>
-      <label>Horizontal offset <span id="avOut-avFigureX">-6px</span>
-        <input type="range" id="avFigureX" data-var="--av-figure-x" min="-80" max="80" step="1" value="-6">
+      <label>Horizontal offset <span id="avOut-avFigureX">-9px</span>
+        <input type="range" id="avFigureX" data-var="--av-figure-x" min="-80" max="80" step="1" value="-9">
       </label>
-      <label>Vertical offset <span id="avOut-avFigureY">60px</span>
-        <input type="range" id="avFigureY" data-var="--av-figure-y" min="-100" max="150" step="1" value="60">
+      <label>Vertical offset <span id="avOut-avFigureY">80px</span>
+        <input type="range" id="avFigureY" data-var="--av-figure-y" min="-100" max="150" step="1" value="80">
       </label>
-      <label>Heart mark size <span id="avOut-avFigureHeartSize">32px</span>
-        <input type="range" id="avFigureHeartSize" data-var="--av-figure-heart-size" min="8" max="44" step="1" value="32">
+      <label>Heart mark size <span id="avOut-avFigureHeartSize">40px</span>
+        <input type="range" id="avFigureHeartSize" data-var="--av-figure-heart-size" min="8" max="44" step="1" value="40">
       </label>
     </div>
     </div>
