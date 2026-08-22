@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angiogram Viewer · Collatera</title>
+<meta name="description" content="Coronary angiogram viewing-angle trainer — LAO/RAO by cranial/caudal projection grid.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+<style>
+/* =================================================================
+   PREVIEW-ONLY FALLBACK TOKENS
+   /assets/styles.css defines these already on the live site (light +
+   dark, plus the real header/nav via site.js). This block exists only
+   so the page renders correctly when opened standalone (e.g. this
+   preview), before it's dropped into the real repo. Safe to delete
+   at deploy time, or just leave it — values match production exactly,
+   so on the live site this block is fully redundant, not conflicting.
+   ================================================================= */
+:root{
+  --bg:#FAF7F0; --surface:#F0EDE6; --ink:#2E2C2A; --muted:#6B6860; --border:#D8D4CC;
+  --accent:#E39FC4; --accent-deep:#A84E7C; --accent-tint:#FBEAF3; --brand:#1C6390;
+  --title:#A8455C; --radius:16px; --shadow:rgba(46,44,42,.10);
+  --c1:#85CCCC; --c2:#90C0D8; --c3:#8DD4A8; --c4:#A5C878; --c5:#C0AEDD; --c6:#F0A860;
+
+  /* ---- adjustable sizing — tuned via the "Adjust sizing" panel below;
+     delete both this comment's block-mates (the .avctl markup/CSS/JS)
+     before deploying, but leave these var() usages + defaults in place ---- */
+  --av-panel-w: 350px;
+  --av-stage-max: 760px;
+  --av-thumb-size: 90px;
+  --av-thumb-expand: 620px;
+  --av-heading-font: 40px;
+  --av-howto-font: 13px;
+  --av-label-font: 36px;
+  --av-badge-font: 20px;
+  --av-pin-font: 17px;
+  --av-badge-font-base: 10px;
+  --av-eye-size: 35px;
+
+  --av-figure-w: 260px;
+  --av-figure-x: -6px;
+  --av-figure-y: 60px;
+  --av-figure-heart-size: 32px;
+}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Calibri Light","Calibri","Hanken Grotesk",system-ui,sans-serif;
+}
+.av-heading{
+  font-family:"Gill Sans MT","Gill Sans","Gill Sans Nova","Hanken Grotesk","Segoe UI",sans-serif;
+}
+.av-preview-note{
+  font-size:12px; color:var(--muted); text-align:center; padding:6px 12px;
+  border-bottom:1px dashed var(--border);
+}
+
+/* ---- page shell ---- */
+.av-page{ max-width:1180px; margin:0 auto; padding:20px 22px 48px; }
+.av-title{ font-family:inherit; }
+.av-title h1{ font-family:"Gill Sans MT","Gill Sans","Hanken Grotesk",sans-serif; font-size:var(--av-heading-font); margin:4px 0 14px; color:var(--title); }
+
+.av-howto{ font-size:var(--av-howto-font); line-height:1.55; color:var(--muted); }
+.av-seg{ display:flex; flex-wrap:wrap; gap:6px; }
+.av-seg button{
+  font-family:inherit; font-size:13.5px; padding:7px 13px; border-radius:999px;
+  border:1px solid var(--border); background:var(--surface); color:var(--ink);
+  cursor:pointer; transition:background .15s, border-color .15s, color .15s;
+}
+.av-seg button[aria-pressed="true"]{
+  background:var(--vessel-color,var(--accent)); border-color:var(--vessel-color,var(--accent));
+  color:#1F1D1B;
+}
+.av-seg button:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+
+/* ---- main layout ---- */
+.av-main{ display:flex; gap:20px; align-items:flex-start; }
+.av-stage-wrap{ flex:1 1 560px; min-width:0; }
+.av-side{ flex:0 0 var(--av-panel-w); }
+@media (max-width:860px){
+  .av-main{ flex-direction:column; }
+  .av-side{ flex:1 1 auto; width:100%; }
+}
+
+/* ---- the grid stage itself ---- */
+.av-stage{
+  position:relative; width:100%; aspect-ratio:1/1; max-width:var(--av-stage-max);
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  overflow:visible; cursor:none; box-shadow:0 1px 0 var(--shadow);
+  touch-action:none;
+}
+.av-axis{ position:absolute; background:var(--border); }
+.av-axis-x{ left:0; right:0; top:50%; height:1px; transform:translateY(-.5px); }
+.av-axis-y{ top:0; bottom:0; left:50%; width:1px; transform:translateX(-.5px); }
+.av-tick{ position:absolute; font-size:10px; color:var(--muted); pointer-events:none; user-select:none; }
+.av-axis-label{
+  position:absolute; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--muted); pointer-events:none; user-select:none;
+}
+.av-origin-figure{
+  position:absolute; left:50%; top:50%;
+  transform:translate(calc(-50% + var(--av-figure-x,-15px)), calc(-50% + var(--av-figure-y,28px)));
+  width:var(--av-figure-w,100px); height:auto;
+  pointer-events:none; z-index:0;
+}
+.av-origin-figure img{
+  display:block; width:100%; height:auto;
+  filter:drop-shadow(0 1px 1px var(--shadow));
+}
+.av-origin-heart{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:var(--av-figure-heart-size,16px); height:var(--av-figure-heart-size,16px);
+  pointer-events:none; z-index:1; filter:drop-shadow(0 1px 1px var(--shadow));
+}
+
+.av-thumb{
+  position:absolute; width:var(--av-thumb-size); height:var(--av-thumb-size); transform:translate(-50%,-50%);
+  border-radius:7px; border:2px solid var(--border); background:#000 center/cover no-repeat;
+  overflow:hidden; cursor:none; z-index:2;
+  transition:width .15s ease-out, height .15s ease-out, box-shadow .15s ease-out, transform .15s ease-out, z-index 0s;
+  box-shadow:0 1px 2px var(--shadow);
+}
+.av-thumb-badge{
+  position:absolute; top:1px; left:1px; font-size:var(--av-badge-font-base); font-weight:700;
+  background:rgba(0,0,0,.55); color:#fff; padding:0 2px; border-radius:2px; line-height:1.3;
+  transition:font-size .15s ease-out, top .15s ease-out, left .15s ease-out, padding .15s ease-out;
+}
+.av-thumb-pin{
+  position:absolute; top:1px; right:1px; font-size:var(--av-badge-font-base); font-weight:700;
+  color:#fff; text-shadow:0 0 3px rgba(0,0,0,.8); transition:font-size .15s ease-out, top .15s ease-out, right .15s ease-out;
+}
+.av-thumb span{ display:none; }
+.av-thumb:hover, .av-thumb:focus-visible{
+  width:var(--av-thumb-expand); height:var(--av-thumb-expand); z-index:5; box-shadow:0 6px 18px var(--shadow);
+  transform:translate(calc(-50% + var(--tx,0px)), calc(-50% + var(--ty,0px)));
+}
+.av-thumb:hover span, .av-thumb:focus-visible span{
+  display:block; position:absolute; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,.6); color:#fff; padding:8px 10px; font-size:var(--av-label-font); line-height:1.3;
+}
+.av-thumb:hover .av-thumb-badge, .av-thumb:focus-visible .av-thumb-badge{
+  font-size:var(--av-badge-font); top:12px; left:12px; padding:2px 7px; border-radius:5px;
+}
+.av-thumb:hover .av-thumb-pin, .av-thumb:focus-visible .av-thumb-pin{
+  font-size:var(--av-pin-font); top:10px; right:12px;
+}
+.av-thumb:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
+
+/* ---- cursor readout + eye ---- */
+.av-readout{
+  position:absolute; pointer-events:none; z-index:6; transform:translate(14px,14px);
+  background:var(--ink); color:var(--bg); font-size:11px; padding:3px 7px;
+  border-radius:6px; white-space:nowrap; opacity:0; transition:opacity .1s;
+}
+.av-stage:hover .av-readout{ opacity:.92; }
+.av-wedge{
+  position:absolute; inset:0; width:100%; height:100%;
+  pointer-events:none; z-index:4; opacity:0; transition:opacity .15s;
+}
+.av-wedge polygon{ fill:var(--accent); fill-opacity:.28; }
+.av-stage:hover .av-wedge{ opacity:1; }
+.av-eye{
+  position:absolute; width:var(--av-eye-size); height:var(--av-eye-size);
+  margin:calc(var(--av-eye-size) / -2) 0 0 calc(var(--av-eye-size) / -2);
+  pointer-events:none; z-index:6; opacity:0; transition:opacity .15s;
+}
+.av-stage:hover .av-eye{ opacity:1; }
+
+/* ---- side panel: one consolidated frame, sections divided by hairlines ---- */
+.av-nav{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:2px 16px;
+}
+.av-nav-section{ padding:14px 0; }
+.av-nav-section + .av-nav-section{ border-top:1px solid var(--border); }
+.av-nav-section h2{ font-size:13px; margin:0 0 8px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.av-vf-frame{
+  aspect-ratio:1/1; border-radius:10px; border:1px solid var(--border);
+  position:relative; overflow:hidden; background:#000;
+}
+.av-vf-frame .av-vf-img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+}
+.av-vf-frame .av-vf-label{
+  position:absolute; left:0; right:0; bottom:0; z-index:1;
+  font-size:11.5px; font-weight:600; color:#fff; text-align:center;
+  padding:5px 6px; background:rgba(0,0,0,.55);
+}
+.av-vf-coords{ margin-top:8px; font-size:11.5px; color:var(--muted); text-align:center; }
+.av-vf-note{ margin-top:8px; font-size:10.5px; color:var(--muted); }
+
+/* =================================================================
+   PREVIEW CALIBRATION CONTROLS — delete this whole rule block (and
+   the matching HTML + wiring script near the end of the body) once
+   sizing is finalized. Nothing above this line depends on it.
+   ================================================================= */
+.avctl{
+  position:fixed; left:0; right:0; bottom:0; width:100%; max-height:44vh;
+  overflow-y:auto; z-index:9999; background:var(--surface);
+  border-top:2px dashed var(--accent-deep);
+  box-shadow:0 -10px 28px rgba(0,0,0,.28); font-size:12px;
+}
+.avctl-toggle{
+  width:100%; text-align:left; font-family:inherit; font-weight:600; font-size:13px;
+  padding:10px 20px; background:var(--accent-tint); color:var(--accent-deep);
+  border:none; cursor:pointer; position:sticky; top:0; z-index:1;
+}
+.avctl-body{ padding:14px 20px 18px; }
+.avctl-groups{ display:flex; flex-wrap:wrap; gap:24px 32px; }
+.avctl-group{ flex:0 0 190px; }
+.avctl-group h3{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+.avctl-group label{ display:block; font-size:11.5px; color:var(--ink); margin-bottom:8px; }
+.avctl-group label span{ float:right; color:var(--muted); font-variant-numeric:tabular-nums; }
+.avctl-group input[type="range"]{ width:100%; margin-top:3px; accent-color:var(--accent-deep); }
+.avctl-bottom-row{ display:flex; gap:20px; align-items:flex-start; margin-top:18px; flex-wrap:wrap; }
+.avctl-reset{
+  flex:0 0 auto; font-family:inherit; font-size:12px; padding:7px 16px;
+  border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); cursor:pointer;
+}
+.avctl-out-wrap{ flex:1 1 320px; min-width:260px; }
+.avctl-out{
+  width:100%; box-sizing:border-box; font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:10.5px; line-height:1.5; padding:8px; border:1px solid var(--border);
+  border-radius:8px; background:var(--bg); color:var(--ink); resize:vertical; height:90px;
+}
+.avctl-out-label{ font-size:10.5px; color:var(--muted); margin:0 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="av-preview-note">Preview mode — shared header/nav loads automatically once this file lives at /angio-viewer/ on the live site.</div>
+
+<div class="av-page">
+  <div class="av-title">
+    <h1>Angiogram Viewer</h1>
+  </div>
+
+  <div class="av-main">
+    <div class="av-side">
+      <div class="av-nav">
+        <div class="av-nav-section">
+          <h2>How to use</h2>
+          <div class="av-howto">Move your cursor across the grid to read live LAO/RAO and cranial/caudal angles. Hover a card to expand it — drag quickly between cards to compare views back to back. The viewfinder below tracks your cursor as you move.</div>
+        </div>
+
+        <div class="av-nav-section">
+          <h2>Vessel</h2>
+          <div class="av-seg" id="avVesselSeg" role="radiogroup" aria-label="Vessel">
+            <button type="button" data-vessel="LM"  aria-pressed="false">LM</button>
+            <button type="button" data-vessel="LAD" aria-pressed="true">LAD</button>
+            <button type="button" data-vessel="LCx" aria-pressed="false">LCx</button>
+            <button type="button" data-vessel="RCA" aria-pressed="false">RCA</button>
+          </div>
+        </div>
+
+        <div class="av-nav-section">
+          <h2>Card set</h2>
+          <div class="av-seg" id="avViewSeg" role="radiogroup" aria-label="Card set">
+            <button type="button" data-view="diagram"   aria-pressed="true">Diagrams</button>
+            <button type="button" data-view="example"   aria-pressed="false">Examples</button>
+            <button type="button" data-view="annotated" aria-pressed="false">Annotated</button>
+          </div>
+        </div>
+
+        <div class="av-nav-section">
+          <h2>Viewfinder</h2>
+          <div class="av-vf-frame" id="avVfFrame">
+            <img class="av-vf-img" id="avVfImg" src="assets/viewfinder-ap.png" alt="">
+            <div class="av-vf-label" id="avVfLabel">Neutral / AP</div>
+          </div>
+          <div class="av-vf-coords" id="avVfCoords">LAO 0&deg; / CRA 0&deg;</div>
+          <div class="av-vf-note">9 placeholder frames shown — final art will be stills of a rotated 3D coronary-only model.</div>
+        </div>
+
+        <div class="av-nav-section">
+          <h2>Legend</h2>
+          <div class="av-vf-coords" style="text-align:left; line-height:1.7;">
+            Dx = diagram &middot; Ex = raw example &middot; An = annotated<br>
+            &#9733; = pinned to axis edge (true angle beyond &plusmn;50&deg;)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="av-stage-wrap">
+      <div class="av-stage" id="avStage">
+        <div class="av-axis av-axis-x"></div>
+        <div class="av-axis av-axis-y"></div>
+        <div class="av-axis-label" style="left:8px; top:calc(50% + 4px);">RAO</div>
+        <div class="av-axis-label" style="right:8px; top:calc(50% + 4px);">LAO</div>
+        <div class="av-axis-label" style="left:calc(50% - 26px); top:6px;">CRANIAL</div>
+        <div class="av-axis-label" style="left:calc(50% - 24px); bottom:4px;">CAUDAL</div>
+        <div class="av-origin-figure" aria-hidden="true">
+          <img src="assets/origin-silhouette.png" alt="">
+        </div>
+        <div class="av-origin-heart" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="100%" height="100%">
+            <path d="M 12,21 C 12,21 3,14.5 3,8.7 C 3,5.6 5.4,3.5 8.2,3.5 C 9.9,3.5 11.2,4.5 12,6
+                     C 12.8,4.5 14.1,3.5 15.8,3.5 C 18.6,3.5 21,5.6 21,8.7 C 21,14.5 12,21 12,21 Z"
+                  fill="var(--av-figure-heart,var(--title))"/>
+          </svg>
+        </div>
+        <svg class="av-wedge" id="avWedge" aria-hidden="true">
+          <polygon id="avWedgePoly" points="0,0 0,0 0,0"></polygon>
+        </svg>
+        <div class="av-readout" id="avReadout">LAO 0&deg; / CRA 0&deg;</div>
+        <div class="av-eye" id="avEye">
+          <svg viewBox="0 0 24 24" width="100%" height="100%">
+            <ellipse cx="12" cy="12" rx="11" ry="6.5" fill="var(--bg)" stroke="var(--ink)" stroke-width="1.4"/>
+            <circle cx="12" cy="12" r="4" fill="var(--brand)"/>
+            <circle cx="12" cy="12" r="1.6" fill="var(--ink)"/>
+          </svg>
+        </div>
+        <!-- thumbnails injected here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var GRID_MAX = 50;          // degrees, both axes, per agreed cap
+  var DOMAIN_THRESHOLD = 10;  // tentative +/-10 deg center zone
+
+  var VESSEL_COLORS = { LM:"var(--c5)", LAD:"var(--c1)", LCx:"var(--c3)", RCA:"var(--c6)" };
+
+  /* ---- data: matches /data/angio-views.json; used as fallback if that
+     file isn't reachable (e.g. this standalone preview) ---- */
+  var FALLBACK_VIEWS = [
+    { id:"ap-cranial-35",      label:"AP / CRA 35",        lao:0,   cran:35, vessels:["LAD"] },
+    { id:"rao-cranial-30",     label:"RAO 30 / CRA 25",     lao:-30, cran:25, vessels:["LAD"] },
+    { id:"lao-cranial-50",     label:"LAO 50 / CRA 25",     lao:50,  cran:25, vessels:["LAD"] },
+    { id:"lateral-90",         label:"Lateral (true 90\u00B0)", lao:50, cran:0, vessels:["LAD","LCx","LM"], pinned:true },
+    { id:"rao-caudal-30",      label:"RAO 30 / CAU 25",     lao:-30, cran:-25, vessels:["LM","LAD","LCx"] },
+    { id:"lao-caudal-45-spider", label:"LAO 45 / CAU 30 (Spider)", lao:45, cran:-30, vessels:["LM","LCx"] },
+    { id:"ap-caudal-25",       label:"AP / CAU 25",         lao:0,   cran:-25, vessels:["LM","LCx"] },
+    { id:"lao-straight-40",    label:"LAO 40 straight",     lao:40,  cran:0,   vessels:["RCA"] },
+    { id:"rao-straight-30",    label:"RAO 30 straight",     lao:-30, cran:0,   vessels:["RCA"] },
+    { id:"lao-cranial-30-rca", label:"LAO 30 / CRA 20",     lao:30,  cran:20,  vessels:["RCA"] }
+  ];
+
+  /* ---- 9-domain lookup: keyed by yBin_xBin, each mapped to its real
+     rendered viewfinder frame ---- */
+  var DOMAINS = {
+    "CRA_RAO": { label:"Cranial / RAO", img:"assets/viewfinder-rao-cran.png" },
+    "CRA_MID": { label:"Cranial",       img:"assets/viewfinder-cran.png" },
+    "CRA_LAO": { label:"Cranial / LAO", img:"assets/viewfinder-lao-cran.png" },
+    "MID_RAO": { label:"RAO",           img:"assets/viewfinder-rao.png" },
+    "MID_MID": { label:"Neutral / AP",  img:"assets/viewfinder-ap.png" },
+    "MID_LAO": { label:"LAO",           img:"assets/viewfinder-lao.png" },
+    "CAU_RAO": { label:"Caudal / RAO",  img:"assets/viewfinder-rao-caud.png" },
+    "CAU_MID": { label:"Caudal",        img:"assets/viewfinder-caud.png" },
+    "CAU_LAO": { label:"Caudal / LAO",  img:"assets/viewfinder-lao-caud.png" }
+  };
+
+  /* ---- placeholder art per card-set toggle ---- */
+  var VIEW_PLACEHOLDER = {
+    diagram:   "assets/placeholder-diagram.png",
+    example:   "assets/placeholder-example.png",
+    annotated: "assets/placeholder-annotated.png"
+  };
+
+  var state = { vessel:"LAD", view:"diagram", views:FALLBACK_VIEWS, lastDomain:null };
+
+  var stage   = document.getElementById("avStage");
+  var readout = document.getElementById("avReadout");
+  var eye     = document.getElementById("avEye");
+  var wedgePoly = document.getElementById("avWedgePoly");
+  var vfFrame = document.getElementById("avVfFrame");
+  var vfImg   = document.getElementById("avVfImg");
+  var vfLabel = document.getElementById("avVfLabel");
+  var vfCoords= document.getElementById("avVfCoords");
+
+  function clamp(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
+
+  function degToPercent(v){ return 50 + (clamp(v, -GRID_MAX, GRID_MAX) / GRID_MAX) * 50; }
+
+  function badgeFor(view){ return view === "diagram" ? "Dx" : view === "example" ? "Ex" : "An"; }
+
+  /* ---- render the thumbnail set for the current vessel ---- */
+  function renderThumbs(){
+    var existing = stage.querySelectorAll(".av-thumb");
+    for (var i = 0; i < existing.length; i++) existing[i].remove();
+
+    var color = VESSEL_COLORS[state.vessel] || "var(--accent)";
+    var relevant = state.views.filter(function(v){ return v.vessels.indexOf(state.vessel) !== -1; });
+
+    var expandPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-thumb-expand")) || 580;
+    var basePx   = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-thumb-size")) || 90;
+    var maxBias  = (expandPx - basePx) / 2 * 0.4; // how far, in px, to nudge an edge card's expansion toward center
+
+    relevant.forEach(function(v){
+      var el = document.createElement("div");
+      el.className = "av-thumb";
+      el.style.left = degToPercent(v.lao) + "%";
+      el.style.top  = (100 - degToPercent(v.cran)) + "%"; /* screen y is inverted vs cranial-positive */
+      el.style.borderColor = color;
+      el.style.backgroundImage = "url(" + VIEW_PLACEHOLDER[state.view] + ")";
+      el.tabIndex = 0;
+      var tx = -(v.lao / GRID_MAX) * maxBias;   // LAO cards (right) pull left; RAO cards (left) pull right
+      var ty = (v.cran / GRID_MAX) * maxBias;   // cranial cards (top) pull down; caudal cards (bottom) pull up
+      el.style.setProperty("--tx", tx.toFixed(1) + "px");
+      el.style.setProperty("--ty", ty.toFixed(1) + "px");
+      el.innerHTML =
+        '<span class="av-thumb-badge">' + badgeFor(state.view) + '</span>' +
+        (v.pinned ? '<span class="av-thumb-pin">&#9733;</span>' : '') +
+        '<span>' + v.label + (v.pinned ? ' &mdash; pinned' : '') + '</span>';
+      stage.appendChild(el);
+    });
+  }
+
+  /* ---- vessel / view toggles ---- */
+  function wireSeg(id, key, onChange){
+    var seg = document.getElementById(id);
+    seg.addEventListener("click", function(e){
+      var btn = e.target.closest("button");
+      if (!btn) return;
+      var buttons = seg.querySelectorAll("button");
+      for (var i = 0; i < buttons.length; i++) buttons[i].setAttribute("aria-pressed", "false");
+      btn.setAttribute("aria-pressed", "true");
+      state[key] = btn.dataset[key === "vessel" ? "vessel" : "view"];
+      onChange();
+    });
+  }
+  wireSeg("avVesselSeg", "vessel", renderThumbs);
+  wireSeg("avViewSeg", "view", renderThumbs);
+
+  /* ---- cursor tracking: degree readout, eye rotation, domain -> viewfinder ---- */
+  stage.addEventListener("mousemove", function(e){
+    var rect = stage.getBoundingClientRect();
+    var originX = rect.left + rect.width / 2;
+    var originY = rect.top + rect.height / 2;
+    var pxPerDegX = (rect.width / 2) / GRID_MAX;
+    var pxPerDegY = (rect.height / 2) / GRID_MAX;
+
+    var lao  = clamp((e.clientX - originX) / pxPerDegX, -GRID_MAX, GRID_MAX);
+    var cran = clamp((originY - e.clientY) / pxPerDegY, -GRID_MAX, GRID_MAX);
+
+    var laoR  = Math.round(lao);
+    var cranR = Math.round(cran);
+
+    readout.textContent = (laoR === 0 ? "AP" : (laoR > 0 ? "LAO " + laoR + "\u00B0" : "RAO " + Math.abs(laoR) + "\u00B0"))
+      + (cranR === 0 ? "" : (cranR > 0 ? " / CRA " + cranR + "\u00B0" : " / CAU " + Math.abs(cranR) + "\u00B0"));
+    readout.style.left = (e.clientX - rect.left) + "px";
+    readout.style.top  = (e.clientY - rect.top) + "px";
+
+    /* eye: follow cursor, rotate to face the origin */
+    var exLocal = e.clientX - rect.left;
+    var eyLocal = e.clientY - rect.top;
+    eye.style.left = exLocal + "px";
+    eye.style.top  = eyLocal + "px";
+    var angle = Math.atan2(originY - e.clientY, originX - e.clientX) * 180 / Math.PI;
+    var facingRotation = angle + 270; // +90 correction on top of the prior +180
+    eye.style.transform = "rotate(" + facingRotation + "deg)";
+
+    /* wedge: two lines from the origin, tangent to the eye's circle, highlighting the space between */
+    var originLocalX = rect.width / 2, originLocalY = rect.height / 2;
+    var dx = exLocal - originLocalX, dy = eyLocal - originLocalY;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var eyeSizeVar = getComputedStyle(document.documentElement).getPropertyValue("--av-eye-size");
+    var eyeR = (parseFloat(eyeSizeVar) || 20) / 2;
+    if (dist > eyeR){
+      var baseAng  = Math.atan2(dy, dx);
+      var halfAng  = Math.asin(eyeR / dist);
+      var tanLen   = Math.sqrt(dist * dist - eyeR * eyeR);
+      var a1 = baseAng - halfAng, a2 = baseAng + halfAng;
+      var t1x = originLocalX + tanLen * Math.cos(a1), t1y = originLocalY + tanLen * Math.sin(a1);
+      var t2x = originLocalX + tanLen * Math.cos(a2), t2y = originLocalY + tanLen * Math.sin(a2);
+      wedgePoly.setAttribute("points",
+        originLocalX + "," + originLocalY + " " + t1x + "," + t1y + " " + t2x + "," + t2y);
+    }
+
+    /* 9-domain classification, only touch viewfinder on change */
+    var xBin = lao > DOMAIN_THRESHOLD ? "LAO" : (lao < -DOMAIN_THRESHOLD ? "RAO" : "MID");
+    var yBin = cran > DOMAIN_THRESHOLD ? "CRA" : (cran < -DOMAIN_THRESHOLD ? "CAU" : "MID");
+    var key = yBin + "_" + xBin;
+    if (key !== state.lastDomain){
+      state.lastDomain = key;
+      var d = DOMAINS[key];
+      vfImg.src = d.img;
+      vfLabel.textContent = d.label;
+    }
+    vfCoords.textContent = readout.textContent;
+  });
+
+  stage.addEventListener("mouseleave", function(){
+    readout.textContent = "AP / neutral";
+    state.lastDomain = "MID_MID";
+    var d = DOMAINS.MID_MID;
+    vfImg.src = d.img;
+    vfLabel.textContent = d.label;
+    vfCoords.textContent = "LAO 0\u00B0 / CRA 0\u00B0";
+  });
+
+  /* ---- load real data if available, else keep the fallback above ---- */
+  fetch("/data/angio-views.json", { cache: "no-store" })
+    .then(function(res){ if (!res.ok) throw 0; return res.json(); })
+    .then(function(data){ if (data && data.views) { state.views = data.views; renderThumbs(); } })
+    .catch(function(){ /* expected in standalone preview; fallback data already active */ });
+
+  renderThumbs();
+})();
+</script>
+
+<!-- =================================================================
+     PREVIEW CALIBRATION CONTROLS — delete this comment, the .avctl
+     div below, and its wiring script once sizing is finalized.
+     ================================================================= -->
+<div class="avctl" id="avCtl">
+  <button type="button" class="avctl-toggle" id="avCtlToggle" aria-expanded="true">Adjust sizing &#9660;</button>
+  <div class="avctl-body" id="avCtlBody">
+    <div class="avctl-groups">
+
+    <div class="avctl-group">
+      <h3>Layout</h3>
+      <label>Nav panel width <span id="avOut-avPanelW">325px</span>
+        <input type="range" id="avPanelW" data-var="--av-panel-w" min="200" max="420" step="5" value="325">
+      </label>
+      <label>Grid stage size <span id="avOut-avStageMax">760px</span>
+        <input type="range" id="avStageMax" data-var="--av-stage-max" min="400" max="900" step="10" value="760">
+      </label>
+    </div>
+
+    <div class="avctl-group">
+      <h3>Thumbnails</h3>
+      <label>Base card size <span id="avOut-avThumbSize">90px</span>
+        <input type="range" id="avThumbSize" data-var="--av-thumb-size" min="24" max="160" step="1" value="90">
+      </label>
+      <label>Expanded card size <span id="avOut-avThumbExpand">620px</span>
+        <input type="range" id="avThumbExpand" data-var="--av-thumb-expand" min="240" max="1100" step="10" value="620">
+      </label>
+    </div>
+
+    <div class="avctl-group">
+      <h3>Fonts</h3>
+      <label>Page heading <span id="avOut-avHeadingFont">40px</span>
+        <input type="range" id="avHeadingFont" data-var="--av-heading-font" min="16" max="56" step="1" value="40">
+      </label>
+      <label>How-to text <span id="avOut-avHowtoFont">13px</span>
+        <input type="range" id="avHowtoFont" data-var="--av-howto-font" min="10" max="18" step=".5" value="13">
+      </label>
+      <label>Expanded card label <span id="avOut-avLabelFont">36px</span>
+        <input type="range" id="avLabelFont" data-var="--av-label-font" min="10" max="50" step="1" value="36">
+      </label>
+      <label>Expanded badge (Dx/Ex/An) <span id="avOut-avBadgeFont">20px</span>
+        <input type="range" id="avBadgeFont" data-var="--av-badge-font" min="10" max="30" step="1" value="20">
+      </label>
+      <label>Expanded pin star <span id="avOut-avPinFont">17px</span>
+        <input type="range" id="avPinFont" data-var="--av-pin-font" min="10" max="24" step="1" value="17">
+      </label>
+      <label>Base badge/pin (small state) <span id="avOut-avBadgeFontBase">10px</span>
+        <input type="range" id="avBadgeFontBase" data-var="--av-badge-font-base" min="5" max="16" step=".5" value="10">
+      </label>
+    </div>
+
+    <div class="avctl-group">
+      <h3>Other</h3>
+      <label>Eye icon size <span id="avOut-avEyeSize">35px</span>
+        <input type="range" id="avEyeSize" data-var="--av-eye-size" min="12" max="55" step="1" value="35">
+      </label>
+    </div>
+
+    <div class="avctl-group">
+      <h3>Origin figure</h3>
+      <label>Silhouette size <span id="avOut-avFigureW">260px</span>
+        <input type="range" id="avFigureW" data-var="--av-figure-w" min="40" max="340" step="2" value="260">
+      </label>
+      <label>Horizontal offset <span id="avOut-avFigureX">-6px</span>
+        <input type="range" id="avFigureX" data-var="--av-figure-x" min="-80" max="80" step="1" value="-6">
+      </label>
+      <label>Vertical offset <span id="avOut-avFigureY">60px</span>
+        <input type="range" id="avFigureY" data-var="--av-figure-y" min="-100" max="150" step="1" value="60">
+      </label>
+      <label>Heart mark size <span id="avOut-avFigureHeartSize">32px</span>
+        <input type="range" id="avFigureHeartSize" data-var="--av-figure-heart-size" min="8" max="44" step="1" value="32">
+      </label>
+    </div>
+    </div>
+
+    <div class="avctl-bottom-row">
+      <button type="button" class="avctl-reset" id="avCtlReset">Reset to current defaults</button>
+      <div class="avctl-out-wrap">
+        <div class="avctl-out-label">Copy this back to Claude to update defaults:</div>
+        <textarea class="avctl-out" id="avCtlOut" readonly onclick="this.select()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var DEFAULTS = {}; // captured from each input's initial value attribute
+  var inputs = document.querySelectorAll("#avCtlBody input[type=range]");
+  var root = document.documentElement.style;
+  var out = document.getElementById("avCtlOut");
+
+  function apply(input){
+    var v = input.value;
+    root.setProperty(input.dataset.var, v + "px");
+    var label = document.getElementById("avOut-" + input.id);
+    if (label) label.textContent = v + "px";
+  }
+
+  function refreshOutput(){
+    var lines = [];
+    inputs.forEach(function(input){ lines.push(input.dataset.var + ": " + input.value + "px;"); });
+    out.value = lines.join("\n");
+  }
+
+  inputs.forEach(function(input){
+    DEFAULTS[input.id] = input.value;
+    apply(input);
+    input.addEventListener("input", function(){ apply(input); refreshOutput(); });
+  });
+  refreshOutput();
+
+  document.getElementById("avCtlReset").addEventListener("click", function(){
+    inputs.forEach(function(input){ input.value = DEFAULTS[input.id]; apply(input); });
+    refreshOutput();
+  });
+
+  var toggle = document.getElementById("avCtlToggle");
+  var body = document.getElementById("avCtlBody");
+  toggle.addEventListener("click", function(){
+    var open = body.style.display !== "none";
+    body.style.display = open ? "none" : "block";
+    toggle.setAttribute("aria-expanded", String(!open));
+    toggle.innerHTML = "Adjust sizing " + (open ? "&#9654;" : "&#9660;");
+  });
+})();
+</script>
+
+<script>window.COLLATERA_SECTION = "Angiogram Viewer";</script>
+<script src="/assets/site.js"></script>
+
+</body>
+</html>
