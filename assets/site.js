@@ -17,7 +17,8 @@ const SECTIONS = [
   { title: "Slide Decks",                  href: "/decks/",        sub: "Presentations and talks" }, 
   { title: "How To Guides",                href: "/how-to/",       sub: "Walkthroughs and how-tos" },
   { title: "Self-Education Resource Hub",  href: "/self-educate/", sub: "Learning resources" },
-  { title: "Reportable (demo)",            href: "/reportabledev/",sub: "Project demo — reporting duty lookup", dev: true }
+  { title: "Reportable (demo)",            href: "/reportabledev/",sub: "Project demo — reporting duty lookup", dev: true },
+  { title: "Angiogram Viewer (demo)",      href: "/angio-viewer/", sub: "Project demo — angiographic view trainer", dev: true }
 ];
 
 /* Disclaimer text shown in the strip under the header */
