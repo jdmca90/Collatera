@@ -1,0 +1,14 @@
+{
+  "views": [
+    { "id": "ap-cranial-35",        "label": "AP / CRA 35",              "lao": 0,   "cran": 35,  "vessels": ["LAD"] },
+    { "id": "rao-cranial-30",       "label": "RAO 30 / CRA 25",          "lao": -30, "cran": 25,  "vessels": ["LAD"] },
+    { "id": "lao-cranial-50",       "label": "LAO 50 / CRA 25",          "lao": 50,  "cran": 25,  "vessels": ["LAD"] },
+    { "id": "lateral-90",           "label": "Lateral (true 90\u00B0)",  "lao": 50,  "cran": 0,   "vessels": ["LAD", "LCx", "LM"], "pinned": true },
+    { "id": "rao-caudal-30",        "label": "RAO 30 / CAU 25",          "lao": -30, "cran": -25, "vessels": ["LM", "LAD", "LCx"] },
+    { "id": "lao-caudal-45-spider", "label": "LAO 45 / CAU 30 (Spider)", "lao": 45,  "cran": -30, "vessels": ["LM", "LCx"] },
+    { "id": "ap-caudal-25",         "label": "AP / CAU 25",              "lao": 0,   "cran": -25, "vessels": ["LM", "LCx"] },
+    { "id": "lao-straight-40",      "label": "LAO 40 straight",          "lao": 40,  "cran": 0,   "vessels": ["RCA"] },
+    { "id": "rao-straight-30",      "label": "RAO 30 straight",          "lao": -30, "cran": 0,   "vessels": ["RCA"] },
+    { "id": "lao-cranial-30-rca",   "label": "LAO 30 / CRA 20",          "lao": 30,  "cran": 20,  "vessels": ["RCA"] }
+  ]
+}
