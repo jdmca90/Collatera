@@ -1697,6 +1697,17 @@
         "Meds"
       ],
       "note": ""
+    },
+    {
+      "id": "img_hden7g6y",
+      "file": "/images/iabp-2-1.jpg",
+      "title": "IABP 2:1",
+      "cat": "Shock",
+      "tags": [
+        "MCS",
+        "IABP"
+      ],
+      "note": ""
     }
   ]
 }
