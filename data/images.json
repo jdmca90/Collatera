@@ -1708,6 +1708,16 @@
         "IABP"
       ],
       "note": ""
+    },
+    {
+      "id": "img_ipkp23ns",
+      "file": "/images/rhc-waveform-example.jpg",
+      "title": "RHC Waveform Example",
+      "cat": "HemoDyn",
+      "tags": [
+        "RHC"
+      ],
+      "note": ""
     }
   ]
 }
