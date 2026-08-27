@@ -1836,6 +1836,17 @@
         "Algo"
       ],
       "note": "Diuresis Algo"
+    },
+    {
+      "id": "img_owhx7s9i",
+      "file": "/images/arterial-line.jpg",
+      "title": "Arterial Line",
+      "cat": "Pathophys",
+      "tags": [
+        "Vasc",
+        "MCS"
+      ],
+      "note": ""
     }
   ]
 }
