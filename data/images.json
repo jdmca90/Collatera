@@ -1794,6 +1794,17 @@
         "LVAD"
       ],
       "note": ""
+    },
+    {
+      "id": "img_n5ripvyx",
+      "file": "/images/iabp-summary.jpg",
+      "title": "IABP Summary",
+      "cat": "Shock",
+      "tags": [
+        "MCS",
+        "IABP"
+      ],
+      "note": ""
     }
   ]
 }
