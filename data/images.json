@@ -1859,6 +1859,17 @@
         "Vasc"
       ],
       "note": ""
+    },
+    {
+      "id": "img_lm3q4y9p",
+      "file": "/images/ventilator-modes.jpg",
+      "title": "Ventilator Modes",
+      "cat": "Pathophys",
+      "tags": [
+        "Sats",
+        "Vent"
+      ],
+      "note": ""
     }
   ]
 }
