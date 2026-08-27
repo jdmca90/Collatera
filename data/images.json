@@ -1816,6 +1816,16 @@
         "Pace"
       ],
       "note": ""
+    },
+    {
+      "id": "img_k38822og",
+      "file": "/images/pulse-oximetry.jpg",
+      "title": "Pulse Oximetry",
+      "cat": "Pathophys",
+      "tags": [
+        "Sats"
+      ],
+      "note": ""
     }
   ]
 }
