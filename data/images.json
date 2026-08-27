@@ -1750,6 +1750,17 @@
         "Table"
       ],
       "note": ""
+    },
+    {
+      "id": "img_ccsyepco",
+      "file": "/images/undifferentiated-shock.jpg",
+      "title": "Undifferentiated Shock",
+      "cat": "Shock",
+      "tags": [
+        "Table",
+        "Algo"
+      ],
+      "note": ""
     }
   ]
 }
