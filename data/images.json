@@ -1729,6 +1729,17 @@
         "ECMO"
       ],
       "note": ""
+    },
+    {
+      "id": "img_fckev5h9",
+      "file": "/images/ecmo-troubleshooting.jpg",
+      "title": "ECMO Troubleshooting",
+      "cat": "Shock",
+      "tags": [
+        "ECMO",
+        "MCS"
+      ],
+      "note": ""
     }
   ]
 }
