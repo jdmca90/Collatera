@@ -1826,6 +1826,16 @@
         "Sats"
       ],
       "note": ""
+    },
+    {
+      "id": "img_fct7q1p4",
+      "file": "/images/negative-fluid-balance.jpg",
+      "title": "Negative Fluid Balance",
+      "cat": "Pathophys",
+      "tags": [
+        "Algo"
+      ],
+      "note": "Diuresis Algo"
     }
   ]
 }
