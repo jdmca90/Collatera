@@ -1870,6 +1870,16 @@
         "Vent"
       ],
       "note": ""
+    },
+    {
+      "id": "img_zm6ho3sz",
+      "file": "/images/teg.jpg",
+      "title": "TEG",
+      "cat": "Pathophys",
+      "tags": [
+        "Vasc"
+      ],
+      "note": "Thromboelastography"
     }
   ]
 }
