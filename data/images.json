@@ -1783,6 +1783,17 @@
         "Algo"
       ],
       "note": ""
+    },
+    {
+      "id": "img_mw102sal",
+      "file": "/images/lvad-summary.jpg",
+      "title": "LVAD Summary",
+      "cat": "Shock",
+      "tags": [
+        "MCS",
+        "LVAD"
+      ],
+      "note": ""
     }
   ]
 }
