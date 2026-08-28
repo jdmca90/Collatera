@@ -1891,6 +1891,17 @@
         "MCS"
       ],
       "note": ""
+    },
+    {
+      "id": "img_z1x12qvh",
+      "file": "/images/peripheral-va-ecmo.jpg",
+      "title": "Peripheral VA-ECMO",
+      "cat": "Shock",
+      "tags": [
+        "ECMO",
+        "MCS"
+      ],
+      "note": ""
     }
   ]
 }
