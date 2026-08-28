@@ -1934,6 +1934,17 @@
         "RHC"
       ],
       "note": ""
+    },
+    {
+      "id": "img_bbfqdo5m",
+      "file": "/images/va-ecmo-circuit-diagram.jpg",
+      "title": "VA-ECMO Circuit Diagram",
+      "cat": "Anatomy",
+      "tags": [
+        "ECMO",
+        "Vasc"
+      ],
+      "note": ""
     }
   ]
 }
