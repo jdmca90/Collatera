@@ -1880,6 +1880,17 @@
         "Vasc"
       ],
       "note": "Thromboelastography"
+    },
+    {
+      "id": "img_o7i8a3v6",
+      "file": "/images/central-va-ecmo.jpg",
+      "title": "Central VA-ECMO",
+      "cat": "Shock",
+      "tags": [
+        "ECMO",
+        "MCS"
+      ],
+      "note": ""
     }
   ]
 }
