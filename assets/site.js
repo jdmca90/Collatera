@@ -521,6 +521,7 @@ window.collateraIsAdmin = false;
         <a class="cauth-link cauth-admin" id="cauthReview" href="/review/">Review queue</a>
         <a class="cauth-link cauth-admin" id="cauthUpload" href="${UPLOAD_URL}">Image Uploader [Admin]</a>
         <a class="cauth-link cauth-admin" id="cauthDeckUpload" href="${DECK_UPLOAD_URL}">Deck Uploader [Admin]</a>
+        <a class="cauth-link cauth-admin" id="cauthNotesCapture" href="/notes/capture/">Capture Notes [Admin]</a>
         <hr class="cauth-rule cauth-rule-admin">
       </div>
       <button class="cauth-link" id="cauthEditBtn" type="button">Edit profile / password</button>
