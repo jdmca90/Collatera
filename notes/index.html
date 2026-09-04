@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes · Collatera</title>
+<meta name="description" content="Whiteboard photos, links, files and notes captured during lectures and cases, organized by topic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css?v=7">
+</head>
+<body>
+
+<div class="rf-bg" aria-hidden="true"></div>
+<div class="rf-wash" aria-hidden="true"></div>
+<div class="rf-slab" aria-hidden="true"></div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" class="search-input" type="search" placeholder="Search bundle titles…" autocomplete="off" aria-label="Search Notes bundles">
+  </div>
+  <div class="chips" id="chips" role="tablist" aria-label="Sort bundles">
+    <button class="chip is-mode" id="chipAll" type="button" role="tab" aria-pressed="true">All</button>
+    <button class="chip is-mode" id="chipRecent" type="button" role="tab" aria-pressed="false">Recent</button>
+    <button class="chip is-mode" id="chipMost" type="button" role="tab" aria-pressed="false">Most viewed</button>
+  </div>
+</div>
+
+<main>
+  <div class="count" id="count"></div>
+  <div class="gal-grid" id="galGrid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <strong id="emptyTitle">Nothing found</strong>
+    <span id="emptyBody">Try a different word.</span>
+  </div>
+</main>
+
+<footer>collatera.org &middot; a growing resource for physician innovators &middot; est. 2026</footer>
+
+<!-- bundle detail (floating overlay) -->
+<div class="scrim" id="scrim"></div>
+<div class="bpanel" id="bpanel">
+  <div class="bpanel-head">
+    <div class="bpanel-eyebrow">Bundle</div>
+    <div class="bpanel-title" id="bpTitle"></div>
+    <div class="bpanel-meta" id="bpMeta"></div>
+    <button class="bpanel-close" id="bpClose" aria-label="Close">&#10005;</button>
+  </div>
+  <div class="cloud" id="bpCloud"><div class="cloud-inner" id="bpCloudInner"></div></div>
+</div>
+
+<!-- single item detail (nested overlay) -->
+<div class="iscrim" id="iscrim"></div>
+<div class="ipanel" id="ipanel">
+  <button class="ipanel-close" id="ipClose" aria-label="Close">&#10005;</button>
+  <div class="ipanel-media" id="ipMedia"></div>
+  <div class="ipanel-body" id="ipBody"></div>
+</div>
+
+<!-- shared header / nav / banner -->
+<script>window.COLLATERA_SECTION = "Notes";</script>
+<script src="/assets/site.js?v=7"></script>
+
+<script>
+/* =================================================================
+   NOTES GALLERY — reads /data/notes.json (published bundles only;
+   drafts and pending items live in Supabase's capture_items table
+   and never reach this page — that's the review/curate page's job).
+
+   The pile-cover and bundle-detail-cloud logic below (seeded RNG,
+   phyllotaxis overflow layout, skyline bin-packing) is carried over
+   unchanged from the approved Step 3 preview — only the data source
+   and per-item rendering (real <img>/file/link/note content instead
+   of generated placeholder art) changed for the real build.
+   ================================================================= */
+
+function seedFromString(s){ let h = 0; for (let i=0;i<s.length;i++) h = (Math.imul(31,h) + s.charCodeAt(i))|0; return h>>>0; }
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function shuffled(arr, rng){ const a = arr.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function escAttr(s){ return String(s == null ? "" : s).replace(/"/g, "&quot;"); }
+
+/* real-item display label — same fallback the capture page itself uses,
+   so an item reads the same way in the gallery as it did while capturing it */
+function itemLabel(item){
+  if (item.type === "photo") return item.label || "Photo";
+  if (item.type === "link")  return item.label || shortHost(item.url);
+  if (item.type === "file")  return item.label || "File";
+  return item.content || "";
+}
+function shortHost(url){
+  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url || ""; }
+}
+function fileIconSVG(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--c5)" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>`;
+}
+function linkIconSVG(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--c2)" stroke-width="1.8"><path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07L11.5 4.5"/><path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 007.07 7.07L12.5 19.5"/></svg>`;
+}
+/* thumbnail content for a pile cover / bundle-cloud tile */
+function tileMedia(item, small){
+  if (item.type === "photo") return `<img src="${escAttr(item.path)}" alt="" loading="lazy">`;
+  if (item.type === "link" && item.preview_image) return `<img src="${escAttr(item.preview_image)}" alt="" loading="lazy">`;
+  if (item.type === "link") return `<div class="tile-icon">${linkIconSVG()}</div>`;
+  if (item.type === "file") return `<div class="tile-icon">${fileIconSVG()}</div>`;
+  return `<div class="tile-note">${esc((item.content || "").slice(0, 140))}</div>`;
+}
+
+function totalCount(b){ return b.items.length; }
+
+/* ---- gallery: photo-pile cover, built live from the bundle's own items ---- */
+const POSITIONS_BY_COUNT = {
+  1: [
+    [ { top:6,  left:6,  w:88, h:88, rot:-2 } ],
+    [ { top:10, left:16, w:74, h:80, rot:4 } ],
+  ],
+  2: [
+    [ { top:6,  left:4,  w:58, h:64, rot:-8 }, { top:30, left:44, w:58, h:64, rot:7 } ],
+    [ { top:10, left:2,  w:50, h:80, rot:-4 }, { top:6,  left:48, w:50, h:80, rot:5 } ],
+  ],
+  3: [
+    [ { top:4,  left:4,  w:52, h:58, rot:-9 }, { top:8,  left:50, w:48, h:54, rot:6 }, { top:44, left:26, w:52, h:56, rot:-3 } ],
+    [ { top:2,  left:2,  w:48, h:52, rot:-6 }, { top:30, left:36, w:50, h:54, rot:5 }, { top:10, left:66, w:32, h:60, rot:-8 } ],
+    [ { top:4,  left:2,  w:34, h:44, rot:-5 }, { top:52, left:2,  w:34, h:44, rot:6 }, { top:8,  left:40, w:56, h:88, rot:-2 } ],
+  ],
+  4: [
+    [ { top:4,  left:2,  w:46, h:50, rot:-8 }, { top:2,  left:52, w:46, h:50, rot:6 }, { top:46, left:4,  w:48, h:52, rot:5 }, { top:44, left:50, w:48, h:52, rot:-6 } ],
+    [ { top:2,  left:4,  w:44, h:48, rot:-6 }, { top:16, left:42, w:46, h:50, rot:5 }, { top:38, left:10, w:44, h:48, rot:-4 }, { top:46, left:52, w:44, h:48, rot:7 } ],
+    [ { top:8,  left:2,  w:44, h:56, rot:-5 }, { top:2,  left:40, w:30, h:36, rot:6 }, { top:42, left:38, w:32, h:38, rot:-7 }, { top:14, left:66, w:32, h:70, rot:4 } ],
+  ],
+  5: [
+    [ { top:10, left:4,  w:44, h:52, rot:-9 }, { top:6,  left:52, w:42, h:48, rot:6 }, { top:40, left:26, w:46, h:54, rot:-3 }, { top:34, left:64, w:40, h:46, rot:8 }, { top:2,  left:26, w:40, h:44, rot:-4 } ],
+    [ { top:2,  left:2,  w:42, h:46, rot:-6 }, { top:14, left:34, w:42, h:46, rot:5 }, { top:28, left:16, w:42, h:46, rot:-4 }, { top:40, left:48, w:42, h:46, rot:7 }, { top:12, left:60, w:40, h:44, rot:-8 } ],
+    [ { top:2,  left:2,  w:38, h:42, rot:-7 }, { top:2,  left:62, w:38, h:42, rot:6 }, { top:52, left:2,  w:38, h:42, rot:5 }, { top:52, left:62, w:38, h:42, rot:-5 }, { top:22, left:30, w:46, h:52, rot:-2 } ],
+    [ { top:6,  left:0,  w:40, h:46, rot:-5 }, { top:2,  left:34, w:44, h:50, rot:4 }, { top:36, left:6,  w:42, h:48, rot:-8 }, { top:30, left:44, w:40, h:46, rot:6 }, { top:12, left:66, w:36, h:42, rot:-3 } ],
+  ],
+};
+/* 6-9 item piles: generated via a phyllotaxis (sunflower-seed) spiral —
+   the same trick that spreads points evenly without a visible grid,
+   tiles shrinking slightly as more of them join the pile. */
+function generatePileSlots(n, rng){
+  const golden = 137.5 * Math.PI / 180;
+  const baseSize = Math.max(30, 60 - (n - 5) * 3.5);
+  const slots = [];
+  for (let i = 0; i < n; i++){
+    const angle = i * golden + rng() * 0.5;
+    const radius = 5 + Math.sqrt(i) * 15 + rng() * 3;
+    const w = baseSize + (rng() * 8 - 4), h = baseSize + (rng() * 8 - 4);
+    slots.push({
+      left: 50 + radius * Math.cos(angle) - w / 2,
+      top: 50 + radius * Math.sin(angle) * 0.78 - h / 2,
+      w, h, rot: rng() * 16 - 8,
+    });
+  }
+  return slots;
+}
+function pileCover(b){
+  const rng = mulberry32(b.seed + 99);
+  const n = Math.max(1, Math.min(9, b.items.length));
+  const picks = shuffled(b.items, rng).slice(0, n);
+  const slots = n <= 5 ? shuffled(POSITIONS_BY_COUNT[n][Math.floor(rng() * POSITIONS_BY_COUNT[n].length)], rng)
+                       : generatePileSlots(n, rng);
+  return picks.map((item, i) => {
+    const slot = slots[i];
+    const jTop = rng()*6-3, jLeft = rng()*6-3, jRot = rng()*8-4;
+    const z = i + 1;
+    const bg = item.type === "file" ? "var(--c5-tint)" : item.type === "note" ? "var(--c6-tint)" : "var(--surface)";
+    return `<div class="pile-tile" style="top:${(slot.top+jTop).toFixed(1)}%;left:${(slot.left+jLeft).toFixed(1)}%;width:${slot.w}%;height:${slot.h}%;transform:rotate(${(slot.rot+jRot).toFixed(1)}deg);z-index:${z};background:${bg};">${tileMedia(item, true)}</div>`;
+  }).join("");
+}
+
+/* ---- bundle detail cloud: skyline bin-packing, tile sizing fixed by type ---- */
+const TYPE_DIM = {
+  photo: { w:200, h:200 },
+  note:  { w:180, h:180 },
+  link:  { w:240, h:84  },
+  file:  { w:240, h:84  },
+};
+function ctileMedia(item){
+  if (item.type === "photo") return `<div class="ctile-media">${tileMedia(item)}</div>`;
+  if (item.type === "link")  return `<div class="ctile-media"><div class="ctile-linkthumb">${tileMedia(item)}</div><div class="ctile-linktitle">${esc(itemLabel(item))}</div></div>`;
+  if (item.type === "file")  return `<div class="ctile-media"><div class="ctile-filethumb">${fileIconSVG()}</div><div class="ctile-filename">${esc(itemLabel(item))}</div></div>`;
+  return `<div class="ctile-media"><div class="ctile-notetxt">${esc(item.content || "")}</div></div>`;
+}
+const GRID = 4;
+const TILE_GAP = 8;
+function packSkyline(viewport, sizer, entries, rng){
+  const u = px => Math.round(px / GRID);
+  const items = entries.map(e => ({ entry:e, w:u(e.dim.w + TILE_GAP), h:u(e.dim.h + TILE_GAP) }));
+  const maxTypeW = Math.max(...Object.values(TYPE_DIM).map(d => u(d.w + TILE_GAP)));
+  const availW = Math.max(maxTypeW + 2, u(viewport.clientWidth - 24));
+  const targetW = Math.max(Math.max(...items.map(i => i.w)), availW);
+  const heights = new Array(targetW).fill(0);
+  const center = targetW / 2;
+  const order = items.slice().sort((a,b) => (b.h - a.h) || (b.w - a.w) || (rng() - 0.5));
+  let maxH = 0;
+  order.forEach(it => {
+    let bestX = 0, bestY = Infinity, bestDist = Infinity;
+    for (let x = 0; x <= targetW - it.w; x++){
+      let y = 0;
+      for (let i = x; i < x + it.w; i++) y = Math.max(y, heights[i]);
+      const dist = Math.abs((x + it.w/2) - center);
+      if (y < bestY - 1e-6 || (Math.abs(y - bestY) < 1e-6 && dist < bestDist)){ bestY = y; bestX = x; bestDist = dist; }
+    }
+    for (let i = bestX; i < bestX + it.w; i++) heights[i] = bestY + it.h;
+    maxH = Math.max(maxH, bestY + it.h);
+    it.entry.px = bestX * GRID; it.entry.py = bestY * GRID;
+  });
+  const blockW = targetW * GRID, blockH = maxH * GRID;
+  const offX = Math.max(12, (viewport.clientWidth - blockW) / 2);
+  const offY = Math.max(12, (viewport.clientHeight - blockH) / 2);
+  entries.forEach(e => {
+    e.el.style.left = (offX + e.px + TILE_GAP/2) + "px";
+    e.el.style.top  = (offY + e.py + TILE_GAP/2) + "px";
+  });
+  sizer.style.minHeight = (blockH + offY * 2) + "px";
+}
+
+const scrim = document.getElementById("scrim"), bpanel = document.getElementById("bpanel");
+const bpCloud = document.getElementById("bpCloud"), bpCloudInner = document.getElementById("bpCloudInner");
+const bpTitle = document.getElementById("bpTitle"), bpMeta = document.getElementById("bpMeta");
+
+function openBundlePanel(bundle){
+  bpTitle.textContent = bundle.title;
+  bpMeta.textContent = `${totalCount(bundle)} item${totalCount(bundle) === 1 ? "" : "s"} · posted ${bundle.posted}${bundle.updated ? ", updated " + bundle.updated : ""}`;
+
+  try { window.CollateraViews && window.CollateraViews.record(bundle.id); } catch {}
+
+  const rng = mulberry32(bundle.seed + 3);
+  bpCloudInner.innerHTML = "";
+  bpCloudInner.style.minHeight = "";
+  bpCloud.scrollTop = 0;
+  const entries = [];
+  shuffled(bundle.items, rng).forEach((item) => {
+    const tile = document.createElement("div");
+    tile.className = `ctile ${item.type}`;
+    tile.innerHTML = ctileMedia(item);
+    tile.addEventListener("click", () => openItemDetail(item));
+    bpCloudInner.appendChild(tile);
+    entries.push({ el: tile, dim: TYPE_DIM[item.type] });
+  });
+  packSkyline(bpCloud, bpCloudInner, entries, rng);
+
+  scrim.classList.add("show"); bpanel.classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+function closeBundlePanel(){ scrim.classList.remove("show"); bpanel.classList.remove("show"); document.body.style.overflow = ""; closeItemDetail(); }
+document.getElementById("bpClose").onclick = closeBundlePanel;
+scrim.onclick = closeBundlePanel;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape"){ closeItemDetail(); closeBundlePanel(); } });
+
+/* ---- single item detail, nested above the cloud panel (read-only —
+   editing lives on the review/curate page, not the public gallery) ---- */
+const iscrim = document.getElementById("iscrim"), ipanel = document.getElementById("ipanel");
+const ipMedia = document.getElementById("ipMedia"), ipBody = document.getElementById("ipBody");
+function openItemDetail(item){
+  if (item.type === "photo"){
+    ipMedia.innerHTML = `<img src="${escAttr(item.path)}" alt="">`; ipMedia.hidden = false;
+    ipBody.innerHTML = `<div class="ipanel-type photo">Photo</div><div class="ipanel-title">${esc(itemLabel(item))}</div>`;
+  } else if (item.type === "link"){
+    if (item.preview_image){ ipMedia.innerHTML = `<img src="${escAttr(item.preview_image)}" alt="">`; ipMedia.hidden = false; }
+    else { ipMedia.hidden = true; }
+    ipBody.innerHTML = `<div class="ipanel-type link">Link</div><div class="ipanel-title">${esc(itemLabel(item))}</div>
+      <div class="ipanel-cap">${esc(item.url || "")}</div>
+      <div class="ipanel-actionrow"><a class="bp-ghost" href="${escAttr(item.url)}" target="_blank" rel="noopener">Open link &#8599;</a></div>`;
+  } else if (item.type === "file"){
+    ipMedia.hidden = true;
+    ipBody.innerHTML = `<div class="ipanel-type file">File</div><div class="ipanel-title">${esc(itemLabel(item))}</div>
+      <div class="ipanel-actionrow"><a class="bp-ghost" href="${escAttr(item.path)}" download>Download</a></div>`;
+  } else {
+    ipMedia.hidden = true;
+    ipBody.innerHTML = `<div class="ipanel-type note">Note</div><div class="ipanel-notetxt" style="margin-top:8px;">${esc(item.content || "")}</div>`;
+  }
+  iscrim.classList.add("show"); ipanel.classList.add("show");
+}
+function closeItemDetail(){ iscrim.classList.remove("show"); ipanel.classList.remove("show"); }
+document.getElementById("ipClose").onclick = closeItemDetail;
+iscrim.onclick = closeItemDetail;
+
+/* =================================================================
+   LOAD /data/notes.json, RENDER GRID, SEARCH + SORT
+   ================================================================= */
+const galGrid = document.getElementById("galGrid"), countEl = document.getElementById("count");
+const emptyEl = document.getElementById("empty"), emptyTitle = document.getElementById("emptyTitle"), emptyBody = document.getElementById("emptyBody");
+const searchEl = document.getElementById("search");
+
+let BUNDLES = [];
+let sortMode = "all"; // all | recent | most
+
+function views(){ try { return window.CollateraViews ? window.CollateraViews.all() : {}; } catch { return {}; } }
+
+function visibleBundles(){
+  const q = searchEl.value.trim().toLowerCase();
+  let list = BUNDLES.filter(b => !q || b.title.toLowerCase().includes(q));
+  const v = views();
+  if (sortMode === "recent"){
+    list = list.slice().sort((a,b) => window.CollateraViews.score(v[b.id]) - window.CollateraViews.score(v[a.id]) || b.posted.localeCompare(a.posted));
+  } else if (sortMode === "most"){
+    list = list.slice().sort((a,b) => ((v[b.id]?.c || 0) - (v[a.id]?.c || 0)) || b.posted.localeCompare(a.posted));
+  } else {
+    list = list.slice().sort((a,b) => b.posted.localeCompare(a.posted));
+  }
+  return list;
+}
+
+function render(){
+  const list = visibleBundles();
+  galGrid.innerHTML = "";
+  countEl.textContent = list.length === 0 ? "" : `${list.length} bundle${list.length === 1 ? "" : "s"}`;
+
+  if (list.length === 0){
+    emptyEl.style.display = "";
+    if (BUNDLES.length === 0){
+      emptyTitle.textContent = "No bundles published yet";
+      emptyBody.textContent = "Captured notes show up here once a bundle is reviewed and published.";
+    } else {
+      emptyTitle.textContent = "Nothing found";
+      emptyBody.textContent = "Try a different word.";
+    }
+    return;
+  }
+  emptyEl.style.display = "none";
+
+  list.forEach((b) => {
+    const rng = mulberry32(b.seed + 7);
+    const dotOrder = shuffled(b.items.map(it => it.type), rng);
+    const card = document.createElement("button");
+    card.className = "bcard";
+    card.innerHTML = `
+      <div class="bcard-cover">${pileCover(b)}<span class="bcard-count">${totalCount(b)} item${totalCount(b) === 1 ? "" : "s"}</span></div>
+      <div class="bcard-body">
+        <span class="bcard-title">${esc(b.title)}</span>
+        <span class="bcard-meta">Posted ${esc(b.posted)}${b.updated ? `<br>Last updated ${esc(b.updated)}` : ""}</span>
+        <div class="bcard-dots">${dotOrder.map(t => `<span class="dot ${t}"></span>`).join("")}</div>
+      </div>`;
+    card.onclick = () => openBundlePanel(b);
+    galGrid.appendChild(card);
+  });
+}
+
+function setSortMode(mode){
+  sortMode = mode;
+  ["chipAll","chipRecent","chipMost"].forEach(id => document.getElementById(id).setAttribute("aria-pressed", "false"));
+  document.getElementById(mode === "all" ? "chipAll" : mode === "recent" ? "chipRecent" : "chipMost").setAttribute("aria-pressed", "true");
+  render();
+}
+document.getElementById("chipAll").onclick = () => setSortMode("all");
+document.getElementById("chipRecent").onclick = () => setSortMode("recent");
+document.getElementById("chipMost").onclick = () => setSortMode("most");
+searchEl.addEventListener("input", render);
+
+fetch("/data/notes.json")
+  .then(r => r.json())
+  .then(data => {
+    BUNDLES = (data.bundles || []).map(b => Object.assign({}, b, { seed: seedFromString(b.id || b.title) }));
+    render();
+  })
+  .catch(err => {
+    countEl.textContent = "";
+    galGrid.innerHTML = "";
+    emptyEl.style.display = "";
+    emptyTitle.textContent = "Couldn't load Notes";
+    emptyBody.textContent = "Check that /data/notes.json exists and is valid JSON. " + esc(err.message);
+  });
+</script>
+
+<style>
+/* ============================================================
+   Notes — page-local background (rf- prefix, no global clash),
+   verbatim from the shared page-local pattern (see decks/index.html).
+   ============================================================ */
+body{ position:relative; background:var(--bg); }
+
+.rf-bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:var(--rf-tile);
+  background-repeat:repeat; background-size:var(--rf-texsize) auto; background-position:center;
+  opacity:var(--rf-texop); filter:var(--rf-coral, none);
+}
+.rf-wash{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:var(--rf-pad); opacity:var(--rf-wash);
+}
+.rf-slab{
+  position:absolute; z-index:0; pointer-events:none;
+  left:50%; transform:translateX(-50%);
+  width:calc(var(--rf-core) + 2 * var(--rf-band));
+  top:calc(var(--rf-top) - var(--rf-band));
+  height:calc(100% - var(--rf-top) - var(--rf-bot) + 2 * var(--rf-band));
+  background:var(--rf-pad);
+  opacity:var(--rf-op);
+  border-radius:var(--rf-round);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 var(--rf-band), #000 calc(100% - var(--rf-band)), transparent 100%);
+  mask-composite:intersect;
+}
+.controls, main, footer{ position:relative; z-index:1; }
+:root.theme-swap .rf-slab, :root.theme-swap .rf-wash{ opacity:0; }
+
+:root{
+  --rf-tile:url("/assets/collatera-tile-coral.png");
+  --rf-coral:saturate(1.52) brightness(0.85) contrast(1.09);
+  --rf-pad:#FFFDF8;
+  --rf-texop:.55; --rf-texsize:570px; --rf-wash:.73;
+  --rf-core:1220px; --rf-band:65px; --rf-op:.62;
+  --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+}
+:root[data-theme="dark"]{
+  --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+  --rf-pad:#141C22;
+  --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
+  --rf-core:1300px; --rf-band:65px; --rf-op:.80;
+  --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+}
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{
+  --rf-tile:url("/assets/collatera-tile-blue.png"); --rf-coral:none;
+    --rf-pad:#141C22;
+    --rf-texop:.19; --rf-texsize:570px; --rf-wash:0;
+    --rf-core:1300px; --rf-band:65px; --rf-op:.80;
+    --rf-top:0px; --rf-bot:115px; --rf-round:30px;
+  }
+}
+@media (max-width:1380px){
+  :root, :root[data-theme="dark"]{ --rf-core:min(1300px, calc(100vw - 130px)); }
+}
+@media (max-width:760px){
+  :root, :root[data-theme="dark"]{ --rf-core:calc(100vw - 44px); --rf-band:22px; --rf-round:18px; }
+}
+
+/* extra tint tokens for the Notes type-coded tiles/dots, not part of the
+   shared site palette (which only defines --c1..--c6 for the rotating
+   category colours used elsewhere) */
+:root{ --c1-tint:#D7EAE5; --c2-tint:#DAE6E9; --c5-tint:#E9E1EA; --c6-tint:#F7DFC5; }
+:root[data-theme="dark"]{ --c1-tint:#385458; --c2-tint:#3C505C; --c5-tint:#4B4B5E; --c6-tint:#5A4936; }
+@media (prefers-color-scheme: dark){
+  :root[data-theme="auto"]{ --c1-tint:#385458; --c2-tint:#3C505C; --c5-tint:#4B4B5E; --c6-tint:#5A4936; }
+}
+
+/* ============================================================
+   GALLERY GRID — photo-pile bundle covers
+   ============================================================ */
+.gal-grid{
+  max-width:1180px; margin:0 auto 60px; padding:0 20px;
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;
+}
+@media (max-width:900px){ .gal-grid{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:640px){ .gal-grid{ grid-template-columns:1fr; } }
+
+.bcard{ border:none; background:none; padding:0; cursor:pointer; text-align:left; display:flex; flex-direction:column; font-family:inherit; }
+.bcard-cover{
+  position:relative; aspect-ratio:16/10; border-radius:var(--radius); overflow:hidden;
+  background:var(--surface); border:1px solid var(--border); box-shadow:0 1px 3px var(--shadow);
+  transition:transform .12s, box-shadow .12s;
+}
+.bcard:hover .bcard-cover{ transform:translateY(-2px); box-shadow:0 12px 26px var(--shadow); }
+.pile-tile{
+  position:absolute; border-radius:8px; overflow:hidden; border:3px solid var(--bg);
+  box-shadow:0 4px 10px rgba(0,0,0,.28);
+}
+.pile-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
+.tile-icon{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:22%; box-sizing:border-box; }
+.tile-note{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:var(--c6); text-align:center; padding:6px; box-sizing:border-box; overflow:hidden; }
+.bcard-count{ position:absolute; right:9px; bottom:9px; z-index:20; background:rgba(20,18,16,.62); color:#fff; font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; }
+.bcard-body{ padding:11px 2px 0; display:flex; flex-direction:column; gap:5px; }
+.bcard-title{ font-weight:700; font-size:14.5px; line-height:1.3; }
+.bcard-meta{ font-size:11.5px; color:var(--muted); line-height:1.5; }
+.bcard-dots{ display:flex; gap:4px; flex-wrap:wrap; margin-top:2px; }
+.dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+.dot.photo{ background:var(--c1); } .dot.link{ background:var(--c2); }
+.dot.file{ background:var(--c5); } .dot.note{ background:var(--c6); }
+
+/* ============================================================
+   BUNDLE PANEL — floating overlay, skyline-packed cloud of items
+   ============================================================ */
+.scrim{
+  position:fixed; inset:0; z-index:80; background:rgba(20,18,16,.5);
+  opacity:0; pointer-events:none; transition:opacity .18s;
+}
+.scrim.show{ opacity:1; pointer-events:auto; }
+.bpanel{
+  position:fixed; top:5vh; left:50%; width:min(1120px,94vw); height:90vh;
+  transform:translateX(-50%) translateY(14px); z-index:81;
+  background:var(--bg); border:1px solid var(--border); border-radius:22px;
+  box-shadow:0 40px 90px rgba(0,0,0,.45); display:flex; flex-direction:column; overflow:hidden;
+  opacity:0; pointer-events:none; transition:opacity .18s, transform .18s;
+}
+.bpanel.show{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+.bpanel-head{ flex:none; padding:20px 60px 14px 26px; border-bottom:1px solid var(--border); position:relative; }
+.bpanel-eyebrow{ font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); }
+.bpanel-title{ font-size:21px; font-weight:700; color:var(--title); margin-top:3px; text-wrap:balance; }
+.bpanel-meta{ font-size:12px; color:var(--muted); margin-top:4px; }
+.bpanel-close{
+  position:absolute; top:16px; right:18px; width:32px; height:32px; border-radius:50%;
+  border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer;
+  display:grid; place-items:center; font-size:15px;
+}
+.bpanel-close:hover{ color:var(--ink); }
+.cloud{ flex:1; min-height:0; overflow-y:auto; position:relative; padding:0; }
+.cloud-inner{ position:relative; }
+.ctile{
+  position:absolute; cursor:pointer; border-radius:8px; overflow:hidden; border:2px solid var(--border);
+  display:flex; flex-direction:column; transition:transform .12s, box-shadow .12s, z-index 0s; box-shadow:0 1px 4px var(--shadow);
+}
+.ctile:hover{ transform:scale(1.045); z-index:50; box-shadow:0 10px 20px var(--shadow); }
+.ctile.photo{ width:200px; height:200px; border-color:var(--c1); }
+.ctile.note{ width:180px; height:180px; border-color:var(--c6); }
+.ctile.link{ width:240px; height:84px; border-color:var(--c2); }
+.ctile.file{ width:240px; height:84px; border-color:var(--c5); }
+.ctile-media{ flex:1; min-height:0; }
+.ctile-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+.ctile.note .ctile-media{ display:flex; align-items:center; justify-content:center; padding:10px; text-align:center; background:var(--c6-tint); }
+.ctile.link .ctile-media,.ctile.file .ctile-media{ display:flex; align-items:center; gap:9px; padding:9px; }
+.ctile.link .ctile-media{ background:var(--c2-tint); }
+.ctile.file .ctile-media{ background:var(--c5-tint); }
+.ctile-linkthumb{ width:60px; height:60px; border-radius:7px; overflow:hidden; flex:none; display:flex; align-items:center; justify-content:center; }
+.ctile-linkthumb svg{ width:60%; height:60%; }
+.ctile-filethumb{ width:56px; height:56px; flex:none; display:flex; align-items:center; justify-content:center; }
+.ctile-filethumb svg{ width:70%; height:70%; }
+.ctile-linktitle,.ctile-filename{ font-size:20px; font-weight:700; line-height:1.18; color:var(--ink); overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.ctile-notetxt{ font-size:20px; line-height:1.24; color:var(--ink); font-weight:600; overflow:hidden; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; }
+
+/* item detail (opens above the cloud panel) */
+.iscrim{ position:fixed; inset:0; z-index:90; background:rgba(20,18,16,.4); opacity:0; pointer-events:none; transition:opacity .16s; }
+.iscrim.show{ opacity:1; pointer-events:auto; }
+.ipanel{
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.97); width:min(560px,90vw); max-height:82vh;
+  z-index:91; background:var(--bg); border:1px solid var(--border); border-radius:18px; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  overflow:hidden; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
+}
+.ipanel.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+.ipanel-close{ position:absolute; top:12px; right:14px; width:30px; height:30px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer; z-index:2; }
+.ipanel-media{ aspect-ratio:4/3; background:var(--surface); }
+.ipanel-media img{ width:100%; height:100%; object-fit:contain; display:block; }
+.ipanel-body{ padding:18px 22px 22px; overflow-y:auto; }
+.ipanel-type{ font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.ipanel-type.photo{ color:var(--c1); } .ipanel-type.link{ color:var(--c2); }
+.ipanel-type.file{ color:var(--c5); } .ipanel-type.note{ color:var(--c6); }
+.ipanel-title{ font-size:16.5px; font-weight:700; margin-top:4px; }
+.ipanel-cap{ font-size:13px; color:var(--muted); line-height:1.55; margin-top:8px; word-break:break-all; }
+.ipanel-notetxt{ font-size:15px; line-height:1.6; color:var(--ink); }
+.ipanel-actionrow{ margin-top:14px; display:flex; gap:9px; }
+.bp-ghost{ padding:.55em 1.2em; border-radius:9px; border:1px solid var(--border); background:transparent; color:var(--ink); font:inherit; font-size:13px; cursor:pointer; text-decoration:none; display:inline-block; }
+</style>
+
+</body>
+</html>
