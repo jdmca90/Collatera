@@ -1,3 +1,23 @@
 {
-  "bundles": []
+  "bundles": [
+    {
+      "id": "test-1", "title": "Test bundle — cards & pile cover", "posted": "2026-09-01",
+      "items": [
+        { "type": "photo", "path": "/assets/collatera-logo-v2.png", "label": "Sample photo" },
+        { "type": "link", "url": "https://www.acc.org", "label": "ACC.org" },
+        { "type": "note", "content": "Sample note text to check the note tile styling and truncation." }
+      ]
+    },
+    {
+      "id": "test-2", "title": "Test bundle — skyline packing", "posted": "2026-08-20", "updated": "2026-08-25",
+      "items": [
+        { "type": "photo", "path": "/assets/collatera-logo-v2.png" },
+        { "type": "photo", "path": "/assets/collatera-tile-coral.png" },
+        { "type": "file", "path": "/decks/files/2026-07-24-djmicrt2026.pdf", "label": "Sample PDF" },
+        { "type": "link", "url": "https://www.escardio.org", "label": "ESC" },
+        { "type": "note", "content": "Second note, different length, to see pile variety." },
+        { "type": "photo", "path": "/assets/collatera-tile-blue.png" }
+      ]
+    }
+  ]
 }
